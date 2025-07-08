@@ -21,6 +21,9 @@ IS_PRINT_JUST_CURRENT_SESSION_BOOKMARKS = True
 
 USAGE_HELP = """
 Usage: runonce_redis_integration.py <bookmark_name> [--save-updates] [-s] [--use-preceding-bookmark <session:bookmark>] [-p <session:bookmark>] [--blank-slate] [-b] [-v <video_path>] [--open-video <video_path>]
+
+Navigation commands:
+  next, previous, first, last    Navigate to adjacent bookmarks in the same directory
 """
 
 # TODO(MFB): Add an option to show redis before and after diffs.
@@ -37,11 +40,19 @@ Options:
   --save-last-redis                          Save current Redis state as redis_after.json
   -v <video_path>, --open-video <video_path> Open video file in OBS (paused) without saving or running anything
 
+Navigation:
+  next, previous, first, last                Navigate to adjacent bookmarks in the same directory
+                                             (requires a last used bookmark to be set)
+
 Examples:
   runonce_redis_integration.py my-bookmark
   runonce_redis_integration.py my-bookmark
   runonce_redis_integration.py my-bookmark session:other-bookmark
   runonce_redis_integration.py my-bookmark --blank-slate
+  runonce_redis_integration.py next -p -s
+  runonce_redis_integration.py previous
+  runonce_redis_integration.py first
+  runonce_redis_integration.py last
   runonce_redis_integration.py -v /path/to/video.mp4
   runonce_redis_integration.py --open-video /path/to/video.mp4
 """

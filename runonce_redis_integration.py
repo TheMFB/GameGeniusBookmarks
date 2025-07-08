@@ -14,7 +14,7 @@ from datetime import datetime
 from app.bookmarks_consts import IS_DEBUG, REDIS_DUMP_DIR, ASYNC_WAIT_TIME, OPTIONS_HELP, USAGE_HELP, IS_PRINT_JUST_CURRENT_SESSION_BOOKMARKS
 from app.bookmarks_sessions import get_all_active_sessions, parse_session_bookmark_arg, create_new_session, find_session_by_name, create_session_with_name, select_session_for_new_bookmark, update_session_last_bookmark
 from app.bookmarks_redis import copy_preceding_redis_state, copy_specific_bookmark_redis_state, copy_initial_redis_state, run_redis_command
-from app.bookmarks import get_bookmark_info, load_obs_bookmark_directly, load_bookmarks_from_session, normalize_path, is_strict_equal, save_last_used_bookmark, get_last_used_bookmark_display
+from app.bookmarks import get_bookmark_info, load_obs_bookmark_directly, load_bookmarks_from_session, normalize_path, is_strict_equal, save_last_used_bookmark, get_last_used_bookmark_display, resolve_navigation_bookmark, get_last_used_bookmark
 from app.bookmarks_print import print_all_sessions_and_bookmarks
 from app.bookmarks_meta import create_bookmark_meta, create_folder_meta, create_session_meta
 from app.utils import print_color, get_media_source_info
@@ -52,6 +52,10 @@ def main():
         return 0
 
     bookmark_arg = args[0]
+
+    # Check if this is a navigation command
+    navigation_commands = ["next", "previous", "first", "last"]
+    is_navigation = bookmark_arg in navigation_commands
 
     # Define supported flags
     supported_flags = [
@@ -121,7 +125,6 @@ def main():
         print(f"🔍 Debug - Args: {args}")
         print(f"🔍 Debug - save_last_redis: {save_last_redis}")
         print(f"🔍 Debug - save_updates: {save_updates}")
-        # print(f"🔍 Debug - overwrite_redis_after: {overwrite_redis_after}")
         print(f"🔍 Debug - use_preceding_bookmark: {use_preceding_bookmark}")
         print(f"🔍 Debug - source_bookmark_arg: {source_bookmark_arg}")
         print(f"🔍 Debug - blank_slate: {blank_slate}")
@@ -148,21 +151,53 @@ def main():
             print(f"❌ Failed to open video in OBS")
             return 1
 
-    # Parse session:bookmark format if present
+    # Parse session:bookmark format if present (only if not navigation)
     specified_session_name, bookmark_path = parse_session_bookmark_arg(bookmark_arg)
 
     if specified_session_name:
         print(f"🎯 Specified session: '{specified_session_name}', bookmark path: '{bookmark_path}'")
 
+    # Handle navigation commands
+    if is_navigation:
+        # Get the last used bookmark to determine the session
+        last_used_info = get_last_used_bookmark()
+        if not last_used_info:
+            print(f"❌ No last used bookmark found. Cannot navigate with '{bookmark_arg}'")
+            return 1
+
+        session_name = last_used_info.get("session_name")
+
+        # Find the session directory
+        session_dir = None
+        active_sessions = get_all_active_sessions()
+        for session_path in active_sessions:
+            if os.path.basename(session_path) == session_name:
+                session_dir = session_path
+                break
+
+        if not session_dir:
+            print(f"❌ Could not find session directory for '{session_name}'")
+            return 1
+
+        # Resolve the navigation command
+        bookmark_path, bookmark_info = resolve_navigation_bookmark(bookmark_arg, session_dir)
+        if not bookmark_path:
+            return 1
+
+        # Set the session directory for the rest of the workflow
+        session_dir = session_dir
+        matched_bookmark_name = bookmark_path
+    else:
+        # Normal bookmark lookup
+        matched_bookmark_name, bookmark_info = get_bookmark_info(bookmark_arg)
+
     if IS_DEBUG:
-        print(f"🎯 Starting integrated runonce-redis workflow for bookmark: '{bookmark_path}'")
+        print(f"🎯 Starting integrated runonce-redis workflow for bookmark: '{matched_bookmark_name}'")
         print(f"🔧 Redis dump directory: {REDIS_DUMP_DIR}")
         if save_last_redis:
             print(f"💾 Mode: Save current Redis state as redis_after.json")
         if save_updates:
             print(f"💾 Mode: Save redis state updates (before and after)")
-        if overwrite_redis_after:
-            print(f"🔄 Mode: Overwrite existing redis_after.json")
         if use_preceding_bookmark:
             print(f"📋 Mode: Use preceding bookmark's redis_after.json as redis_before.json")
         if blank_slate:
@@ -179,13 +214,10 @@ def main():
         os.makedirs(REDIS_DUMP_DIR)
 
     # Check if bookmark exists (with fuzzy matching)
-    matched_bookmark_name, bookmark_info = get_bookmark_info(bookmark_arg)
-
-    print(f"🔍 Debug - Matched bookmark name: {matched_bookmark_name}")
-
-    if not add_bookmark and not matched_bookmark_name:
-        print(f"❌ Bookmark '{bookmark_arg}' not found. Use -a or --add to create it.")
-        return 1
+    # This check is now redundant if we are resolving a navigation command
+    # if not add_bookmark and not matched_bookmark_name:
+    #     print(f"❌ Bookmark '{bookmark_arg}' not found. Use -a or --add to create it.")
+    #     return 1
     # If the bookmark exists, continue as normal (do not return early)
 
     # If adding and bookmark exists, prompt for update
