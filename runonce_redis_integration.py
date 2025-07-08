@@ -58,7 +58,7 @@ def main():
         "-a",
         "--add",
         "-s",
-        "--save-redis-after",
+        "--save-updates",
         "-p",
         "--use-preceding-bookmark",
         "-b",
@@ -78,7 +78,7 @@ def main():
         print()
 
     save_last_redis = "--save-last-redis" in args or "-s" in args
-    overwrite_redis_after = "--save-redis-after" in args
+    save_updates = "--save-updates" in args or "-s" in args
     use_preceding_bookmark = "--use-preceding-bookmark" in args or "-p" in args
     blank_slate = "--blank-slate" in args or "-b" in args
     is_dry_run = "--dry-run" in args or "-d" in args
@@ -120,7 +120,8 @@ def main():
     if IS_DEBUG:
         print(f"🔍 Debug - Args: {args}")
         print(f"🔍 Debug - save_last_redis: {save_last_redis}")
-        print(f"🔍 Debug - overwrite_redis_after: {overwrite_redis_after}")
+        print(f"🔍 Debug - save_updates: {save_updates}")
+        # print(f"🔍 Debug - overwrite_redis_after: {overwrite_redis_after}")
         print(f"🔍 Debug - use_preceding_bookmark: {use_preceding_bookmark}")
         print(f"🔍 Debug - source_bookmark_arg: {source_bookmark_arg}")
         print(f"🔍 Debug - blank_slate: {blank_slate}")
@@ -158,6 +159,8 @@ def main():
         print(f"🔧 Redis dump directory: {REDIS_DUMP_DIR}")
         if save_last_redis:
             print(f"💾 Mode: Save current Redis state as redis_after.json")
+        if save_updates:
+            print(f"💾 Mode: Save redis state updates (before and after)")
         if overwrite_redis_after:
             print(f"🔄 Mode: Overwrite existing redis_after.json")
         if use_preceding_bookmark:
@@ -264,6 +267,15 @@ def main():
                 if not copy_preceding_redis_state(matched_bookmark_name, session_dir):
                     print("❌ Failed to copy preceding Redis state")
                     return 1
+
+            # If save_updates is enabled, save the pulled-in redis state as redis_before.json
+            if save_updates:
+                print(f"💾 Saving pulled-in Redis state as redis_before.json...")
+                # The copy functions already create redis_before.json, so we just need to ensure it exists
+                if os.path.exists(redis_before_path):
+                    if IS_DEBUG:
+                        print(f"📋 Redis before state saved: {redis_before_path}")
+
             # Update the path since we just created/copied the file
             redis_before_path = os.path.join(bookmark_dir, "redis_before.json")
 
@@ -433,6 +445,16 @@ def main():
                 if not copy_preceding_redis_state(bookmark_path, session_dir):
                     print("❌ Failed to copy preceding Redis state")
                     return 1
+
+            # If save_updates is enabled, save the pulled-in redis state as redis_before.json
+            if save_updates:
+                print(f"💾 Saving pulled-in Redis state as redis_before.json...")
+                # The copy functions already create redis_before.json, so we just need to ensure it exists
+                bookmark_dir = os.path.join(session_dir, bookmark_path)
+                redis_before_path = os.path.join(bookmark_dir, "redis_before.json")
+                if os.path.exists(redis_before_path):
+                    if IS_DEBUG:
+                        print(f"📋 Redis before state saved: {redis_before_path}")
         else:
             # Normal flow - save current Redis state
             print(f"💾 Saving current Redis state for new bookmark '{bookmark_path}'...")
@@ -587,53 +609,50 @@ def main():
 
             if IS_DEBUG:
                 print(f"🔍 Debug - redis_after_exists: {redis_after_exists}")
-                print(f"🔍 Debug - overwrite_redis_after: {overwrite_redis_after}")
+                print(f"🔍 Debug - save_updates: {save_updates}")
                 print(f"🔍 Debug - final_after_path: {final_after_path}")
 
-            if redis_after_exists and not overwrite_redis_after:
-                print(f"📋 Redis after state already exists, skipping final export")
+            # Save final Redis state if save_updates is enabled or if it doesn't exist
+            should_save_redis_after = save_updates or not redis_after_exists
 
-        # Save final Redis state based on flags
-        should_save_redis_after = not redis_after_exists or overwrite_redis_after
-
-        if should_save_redis_after:
-            if overwrite_redis_after and redis_after_exists:
-                print(f"💾 Overwriting existing Redis after state...")
-            else:
-                print(f"💾 Saving final Redis state...")
-
-            if not run_redis_command(['export', 'bookmark_temp_after']):
-                print("❌ Failed to export final Redis state")
-                return 1
-
-            # Move the final Redis export to the bookmark directory
-            if session_dir:
-                bookmark_dir = os.path.join(session_dir, bookmark_path)
-                temp_redis_after_path = os.path.join(REDIS_DUMP_DIR, "bookmark_temp_after.json")
-
-                if IS_DEBUG:
-                    print(f"🔍 Looking for final Redis export at: {temp_redis_after_path}")
-
-
-                if os.path.exists(temp_redis_after_path) and os.path.exists(bookmark_dir):
-                    import shutil
-                    final_after_path = os.path.join(bookmark_dir, "redis_after.json")
-                    shutil.move(temp_redis_after_path, final_after_path)
-                    print(f"💾 Saved final Redis state to: {final_after_path}")
-
-                    # Generate friendly version
-                    try:
-                        convert_redis_to_friendly(final_after_path)
-                        if IS_DEBUG:
-                            print(f"📋 Generated friendly Redis after")
-                    except Exception as e:
-                        print(f"⚠️  Could not generate friendly Redis after: {e}")
+            if should_save_redis_after:
+                if save_updates and redis_after_exists:
+                    print(f"💾 Overwriting existing Redis after state...")
                 else:
-                    print(f"❌ Could not move final Redis file - temp_after exists: {os.path.exists(temp_redis_after_path)}, bookmark_dir exists: {os.path.exists(bookmark_dir) if bookmark_dir else 'bookmark_dir is None'}")
-                    # List what files are actually in the redis dump directory
-                    if os.path.exists(REDIS_DUMP_DIR):
-                        files = os.listdir(REDIS_DUMP_DIR)
-                        print(f"🔍 Files in Redis dump directory: {files}")
+                    print(f"💾 Saving final Redis state...")
+
+                if not run_redis_command(['export', 'bookmark_temp_after']):
+                    print("❌ Failed to export final Redis state")
+                    return 1
+
+                # Move the final Redis export to the bookmark directory
+                if session_dir:
+                    bookmark_dir = os.path.join(session_dir, bookmark_path)
+                    temp_redis_after_path = os.path.join(REDIS_DUMP_DIR, "bookmark_temp_after.json")
+
+                    if IS_DEBUG:
+                        print(f"🔍 Looking for final Redis export at: {temp_redis_after_path}")
+
+
+                    if os.path.exists(temp_redis_after_path) and os.path.exists(bookmark_dir):
+                        import shutil
+                        final_after_path = os.path.join(bookmark_dir, "redis_after.json")
+                        shutil.move(temp_redis_after_path, final_after_path)
+                        print(f"💾 Saved final Redis state to: {final_after_path}")
+
+                        # Generate friendly version
+                        try:
+                            convert_redis_to_friendly(final_after_path)
+                            if IS_DEBUG:
+                                print(f"📋 Generated friendly Redis after")
+                        except Exception as e:
+                            print(f"⚠️  Could not generate friendly Redis after: {e}")
+                    else:
+                        print(f"❌ Could not move final Redis file - temp_after exists: {os.path.exists(temp_redis_after_path)}, bookmark_dir exists: {os.path.exists(bookmark_dir) if bookmark_dir else 'bookmark_dir is None'}")
+                        # List what files are actually in the redis dump directory
+                        if os.path.exists(REDIS_DUMP_DIR):
+                            files = os.listdir(REDIS_DUMP_DIR)
+                            print(f"🔍 Files in Redis dump directory: {files}")
     else:
         print(f"📖 Load-only mode: Skipping final Redis state save")
 

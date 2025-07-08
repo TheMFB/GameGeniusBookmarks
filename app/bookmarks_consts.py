@@ -20,7 +20,7 @@ INITIAL_REDIS_STATE_DIR = os.path.join(REPO_ROOT, "app")
 IS_PRINT_JUST_CURRENT_SESSION_BOOKMARKS = True
 
 USAGE_HELP = """
-Usage: runonce_redis_integration.py <bookmark_name> [--save-redis-after] [-s] [--use-preceding-bookmark <session:bookmark>] [-p <session:bookmark>] [--blank-slate] [-b] [-v <video_path>] [--open-video <video_path>]
+Usage: runonce_redis_integration.py <bookmark_name> [--save-updates] [-s] [--use-preceding-bookmark <session:bookmark>] [-p <session:bookmark>] [--blank-slate] [-b] [-v <video_path>] [--open-video <video_path>]
 """
 
 # TODO(MFB): Add an option to show redis before and after diffs.
@@ -29,7 +29,7 @@ OPTIONS_HELP = USAGE_HELP + """
 Options:
   -h, --help, -ls                            Show this help message and exit
     (bmls / lsbm)
-  -s, --save-redis-after                     Overwrite redis_after.json after running
+  -s, --save-updates                         Save redis state updates (before and after)
     (bmsave / savebm)
   -p <bookmark>, --use-preceding-bookmark    Use redis_after.json from preceding or specified bookmark as redis_before.json
   -d, --dry-run                              Dry run, Load bookmark only (no main process)

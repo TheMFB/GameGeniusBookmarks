@@ -284,7 +284,7 @@ def print_all_sessions_and_bookmarks(
     print('')
     # Convert slashes to colons for display
     display_bookmark_name = current_bookmark_name.replace('/', ':') if current_bookmark_name else ''
-    print_color(f'runonce-redis {top_level_session_name}:{display_bookmark_name}', 'blue')
+    print(f"runonce-redis \033[34m{top_level_session_name}:{display_bookmark_name}\033[0m")
     print(
         f"   {USAGE_HELP}")
 
