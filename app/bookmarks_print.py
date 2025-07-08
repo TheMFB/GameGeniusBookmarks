@@ -3,7 +3,7 @@
 Integration script that coordinates OBS bookmarks with Redis state management
 """
 import os
-from app.bookmarks_consts import IS_DEBUG, HIDDEN_COLOR, RESET_COLOR
+from app.bookmarks_consts import IS_DEBUG, HIDDEN_COLOR, RESET_COLOR, USAGE_HELP
 from app.bookmarks_sessions import get_all_active_sessions
 from app.bookmarks_meta import load_session_meta, load_folder_meta
 from app.bookmarks import load_bookmarks_from_session
@@ -175,8 +175,7 @@ def print_all_sessions_and_bookmarks(current_session_name=None, current_bookmark
 
     print('')
     print_color(f'{current_session_name}:{current_bookmark_name}', 'blue')
-    # print(f"   Usage: runonce_redis_integration.py <bookmark_name> [--save-last-redis] [-s] [--overwrite-redis-after] [-o] [--use-preceding] [-p] [--blank-slate] [-b]")
     print(
-        f"   Usage: runonce_redis_integration.py <bookmark_name> [--overwrite-redis-after] [-o] [--use-preceding [session:bookmark]] [-p [session:bookmark]] [--blank-slate] [-b]")
+        f"   {USAGE_HELP}")
 
     print("=" * 50)

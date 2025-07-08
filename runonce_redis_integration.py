@@ -10,7 +10,7 @@ import json
 import obsws_python as obs
 from datetime import datetime
 
-from app.bookmarks_consts import IS_DEBUG, REDIS_DUMP_DIR, ASYNC_WAIT_TIME
+from app.bookmarks_consts import IS_DEBUG, REDIS_DUMP_DIR, ASYNC_WAIT_TIME, OPTIONS_HELP, USAGE_HELP
 from app.bookmarks_sessions import get_all_active_sessions, parse_session_bookmark_arg, create_new_session, find_session_by_name, create_session_with_name, select_session_for_new_bookmark
 from app.bookmarks_redis import copy_preceding_redis_state, copy_specific_bookmark_redis_state, copy_initial_redis_state, run_redis_command
 from app.bookmarks import get_bookmark_info, load_obs_bookmark_directly, load_bookmarks_from_session
@@ -18,10 +18,6 @@ from app.bookmarks_print import print_all_sessions_and_bookmarks
 from app.bookmarks_meta import create_bookmark_meta, create_folder_meta, create_session_meta
 from app.utils import print_color, get_media_source_info
 from redis_friendly_converter import convert_file as convert_redis_to_friendly
-
-
-#  Usage: runonce_redis_integration.py <bookmark_name> [--save-last-redis] [--s] [--overwrite-redis-after] [--o] [--r]
-
 
 def run_main_process():
     """Run the main game processor"""
@@ -35,29 +31,13 @@ def run_main_process():
         print(f"❌ Error running main process: {e}")
         return False
 
-
-
 def main():
     # Parse command line arguments
     args = sys.argv[1:]
 
     # Print help/usage if no arguments or -h/--help is present
     if not args or '-h' in args or '--help' in args:
-        print("""
-Usage: runonce_redis_integration.py <bookmark_name> [--overwrite-redis-after] [-o] [--use-preceding [session:bookmark]] [-p [session:bookmark]] [--blank-slate] [-b]
-
-Options:
-  -o, --overwrite-redis-after       Overwrite redis_after.json after running
-  -p [bookmark], --use-preceding    Use redis_after.json from preceding or specified bookmark as redis_before.json
-  -b, --blank-slate                 Use initial blank slate Redis state
-  -h, --help                        Show this help message and exit
-
-Examples:
-  runonce_redis_integration.py my-bookmark
-  runonce_redis_integration.py my-bookmark -u
-  runonce_redis_integration.py my-bookmark -u session:other-bookmark
-  runonce_redis_integration.py my-bookmark --blank-slate
-""")
+        print(OPTIONS_HELP)
         # List all sessions and bookmarks
         print_all_sessions_and_bookmarks()
 
@@ -66,27 +46,26 @@ Examples:
     bookmark_arg = args[0]
 
     # Define supported flags
-    supported_flags = ["--save-last-redis", "-s", "--overwrite-redis-after", "-o", "--use-preceding", "-p", "--blank-slate", "-b", "--load-only", "-l"]
+    supported_flags = ["--save-last-redis", "--save-redis-after", "-s", "--use-preceding-bookmark", "-p", "--blank-slate", "-b", "--load-only", "-l"]
 
     # Check for unsupported flags
     unsupported_flags = [arg for arg in args if arg.startswith("--") and arg not in supported_flags]
     if unsupported_flags:
         print(f"⚠️  Warning: Unsupported flags detected: {unsupported_flags}")
-        print(f"   Supported flags: {supported_flags}")
-        print(f"   Usage: runonce_redis_integration.py <bookmark_name> [--save-last-redis] [-s] [--overwrite-redis-after] [-o] [--use-preceding [session:bookmark]] [-p [session:bookmark]] [--blank-slate] [-b]")
+        print(OPTIONS_HELP)
         print()
 
     save_last_redis = "--save-last-redis" in args or "-s" in args
-    overwrite_redis_after = "--overwrite-redis-after" in args or "-o" in args
-    use_preceding = "--use-preceding" in args or "-p" in args
+    overwrite_redis_after = "--save-redis-after" in args
+    use_preceding_bookmark = "--use-preceding-bookmark" in args or "-p" in args
     blank_slate = "--blank-slate" in args or "-b" in args
     load_only = "--load-only" in args or "-l" in args
 
-    # Parse the source bookmark for --use-preceding if specified
+    # Parse the source bookmark for --use-preceding-bookmark if specified
     source_bookmark_arg = None
-    if use_preceding:
-        # Find the index of the use_preceding flag
-        preceding_flags = ["--use-preceding", "-p"]
+    if use_preceding_bookmark:
+        # Find the index of the use_preceding_bookmark flag
+        preceding_flags = ["--use-preceding-bookmark", "-p"]
         for flag in preceding_flags:
             if flag in args:
                 flag_index = args.index(flag)
@@ -101,7 +80,7 @@ Examples:
         print(f"🔍 Debug - Args: {args}")
         print(f"🔍 Debug - save_last_redis: {save_last_redis}")
         print(f"🔍 Debug - overwrite_redis_after: {overwrite_redis_after}")
-        print(f"🔍 Debug - use_preceding: {use_preceding}")
+        print(f"🔍 Debug - use_preceding_bookmark: {use_preceding_bookmark}")
         print(f"🔍 Debug - source_bookmark_arg: {source_bookmark_arg}")
         print(f"🔍 Debug - blank_slate: {blank_slate}")
         print(f"🔍 Debug - load_only: {load_only}")
@@ -119,7 +98,7 @@ Examples:
             print(f"💾 Mode: Save current Redis state as redis_after.json")
         if overwrite_redis_after:
             print(f"🔄 Mode: Overwrite existing redis_after.json")
-        if use_preceding:
+        if use_preceding_bookmark:
             print(f"📋 Mode: Use preceding bookmark's redis_after.json as redis_before.json")
         if blank_slate:
             print(f"🆕 Mode: Use initial blank slate Redis state")
@@ -222,8 +201,8 @@ Examples:
         if IS_DEBUG:
             print(f"🔍 Checking for existing Redis state at: {redis_before_path}")
 
-        # Handle --use-preceding flag for existing bookmark
-        if use_preceding:
+        # Handle --use-preceding-bookmark flag for existing bookmark
+        if use_preceding_bookmark:
             if source_bookmark_arg:
                 print(f"📋 Using specified bookmark's Redis state for '{matched_bookmark_name}'...")
                 if not copy_specific_bookmark_redis_state(source_bookmark_arg, matched_bookmark_name, session_dir):
@@ -402,8 +381,8 @@ Examples:
         if not os.path.exists(bookmark_dir):
             os.makedirs(bookmark_dir)
 
-        # Handle --use-preceding flag for new bookmark
-        if use_preceding:
+        # Handle --use-preceding-bookmark flag for new bookmark
+        if use_preceding_bookmark:
             if source_bookmark_arg:
                 print(f"📋 Using specified bookmark's Redis state for new bookmark '{bookmark_path}'...")
                 if not copy_specific_bookmark_redis_state(source_bookmark_arg, bookmark_path, session_dir):

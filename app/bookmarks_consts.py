@@ -16,3 +16,24 @@ BOOKMARKS_DIR = os.path.join(REPO_ROOT, "obs_bookmark_saves")
 # Redis dump directory - you may want to adjust this path for your new setup
 REDIS_DUMP_DIR = "/Users/mfb/dev/MFBTech/GameGeniusProject/GameGenius/game-genius/services/session_manager/utils/standalone/redis_dump"
 INITIAL_REDIS_STATE_DIR = os.path.join(REPO_ROOT, "app")
+
+USAGE_HELP = """
+Usage: runonce_redis_integration.py <bookmark_name> [--save-redis-after] [-s] [--use-preceding-bookmark [session:bookmark]] [-p [session:bookmark]] [--blank-slate] [-b]
+"""
+
+OPTIONS_HELP = USAGE_HELP + """
+
+Options:
+  --save-redis-after                    Overwrite redis_after.json after running
+  -p [bookmark], --use-preceding-bookmark    Use redis_after.json from preceding or specified bookmark as redis_before.json
+  -b, --blank-slate                          Use initial blank slate Redis state
+  -h, --help                                 Show this help message and exit
+  -l, --load-only                            Load bookmark only (no main process)
+  --save-last-redis                          Save current Redis state as redis_after.json
+
+Examples:
+  runonce_redis_integration.py my-bookmark
+  runonce_redis_integration.py my-bookmark
+  runonce_redis_integration.py my-bookmark session:other-bookmark
+  runonce_redis_integration.py my-bookmark --blank-slate
+"""

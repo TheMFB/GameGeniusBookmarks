@@ -10,8 +10,6 @@ from app.bookmarks_consts import IS_DEBUG
 from app.bookmarks_sessions import get_all_active_sessions
 
 
-#  Usage: runonce_redis_integration.py <bookmark_name> [--save-last-redis] [--s] [--overwrite-redis-after] [--o] [--r]
-
 def load_bookmarks_from_session(session_dir):
     """Load bookmarks from session directory by scanning for bookmark directories recursively"""
     bookmarks = {}
