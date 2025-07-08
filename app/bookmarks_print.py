@@ -20,6 +20,13 @@ def print_all_sessions_and_bookmarks(
     """Print all sessions and their bookmarks, highlighting the current one"""
     active_sessions = get_all_active_sessions()
 
+    if IS_DEBUG:
+        print_color("YYYYY", 'red')
+        print_color('---- top_level_session_name:', 'red')
+        pprint(top_level_session_name)
+        print_color('---- current_bookmark_name:', 'red')
+        pprint(current_bookmark_name)
+
     if not active_sessions:
         print("❌ No active sessions found")
         return
@@ -194,13 +201,22 @@ def print_all_sessions_and_bookmarks(
                     current_path_parts = current_bookmark_name.split('/')
                     current_folder_path = '/'.join(current_path_parts[:-1])
 
-                    # Only show bookmarks if this folder contains the current bookmark
-                    if folder_path == current_folder_path:
-                        # Show all bookmarks in the current folder (neighbors)
-                        filtered_bookmarks = bookmarks_in_folder
+                    # For root-level bookmarks (no slashes), show all root bookmarks
+                    if len(current_path_parts) == 1:
+                        # Current bookmark is at root level, show all root bookmarks
+                        if folder_path == 'root':
+                            filtered_bookmarks = bookmarks_in_folder
+                        else:
+                            # Don't show bookmarks from other folders
+                            filtered_bookmarks = []
                     else:
-                        # Don't show bookmarks from other folders
-                        filtered_bookmarks = []
+                        # Current bookmark is in a subfolder, only show bookmarks in that folder
+                        if folder_path == current_folder_path:
+                            # Show all bookmarks in the current folder (neighbors)
+                            filtered_bookmarks = bookmarks_in_folder
+                        else:
+                            # Don't show bookmarks from other folders
+                            filtered_bookmarks = []
                 else:
                     # Show all bookmarks (normal mode)
                     filtered_bookmarks = bookmarks_in_folder
