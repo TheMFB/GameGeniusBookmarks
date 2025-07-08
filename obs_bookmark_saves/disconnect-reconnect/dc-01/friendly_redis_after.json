@@ -58,7 +58,7 @@
                 }
               }
             ],
-            "update_battle_mode_statuses": [
+            "update_map_battle_mode_statuses": [
               {
                 "user_id": "DEV_GG_USER_ID",
                 "timestamp": 1751369261.74,
@@ -765,9 +765,9 @@
               "last_css_ocr_check": 1751369259.03,
               "last_css_hero_check": 1751369259.95
             },
-            "battle_mode_statuses": {
+            "map_battle_mode_statuses": {
               "game_mode_name": null,
-              "battle_mode_name": null,
+              "map_battle_mode_name": null,
               "stage_name": null,
               "stage_location_name": null,
               "team_objective_control_state": null,

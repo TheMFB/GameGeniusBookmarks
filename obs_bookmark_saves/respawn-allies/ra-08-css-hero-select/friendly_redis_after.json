@@ -732,7 +732,7 @@
                 }
               }
             ],
-            "update_battle_mode_statuses": [
+            "update_map_battle_mode_statuses": [
               {
                 "user_id": "DEV_GG_USER_ID",
                 "timestamp": 1751485923.78,
@@ -976,9 +976,9 @@
               "last_css_ocr_check": 1751485922.38,
               "last_css_hero_check": 1751485922.82
             },
-            "battle_mode_statuses": {
+            "map_battle_mode_statuses": {
               "game_mode_name": "conquest",
-              "battle_mode_name": "convoy",
+              "map_battle_mode_name": "convoy",
               "stage_name": "symbiotic_surface",
               "stage_location_name": "klyntar",
               "team_objective_control_state": null,

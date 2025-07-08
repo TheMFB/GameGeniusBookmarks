@@ -513,9 +513,9 @@
               "last_css_ocr_check": null,
               "last_css_hero_check": null
             },
-            "battle_mode_statuses": {
+            "map_battle_mode_statuses": {
               "game_mode_name": "competitive",
-              "battle_mode_name": "convoy",
+              "map_battle_mode_name": "convoy",
               "stage_name": "yggdrasill_path",
               "stage_location_name": "yggsgard",
               "team_objective_control_state": null,
@@ -594,9 +594,9 @@
               "last_css_ocr_check": null,
               "last_css_hero_check": null
             },
-            "battle_mode_statuses": {
+            "map_battle_mode_statuses": {
               "game_mode_name": null,
-              "battle_mode_name": null,
+              "map_battle_mode_name": null,
               "stage_name": null,
               "stage_location_name": null,
               "team_objective_control_state": null,

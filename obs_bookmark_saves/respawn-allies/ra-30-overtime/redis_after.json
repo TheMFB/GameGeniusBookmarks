@@ -818,9 +818,9 @@
       "last_css_ocr_check": 1751552093.91,
       "last_css_hero_check": 1751552094.32
     },
-    "battle_mode_statuses": {
+    "map_battle_mode_statuses": {
       "game_mode_name": "conquest",
-      "battle_mode_name": "convergence",
+      "map_battle_mode_name": "convergence",
       "stage_name": "symbiotic_surface",
       "stage_location_name": "klyntar",
       "team_objective_control_state": null,

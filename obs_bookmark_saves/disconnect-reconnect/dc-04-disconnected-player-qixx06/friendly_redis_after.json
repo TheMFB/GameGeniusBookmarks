@@ -1357,9 +1357,9 @@
               "last_css_ocr_check": 1751312667.09,
               "last_css_hero_check": 1751312667.79
             },
-            "battle_mode_statuses": {
+            "map_battle_mode_statuses": {
               "game_mode_name": null,
-              "battle_mode_name": null,
+              "map_battle_mode_name": null,
               "stage_name": null,
               "stage_location_name": null,
               "team_objective_control_state": null,

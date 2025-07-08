@@ -290,7 +290,7 @@
     "created_at": 1751311420.78,
     "state": {}
   },
-  "game:marvel_rivals:session:DEV_SESSION_ID:recent_actions:update_battle_mode_statuses": [
+  "game:marvel_rivals:session:DEV_SESSION_ID:recent_actions:update_map_battle_mode_statuses": [
     {
       "user_id": "DEV_GG_USER_ID",
       "timestamp": 1751552095.95,
@@ -668,9 +668,9 @@
       "last_css_ocr_check": 1751552093.91,
       "last_css_hero_check": 1751552094.32
     },
-    "battle_mode_statuses": {
+    "map_battle_mode_statuses": {
       "game_mode_name": "conquest",
-      "battle_mode_name": "convoy",
+      "map_battle_mode_name": "convoy",
       "stage_name": "symbiotic_surface",
       "stage_location_name": "klyntar",
       "team_objective_control_state": null,

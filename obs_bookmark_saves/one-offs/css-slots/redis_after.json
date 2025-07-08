@@ -521,9 +521,9 @@
       "last_css_ocr_check": 1751472283.2,
       "last_css_hero_check": 1751472283.8
     },
-    "battle_mode_statuses": {
+    "map_battle_mode_statuses": {
       "game_mode_name": null,
-      "battle_mode_name": null,
+      "map_battle_mode_name": null,
       "stage_name": "symbiotic_surface",
       "stage_location_name": "klyntar",
       "team_objective_control_state": null,

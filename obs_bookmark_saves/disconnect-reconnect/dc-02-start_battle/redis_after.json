@@ -331,7 +331,7 @@
   },
   "gateway_listener_test": "Test value at 1751277898.39",
   "user_session:DEV_GG_USER_ID": "DEV_SESSION_ID",
-  "game:marvel_rivals:session:DEV_SESSION_ID:recent_actions:update_battle_mode_statuses": [
+  "game:marvel_rivals:session:DEV_SESSION_ID:recent_actions:update_map_battle_mode_statuses": [
     {
       "user_id": "DEV_GG_USER_ID",
       "timestamp": 1751313881.53,
@@ -421,9 +421,9 @@
       "last_css_ocr_check": 1751312667.09,
       "last_css_hero_check": 1751312667.79
     },
-    "battle_mode_statuses": {
+    "map_battle_mode_statuses": {
       "game_mode_name": null,
-      "battle_mode_name": null,
+      "map_battle_mode_name": null,
       "stage_name": null,
       "stage_location_name": null,
       "team_objective_control_state": null,

@@ -8,7 +8,7 @@
       "session": {
         "DEV_SESSION_ID": {
           "recent_actions": {
-            "update_battle_mode_statuses": [
+            "update_map_battle_mode_statuses": [
               {
                 "user_id": "DEV_GG_USER_ID",
                 "timestamp": 1751466937.01,
@@ -16,7 +16,7 @@
                   "stage_location_name": "intergalactic_empire_of_wakanda",
                   "stage_name": "hall_of_djalia",
                   "game_mode_name": "quick_match",
-                  "battle_mode_name": "convergence"
+                  "map_battle_mode_name": "convergence"
                 }
               }
             ],
@@ -184,9 +184,9 @@
               "last_css_ocr_check": null,
               "last_css_hero_check": null
             },
-            "battle_mode_statuses": {
+            "map_battle_mode_statuses": {
               "game_mode_name": "quick_match",
-              "battle_mode_name": "convergence",
+              "map_battle_mode_name": "convergence",
               "stage_name": "hall_of_djalia",
               "stage_location_name": "intergalactic_empire_of_wakanda",
               "team_objective_control_state": null,

@@ -88,7 +88,7 @@
                 }
               }
             ],
-            "update_battle_mode_statuses": [
+            "update_map_battle_mode_statuses": [
               {
                 "user_id": "DEV_GG_USER_ID",
                 "timestamp": 1751988183.14,
@@ -110,9 +110,9 @@
               "last_css_ocr_check": 1751988181.67,
               "last_css_hero_check": 1751988182.25
             },
-            "battle_mode_statuses": {
+            "map_battle_mode_statuses": {
               "game_mode_name": null,
-              "battle_mode_name": null,
+              "map_battle_mode_name": null,
               "stage_name": null,
               "stage_location_name": null,
               "team_objective_control_state": null,
@@ -247,9 +247,9 @@
               "last_css_ocr_check": null,
               "last_css_hero_check": null
             },
-            "battle_mode_statuses": {
+            "map_battle_mode_statuses": {
               "game_mode_name": null,
-              "battle_mode_name": null,
+              "map_battle_mode_name": null,
               "stage_name": null,
               "stage_location_name": null,
               "team_objective_control_state": null,
