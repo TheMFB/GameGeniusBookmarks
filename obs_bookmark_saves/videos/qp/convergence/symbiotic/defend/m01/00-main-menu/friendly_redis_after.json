@@ -3,13 +3,112 @@
     "marvel_rivals": {
       "session": {
         "DEV_SESSION_ID": {
+          "recent_actions": {
+            "patch_player_in_battle_state": [
+              {
+                "user_id": "DEV_GG_USER_ID",
+                "timestamp": 1751988183.08,
+                "data": {
+                  "player_id": "DEV_PLAYER_ID",
+                  "details": {
+                    "player_meta_statuses": {
+                      "current_hero_statuses": {
+                        "current_hero_last_check_time": 1751988182.26,
+                        "current_hero_last_check_error_count": 0
+                      }
+                    }
+                  },
+                  "ally_or_opponent": "ally",
+                  "timestamp": 1751988183.08
+                }
+              }
+            ],
+            "patch_player_slots": [
+              {
+                "user_id": "DEV_GG_USER_ID",
+                "timestamp": 1751988183.08,
+                "data": {
+                  "ally_or_opponent": "ally",
+                  "player_id": "DEV_PLAYER_ID",
+                  "slots": {
+                    "css_slot": 1
+                  },
+                  "player_name": "TheMFB",
+                  "context": "match_players_to_ocr",
+                  "timestamp": 1751988183.08
+                }
+              }
+            ],
+            "update_screen_statuses": [
+              {
+                "user_id": "DEV_GG_USER_ID",
+                "timestamp": 1751988183.13,
+                "data": {
+                  "current_screen_name": "css_screen",
+                  "current_screen_details": {}
+                }
+              },
+              {
+                "user_id": "DEV_GG_USER_ID",
+                "timestamp": 1751988183.14,
+                "data": {
+                  "last_css_ocr_check": 1751988181.67
+                }
+              },
+              {
+                "user_id": "DEV_GG_USER_ID",
+                "timestamp": 1751988183.14,
+                "data": {
+                  "last_css_hero_check": 1751988182.25
+                }
+              },
+              {
+                "user_id": "DEV_GG_USER_ID",
+                "timestamp": 1751988183.14,
+                "data": {
+                  "current_screen_details": {
+                    "css_phase": "confirm_your_hero"
+                  }
+                }
+              }
+            ],
+            "hero_swap": [
+              {
+                "user_id": "DEV_GG_USER_ID",
+                "timestamp": 1751988183.08,
+                "data": {
+                  "player_id": "DEV_PLAYER_ID",
+                  "ally_or_opponent": "ally",
+                  "newly_selected_hero": {
+                    "id": 0,
+                    "hero_name": "choosing_hero",
+                    "is_lord": false
+                  },
+                  "timestamp": 1751988183.08
+                }
+              }
+            ],
+            "update_battle_mode_statuses": [
+              {
+                "user_id": "DEV_GG_USER_ID",
+                "timestamp": 1751988183.14,
+                "data": {
+                  "timestamps": {
+                    "game_begins_timestamp": 1751988216.08
+                  }
+                }
+              }
+            ]
+          },
           "game_state": {
             "screen_statuses": {
-              "current_screen_name": "main_menu_screen",
-              "current_screen_details": {},
+              "current_screen_name": "css_screen",
+              "current_screen_details": {
+                "css_phase": "confirm_your_hero"
+              },
               "last_main_menu_screen_leader_ocr_check": 1751987948.44,
-              "last_css_ocr_check": null,
-              "last_css_hero_check": null
+              "last_css_ocr_check": 1751988181.67,
+              "last_css_hero_check": 1751988182.25
             },
             "battle_mode_statuses": {
               "game_mode_name": null,
@@ -21,7 +120,7 @@
               "team_attack_or_defend": null,
               "advantage_state_intensity": null,
               "timestamps": {
-                "game_begins_timestamp": null,
+                "game_begins_timestamp": 1751988216.08,
                 "out_of_spawn_timestamp": null,
                 "battle_start_timestamp": null,
                 "overtime_timestamp": null,
@@ -45,7 +144,7 @@
                 "opponent": {}
               }
             },
-            "last_updated": 1751987948.66
+            "last_updated": 1751988183.14
           },
           "players_state": {
             "ally": {
@@ -87,9 +186,13 @@
                     "last_respawn_time_check": null
                   }
                 },
-                "current_hero": {},
+                "current_hero": {
+                  "id": 0,
+                  "hero_name": "choosing_hero",
+                  "is_lord": false
+                },
                 "slots": {
-                  "css_slot": null,
+                  "css_slot": 1,
                   "intro_main_slot": 1,
                   "az_slot": null,
                   "scoreboard_slot": null
@@ -100,8 +203,8 @@
                   "is_joined_team_party": true,
                   "stream_time_offset": null,
                   "current_hero_statuses": {
-                    "current_hero_last_check_time": null,
-                    "current_hero_last_check_error_count": null
+                    "current_hero_last_check_time": 1751988182.26,
+                    "current_hero_last_check_error_count": 0
                   },
                   "watching_player_details": null,
                   "disconnect_statuses": {
@@ -122,17 +225,6 @@
             "game_name": "marvel_rivals",
             "created_at": 1751311420.78,
             "state": {}
-          },
-          "recent_actions": {
-            "update_screen_statuses": [
-              {
-                "user_id": "DEV_GG_USER_ID",
-                "timestamp": 1751987948.66,
-                "data": {
-                  "last_main_menu_screen_leader_ocr_check": 1751987948.44
-                }
-              }
-            ]
           },
           "players_meta_state": {
             "is_opponent_names_found": false,

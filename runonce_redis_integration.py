@@ -516,51 +516,35 @@ def main():
                     if IS_DEBUG:
                         print(f"📋 Created folder metadata for: {folder_name}")
 
-        # Update session metadata
-        session_name = os.path.basename(session_dir)
-        session_meta_path = os.path.join(session_dir, "session_meta.json")
-
-        if is_first_bookmark:
-            # This is the first bookmark in the session, set description to video filename
+            # Set description in the last directory of the bookmark path (not the session root)
+            last_dir_path = os.path.join(session_dir, *path_parts[:-1])
+            folder_meta_file = os.path.join(last_dir_path, "session_meta.json")
             video_filename = ""
             if media_info and media_info.get('file_path'):
                 video_filename = os.path.basename(media_info['file_path'])
-
-            # Create or update session metadata with video filename as description
-            if os.path.exists(session_meta_path):
+            # Create or update folder meta with video filename as description
+            if os.path.exists(folder_meta_file):
                 try:
-                    with open(session_meta_path, 'r') as f:
+                    with open(folder_meta_file, 'r') as f:
                         meta_data = json.load(f)
                 except json.JSONDecodeError:
                     meta_data = {}
             else:
                 meta_data = {
-                    "session_name": session_name,
                     "created_at": datetime.now().isoformat(),
                     "description": "",
                     "tags": []
                 }
-
-            # Update description with video filename if available
             if video_filename:
                 meta_data["description"] = video_filename
-                if IS_DEBUG:
-                    print(f"📋 Set session description to video filename: {video_filename}")
-
-            # Update last_modified
             meta_data["last_modified"] = datetime.now().isoformat()
-
             try:
-                with open(session_meta_path, 'w') as f:
+                with open(folder_meta_file, 'w') as f:
                     json.dump(meta_data, f, indent=2)
                 if IS_DEBUG:
-                    print(f"📋 Updated session metadata with video filename")
+                    print(f"📋 Updated folder metadata for '{os.path.basename(last_dir_path)}' with video filename: {video_filename}")
             except Exception as e:
-                print(f"❌ Error updating session metadata: {e}")
-        else:
-            # This is not the first bookmark, don't update the metadata
-            if IS_DEBUG:
-                print(f"📋 Not the first bookmark in session, skipping session metadata update")
+                print(f"❌ Error updating folder metadata: {e}")
 
     # Run the main process (unless load-only mode)
     if not load_only:
