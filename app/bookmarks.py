@@ -120,6 +120,13 @@ def load_bookmarks_from_session(session_dir):
 #                 return None, None
 
 
+def is_strict_equal(path1, path2):
+    """Check if two bookmark paths are strictly equal after normalization."""
+    normalized1 = '/'.join(normalize_path(path1))
+    normalized2 = '/'.join(normalize_path(path2))
+    return normalized1 == normalized2
+
+
 def find_matching_bookmark(bookmark_name, session_dir):
     """Find matching bookmark using step-through logic and fallback fuzzy matching."""
 
@@ -320,11 +327,6 @@ def find_preceding_bookmark(bookmark_name, session_dir):
                 return name
 
     return None
-
-
-
-
-
 
 
 def normalize_path(path):

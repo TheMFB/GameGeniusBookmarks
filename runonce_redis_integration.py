@@ -2,6 +2,7 @@
 """
 Integration script that coordinates OBS bookmarks with Redis state management
 """
+from pprint import pprint
 import os
 import sys
 import subprocess
@@ -13,7 +14,7 @@ from datetime import datetime
 from app.bookmarks_consts import IS_DEBUG, REDIS_DUMP_DIR, ASYNC_WAIT_TIME, OPTIONS_HELP, USAGE_HELP
 from app.bookmarks_sessions import get_all_active_sessions, parse_session_bookmark_arg, create_new_session, find_session_by_name, create_session_with_name, select_session_for_new_bookmark
 from app.bookmarks_redis import copy_preceding_redis_state, copy_specific_bookmark_redis_state, copy_initial_redis_state, run_redis_command
-from app.bookmarks import get_bookmark_info, load_obs_bookmark_directly, load_bookmarks_from_session
+from app.bookmarks import get_bookmark_info, load_obs_bookmark_directly, load_bookmarks_from_session, normalize_path, is_strict_equal
 from app.bookmarks_print import print_all_sessions_and_bookmarks
 from app.bookmarks_meta import create_bookmark_meta, create_folder_meta, create_session_meta
 from app.utils import print_color, get_media_source_info
@@ -170,6 +171,9 @@ def main():
     # Check if bookmark exists (with fuzzy matching)
     matched_bookmark_name, bookmark_info = get_bookmark_info(bookmark_arg)
 
+    print(f"🔍 Debug - Matched bookmark name: {matched_bookmark_name}")
+    pprint(bookmark_info)
+
     if not add_bookmark and not matched_bookmark_name:
         print(f"❌ Bookmark '{bookmark_arg}' not found. Use -a or --add to create it.")
         return 1
@@ -177,29 +181,33 @@ def main():
 
     # If adding and bookmark exists, prompt for update
     if add_bookmark and matched_bookmark_name:
-        print(f"⚠️  Bookmark '{matched_bookmark_name}' already exists.")
-        print("What would you like to do?")
-        print("  1. Update before redis json")
-        print("  2. Update after redis json")
-        print("  3. Update both")
-        print("  4. Cancel")
-        while True:
-            choice = input("Enter choice (1-4): ").strip()
-            if choice == "1":
-                overwrite_redis_after = False
-                break
-            elif choice == "2":
-                overwrite_redis_after = True
-                break
-            elif choice == "3":
-                overwrite_redis_after = True
-                # We'll handle both updates in the workflow below
-                break
-            elif choice == "4":
-                print("❌ Cancelled.")
-                return 1
-            else:
-                print("❌ Invalid choice. Please enter 1-4.")
+        if is_strict_equal(matched_bookmark_name, bookmark_arg):
+            print(
+                f"⚠️  Bookmark '{matched_bookmark_name}' already exists (partial match).")
+            print("What would you like to do?")
+            print("  1. Update before redis json")
+            print("  2. Update after redis json")
+            print("  3. Update both")
+            print("  4. Cancel")
+            while True:
+                choice = input("Enter choice (1-4): ").strip()
+                if choice == "1":
+                    overwrite_redis_after = False
+                    break
+                elif choice == "2":
+                    overwrite_redis_after = True
+                    break
+                elif choice == "3":
+                    overwrite_redis_after = True
+                    # We'll handle both updates in the workflow below
+                    break
+                elif choice == "4":
+                    print("❌ Cancelled.")
+                    return 1
+                else:
+                    print("❌ Invalid choice. Please enter 1-4.")
+        else:
+            matched_bookmark_name = None
 
     # Main workflow: Load existing bookmark OR create new one
     session_dir = None  # Track the session directory throughout the workflow
