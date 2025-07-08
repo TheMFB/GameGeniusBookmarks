@@ -15,7 +15,7 @@ from app.utils import print_color
 def print_all_sessions_and_bookmarks(
         top_level_session_name=None,
         current_bookmark_name=None,
-        is_print_just_current_session_bookmarks=True
+        is_print_just_current_session_bookmarks=False
 ):
     """Print all sessions and their bookmarks, highlighting the current one"""
     active_sessions = get_all_active_sessions()
@@ -32,6 +32,9 @@ def print_all_sessions_and_bookmarks(
             session_name_from_state = last_used_info.get("session_name")
             bookmark_name_from_state = last_used_info.get("bookmark_name")
 
+            # Convert colons back to slashes for internal processing
+            bookmark_name_slashes = bookmark_name_from_state.replace(':', '/')
+
             # The session_name in the state file might be the full path or just the basename
             # Let's try to find the correct session by matching against all session paths
             found_session = None
@@ -46,9 +49,9 @@ def print_all_sessions_and_bookmarks(
 
             if found_session:
                 top_level_session_name = os.path.basename(found_session)
-                current_bookmark_name = bookmark_name_from_state
+                current_bookmark_name = bookmark_name_slashes  # Use the slash version for internal processing
                 if IS_DEBUG:
-                    print(f"📌 Using last used bookmark: {top_level_session_name}:{current_bookmark_name}")
+                    print(f"📌 Using last used bookmark: {top_level_session_name}:{bookmark_name_from_state}")
             else:
                 if IS_DEBUG:
                     print(f"⚠️  Could not find session '{session_name_from_state}' in active sessions")
@@ -184,7 +187,25 @@ def print_all_sessions_and_bookmarks(
                             f"{indent}   {' '.join(f'•{tag}' for tag in folder_tags)}", 'cyan')
 
                 # Print bookmarks directly in this folder
-                for bookmark_name, bookmark_info in sorted(folder_hierarchy.get(folder_path, [])):
+                bookmarks_in_folder = folder_hierarchy.get(folder_path, [])
+
+                # Filter bookmarks if we're in just-current mode and this is the current session
+                if is_print_just_current_session_bookmarks and is_current_session and current_bookmark_name:
+                    current_path_parts = current_bookmark_name.split('/')
+                    current_folder_path = '/'.join(current_path_parts[:-1])
+
+                    # Only show bookmarks if this folder contains the current bookmark
+                    if folder_path == current_folder_path:
+                        # Show all bookmarks in the current folder (neighbors)
+                        filtered_bookmarks = bookmarks_in_folder
+                    else:
+                        # Don't show bookmarks from other folders
+                        filtered_bookmarks = []
+                else:
+                    # Show all bookmarks (normal mode)
+                    filtered_bookmarks = bookmarks_in_folder
+
+                for bookmark_name, bookmark_info in sorted(filtered_bookmarks):
                     timestamp = bookmark_info.get(
                         'timestamp_formatted', 'unknown time')
                     if len(timestamp) < 5:
@@ -223,9 +244,19 @@ def print_all_sessions_and_bookmarks(
                         print_color(
                             f"{indent}      {' '.join(f'•{tag}' for tag in bookmark_tags)}", 'cyan')
 
-                # Recurse into subfolders
-                for child_folder in sorted(folder_tree.get(folder_path, [])):
-                    print_folder_contents(child_folder, indent_level + 1)
+                # Recurse into subfolders only if we're not in just-current mode or if this folder contains the current bookmark
+                if not is_print_just_current_session_bookmarks or (is_current_session and current_bookmark_name):
+                    current_path_parts = current_bookmark_name.split('/') if current_bookmark_name else []
+                    current_folder_path = '/'.join(current_path_parts[:-1]) if current_path_parts else ""
+
+                    # Only recurse if this folder is on the path to the current bookmark
+                    should_recurse = (not is_print_just_current_session_bookmarks or
+                                    folder_path == 'root' or
+                                    current_folder_path.startswith(folder_path + '/'))
+
+                    if should_recurse:
+                        for child_folder in sorted(folder_tree.get(folder_path, [])):
+                            print_folder_contents(child_folder, indent_level + 1)
 
             # Start the recursive display from root
             print_folder_contents('root', indent_level=0)

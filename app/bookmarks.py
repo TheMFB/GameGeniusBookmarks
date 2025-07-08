@@ -371,17 +371,19 @@ def stepwise_match(user_parts, all_bookmarks):
 def save_last_used_bookmark(session_name, bookmark_name):
     """Save the last used bookmark to a global state file."""
     state_file = os.path.join(os.path.dirname(__file__), "..", "last_bookmark_state.json")
-    
+
     # Ensure we're saving the session basename, not the full path
     session_basename = os.path.basename(session_name) if '/' in session_name else session_name
-    
+
+    # Convert slashes to colons in bookmark name for consistency
+    bookmark_name_colons = bookmark_name.replace('/', ':')
+
     state_data = {
         "session_name": session_basename,  # Save just the basename
-        "bookmark_name": bookmark_name,
-        "full_path": f"{session_basename}:{bookmark_name}",
+        "bookmark_name": bookmark_name_colons,  # Use colons instead of slashes
         "timestamp": datetime.now().isoformat()
     }
-    
+
     with open(state_file, 'w') as f:
         json.dump(state_data, f, indent=2)
 
