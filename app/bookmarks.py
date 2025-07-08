@@ -9,6 +9,8 @@ import obsws_python as obs
 from app.bookmarks_consts import IS_DEBUG
 from app.bookmarks_sessions import get_all_active_sessions
 
+import re
+
 
 def load_bookmarks_from_session(session_dir):
     """Load bookmarks from session directory by scanning for bookmark directories recursively"""
@@ -53,12 +55,84 @@ def load_bookmarks_from_session(session_dir):
     return bookmarks
 
 
-def find_matching_bookmark(bookmark_name, session_dir):
-    """Find matching bookmark using fuzzy matching logic with support for nested folders"""
-    bookmarks = load_bookmarks_from_session(session_dir)
+# def find_matching_bookmark(bookmark_name, session_dir):
+#     """Find matching bookmark using fuzzy matching logic with support for nested folders"""
+#     bookmarks = load_bookmarks_from_session(session_dir)
 
+#     if not bookmarks:
+#         return None, None
+
+#     # First try exact match
+#     if bookmark_name in bookmarks:
+#         if IS_DEBUG:
+#             print(f"🎯 Found exact bookmark match: '{bookmark_name}'")
+#         return bookmark_name, bookmarks[bookmark_name]
+
+#     # Try fuzzy matching - find bookmarks that start with the given name
+#     # Also check if the bookmark name appears anywhere in the path
+#     matches = []
+#     for path in bookmarks.keys():
+#         # Check if the path starts with the bookmark name
+#         if path.lower().startswith(bookmark_name.lower()):
+#             matches.append(path)
+#         # Check if the bookmark name appears in any part of the path
+#         elif bookmark_name.lower() in path.lower():
+#             matches.append(path)
+
+#     if len(matches) == 0:
+#         return None, None
+#     elif len(matches) == 1:
+#         target_bookmark_name = matches[0]
+#         if IS_DEBUG:
+#             print(f"🎯 Found fuzzy bookmark match: '{target_bookmark_name}'")
+#         return target_bookmark_name, bookmarks[target_bookmark_name]
+#     else:
+#         print(f"🤔 Multiple bookmarks found matching '{bookmark_name}':")
+#         print(f"   Please be more specific. Found {len(matches)} matches:")
+#         for i, match in enumerate(sorted(matches), 1):
+#             bookmark = bookmarks[match]
+#             # Convert slashes to colons with spaces for display
+#             display_match = match.replace('/', ' : ')
+#             print(
+#                 f"   {i}. {bookmark.get('timestamp_formatted', 'unknown time')} - {display_match}")
+#         print(f"   {len(matches) + 1}. Create new bookmark '{bookmark_name}'")
+
+#         while True:
+#             try:
+#                 choice = input(
+#                     f"Enter choice (1-{len(matches) + 1}): ").strip()
+#                 choice_num = int(choice)
+
+#                 if 1 <= choice_num <= len(matches):
+#                     selected_match = sorted(matches)[choice_num - 1]
+#                     print(f"✅ Selected bookmark: '{selected_match}'")
+#                     return selected_match, bookmarks[selected_match]
+#                 elif choice_num == len(matches) + 1:
+#                     print(f"✅ Creating new bookmark: '{bookmark_name}'")
+#                     return None, None  # Signal to create new bookmark
+#                 else:
+#                     print(
+#                         f"❌ Invalid choice. Please enter 1-{len(matches) + 1}")
+#             except ValueError:
+#                 print("❌ Please enter a valid number")
+#             except KeyboardInterrupt:
+#                 print("\n❌ Cancelled")
+#                 return None, None
+
+
+def find_matching_bookmark(bookmark_name, session_dir):
+    """Find matching bookmark using step-through logic and fallback fuzzy matching."""
+    print('')
+    print('++++ find_matching_bookmark ++++')
+    print(f"bookmark_name: {bookmark_name}")
+    print(f"session_dir: {session_dir}")
+    print('')
+
+    bookmarks = load_bookmarks_from_session(session_dir)
     if not bookmarks:
         return None, None
+
+    all_paths = list(bookmarks.keys())
 
     # First try exact match
     if bookmark_name in bookmarks:
@@ -66,31 +140,80 @@ def find_matching_bookmark(bookmark_name, session_dir):
             print(f"🎯 Found exact bookmark match: '{bookmark_name}'")
         return bookmark_name, bookmarks[bookmark_name]
 
-    # Try fuzzy matching - find bookmarks that start with the given name
-    # Also check if the bookmark name appears anywhere in the path
+    # Normalize user input
+    user_input_parts = normalize_path(bookmark_name)
+
+    if IS_DEBUG:
+        print(f"🔎 Normalized user input: {user_input_parts}")
+
+    # Try stepwise matching
+    stepwise_matches = stepwise_match(user_input_parts, all_paths)
+
+    if stepwise_matches:
+        if len(stepwise_matches) == 1:
+            target = stepwise_matches[0]
+            if IS_DEBUG:
+                print(f"🎯 Stepwise match resolved to: '{target}'")
+            return target, bookmarks[target]
+        else:
+            print(f"🤔 Multiple bookmarks found matching '{bookmark_name}':")
+            print(
+                f"   Please be more specific. Found {len(stepwise_matches)} matches:")
+            for i, match in enumerate(sorted(stepwise_matches), 1):
+                bookmark = bookmarks[match]
+                display_match = match.replace('/', ' : ')
+                print(
+                    f"   {i}. {bookmark.get('timestamp_formatted', 'unknown time')} - {display_match}")
+            print(
+                f"   {len(stepwise_matches) + 1}. Create new bookmark '{bookmark_name}'")
+
+            while True:
+                try:
+                    choice = input(
+                        f"Enter choice (1-{len(stepwise_matches) + 1}): ").strip()
+                    choice_num = int(choice)
+
+                    if 1 <= choice_num <= len(stepwise_matches):
+                        selected_match = sorted(stepwise_matches)[
+                            choice_num - 1]
+                        print(f"✅ Selected bookmark: '{selected_match}'")
+                        return selected_match, bookmarks[selected_match]
+                    elif choice_num == len(stepwise_matches) + 1:
+                        print(f"✅ Creating new bookmark: '{bookmark_name}'")
+                        return None, None
+                    else:
+                        print(
+                            f"❌ Invalid choice. Please enter 1-{len(stepwise_matches) + 1}")
+                except ValueError:
+                    print("❌ Please enter a valid number")
+                except KeyboardInterrupt:
+                    print("\n❌ Cancelled")
+                    return None, None
+
+    # Fallback fuzzy match
     matches = []
     for path in bookmarks.keys():
-        # Check if the path starts with the bookmark name
         if path.lower().startswith(bookmark_name.lower()):
             matches.append(path)
-        # Check if the bookmark name appears in any part of the path
         elif bookmark_name.lower() in path.lower():
             matches.append(path)
 
     if len(matches) == 0:
         return None, None
     elif len(matches) == 1:
-        target_bookmark_name = matches[0]
+        target = matches[0]
         if IS_DEBUG:
-            print(f"🎯 Found fuzzy bookmark match: '{target_bookmark_name}'")
-        return target_bookmark_name, bookmarks[target_bookmark_name]
+            print(f"🎯 Fuzzy fallback match: '{target}'")
+        return target, bookmarks[target]
     else:
-        print(f"🤔 Multiple bookmarks found matching '{bookmark_name}':")
+        print(
+            f"🤔 Fuzzy fallback: Multiple bookmarks found matching '{bookmark_name}':")
         print(f"   Please be more specific. Found {len(matches)} matches:")
         for i, match in enumerate(sorted(matches), 1):
             bookmark = bookmarks[match]
+            display_match = match.replace('/', ' : ')
             print(
-                f"   {i}. '{match}' - {bookmark.get('timestamp_formatted', 'unknown time')}")
+                f"   {i}. {bookmark.get('timestamp_formatted', 'unknown time')} - {display_match}")
         print(f"   {len(matches) + 1}. Create new bookmark '{bookmark_name}'")
 
         while True:
@@ -105,7 +228,7 @@ def find_matching_bookmark(bookmark_name, session_dir):
                     return selected_match, bookmarks[selected_match]
                 elif choice_num == len(matches) + 1:
                     print(f"✅ Creating new bookmark: '{bookmark_name}'")
-                    return None, None  # Signal to create new bookmark
+                    return None, None
                 else:
                     print(
                         f"❌ Invalid choice. Please enter 1-{len(matches) + 1}")
@@ -202,3 +325,46 @@ def find_preceding_bookmark(bookmark_name, session_dir):
                 return name
 
     return None
+
+
+
+
+
+
+
+def normalize_path(path):
+    """Normalize a bookmark path into components using both ':' and '/' as separators."""
+    # Replace both ':' and '/' with a single consistent delimiter (e.g., '/')
+    path = path.replace(':', '/')
+    return [part.lower() for part in path.strip('/').split('/')]
+
+
+def stepwise_match(user_parts, all_bookmarks):
+    """Perform reverse stepwise matching of user_parts against bookmark paths."""
+    candidate_paths = []
+
+    # Preprocess all bookmarks into tokenized forms
+    tokenized_bookmarks = [
+        (path, normalize_path(path)) for path in all_bookmarks
+    ]
+
+    # Start by finding matches on the last user input part
+    depth = 1  # start from end of user input
+    while True:
+        matching = []
+        for orig_path, tokens in tokenized_bookmarks:
+            if len(tokens) < depth:
+                continue
+            if tokens[-depth].startswith(user_parts[-depth]):
+                matching.append((orig_path, tokens))
+
+        if not matching:
+            return []  # no matches at this depth — fail
+        if depth == len(user_parts):
+            return [m[0] for m in matching]  # all user parts matched
+        if len(matching) == 1:
+            return [matching[0][0]]  # only one left — use it
+
+        # More than one match, keep going deeper
+        tokenized_bookmarks = matching
+        depth += 1

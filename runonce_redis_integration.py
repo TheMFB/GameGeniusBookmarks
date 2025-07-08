@@ -165,7 +165,7 @@ def main():
         os.makedirs(REDIS_DUMP_DIR)
 
     # Check if bookmark exists (with fuzzy matching)
-    matched_bookmark_name, bookmark_info = get_bookmark_info(bookmark_path)
+    matched_bookmark_name, bookmark_info = get_bookmark_info(bookmark_arg)
 
     # Handle --save-last-redis flag (requires existing bookmark)
     if save_last_redis:

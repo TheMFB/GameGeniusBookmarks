@@ -112,7 +112,7 @@ def create_bookmark_meta(bookmark_dir, bookmark_name, obs_info):
     """Create bookmark_meta.json file in the bookmark directory"""
     meta_data = {
         "timestamp": obs_info["media_cursor"],
-        "timestamp_formatted": f"{obs_info['media_cursor'] // 60000}:{(obs_info['media_cursor'] % 60000) // 1000:02d}",
+        "timestamp_formatted": f"{(obs_info['media_cursor'] // 60000):02d}:{(obs_info['media_cursor'] % 60000) // 1000:02d}",
         "source_name": obs_info["source_name"],
         "file_path": obs_info["file_path"],
         "media_duration": obs_info["media_duration"],
