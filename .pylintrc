@@ -1,0 +1,17 @@
+[TYPECHECK]
+ignored-modules=cv2
+generated-members=cv2.*
+
+[MESSAGES CONTROL]
+disable=C0111,C0114,E0401,E1136,C0301,W1039
+
+# C0111: Missing docstring
+# C0114: Missing docstring
+# E0401: Import error
+# E1136: Use a list comprehension
+# C0301: Too many lines in module
+# W1039: F-string with no variables
+
+[MASTER]
+disable=E0401
+; missing-function-docstring=no-member

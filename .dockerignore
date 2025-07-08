@@ -1,0 +1,16 @@
+services/
+
+# Ignore virtual environments
+.venv
+venv
+
+# Common Python junk
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# IDEs and editors
+.vscode/
+.idea/
+.env
