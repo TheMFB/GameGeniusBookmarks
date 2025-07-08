@@ -18,22 +18,25 @@ REDIS_DUMP_DIR = "/Users/mfb/dev/MFBTech/GameGeniusProject/GameGenius/game-geniu
 INITIAL_REDIS_STATE_DIR = os.path.join(REPO_ROOT, "app")
 
 USAGE_HELP = """
-Usage: runonce_redis_integration.py <bookmark_name> [--save-redis-after] [-s] [--use-preceding-bookmark [session:bookmark]] [-p [session:bookmark]] [--blank-slate] [-b]
+Usage: runonce_redis_integration.py <bookmark_name> [--save-redis-after] [-s] [--use-preceding-bookmark <session:bookmark>] [-p <session:bookmark>] [--blank-slate] [-b] [-v <video_path>] [--open-video <video_path>]
 """
 
 OPTIONS_HELP = USAGE_HELP + """
 
 Options:
-  --save-redis-after                    Overwrite redis_after.json after running
-  -p [bookmark], --use-preceding-bookmark    Use redis_after.json from preceding or specified bookmark as redis_before.json
+  -s, --save-redis-after                     Overwrite redis_after.json after running
+  -p <bookmark>, --use-preceding-bookmark    Use redis_after.json from preceding or specified bookmark as redis_before.json
   -b, --blank-slate                          Use initial blank slate Redis state
   -h, --help                                 Show this help message and exit
   -l, --load-only                            Load bookmark only (no main process)
   --save-last-redis                          Save current Redis state as redis_after.json
+  -v <video_path>, --open-video <video_path> Open video file in OBS (paused) without saving or running anything
 
 Examples:
   runonce_redis_integration.py my-bookmark
   runonce_redis_integration.py my-bookmark
   runonce_redis_integration.py my-bookmark session:other-bookmark
   runonce_redis_integration.py my-bookmark --blank-slate
+  runonce_redis_integration.py -v /path/to/video.mp4
+  runonce_redis_integration.py --open-video /path/to/video.mp4
 """

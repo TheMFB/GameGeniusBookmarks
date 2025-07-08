@@ -1,6 +1,7 @@
 # type: ignore
 from typing import Literal
 import obsws_python as obs
+import os
 
 ColorTypes = Literal['black', 'red', 'green',
                      'yellow', 'blue', 'magenta', 'cyan', 'white']
@@ -19,6 +20,43 @@ def print_color(text: str, color: ColorTypes):
     }
 
     print(f"\033[{color_codes[color]}m{text}\033[0m")
+
+
+def open_video_in_obs(video_path: str, source_name: str = "Media Source"):
+    """Open a video file in OBS with it paused"""
+    try:
+        # Check if video file exists
+        if not os.path.exists(video_path):
+            print(f"❌ Video file not found: {video_path}")
+            return False
+        
+        # Convert to absolute path
+        video_path = os.path.abspath(video_path)
+        
+        cl = obs.ReqClient(host="localhost", port=4455, password="", timeout=3)
+        
+        # Set the media source to the video file
+        cl.send("SetInputSettings", {
+            "inputName": source_name,
+            "inputSettings": {
+                "local_file": video_path
+            }
+        })
+        
+        # Pause the media
+        cl.send("TriggerMediaInputAction", {
+            "inputName": source_name,
+            "mediaAction": "OBS_WEBSOCKET_MEDIA_INPUT_ACTION_PAUSE"
+        })
+        
+        print(f"✅ Opened video in OBS: {video_path}")
+        print(f"📺 Source: {source_name}")
+        print(f"⏸️  Status: Paused")
+        return True
+        
+    except Exception as e:
+        print(f"❌ Error opening video in OBS: {e}")
+        return False
 
 
 def get_media_source_info(source_name="Media Source"):

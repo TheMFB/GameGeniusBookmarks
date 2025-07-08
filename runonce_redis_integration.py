@@ -46,7 +46,19 @@ def main():
     bookmark_arg = args[0]
 
     # Define supported flags
-    supported_flags = ["--save-last-redis", "--save-redis-after", "-s", "--use-preceding-bookmark", "-p", "--blank-slate", "-b", "--load-only", "-l"]
+    supported_flags = [
+        "-s",
+        "--save-redis-after",
+        "-p",
+        "--use-preceding-bookmark",
+        "-b",
+        "--blank-slate",
+        "-l",
+        "--load-only",
+        "--save-last-redis",
+        "-v"
+        "--open-video",
+    ]
 
     # Check for unsupported flags
     unsupported_flags = [arg for arg in args if arg.startswith("--") and arg not in supported_flags]
@@ -60,6 +72,9 @@ def main():
     use_preceding_bookmark = "--use-preceding-bookmark" in args or "-p" in args
     blank_slate = "--blank-slate" in args or "-b" in args
     load_only = "--load-only" in args or "-l" in args
+
+    # Check for video opening flags
+    open_video = "--open-video" in args or "-v" in args
 
     # Parse the source bookmark for --use-preceding-bookmark if specified
     source_bookmark_arg = None
@@ -76,6 +91,21 @@ def main():
                         print(f"🔍 Found source bookmark argument: '{source_bookmark_arg}'")
                 break
 
+    # Parse the video path for --open-video if specified
+    video_path = None
+    if open_video:
+        # Find the index of the open_video flag
+        video_flags = ["--open-video", "-v"]
+        for flag in video_flags:
+            if flag in args:
+                flag_index = args.index(flag)
+                # Check if there's an argument after the flag that's not another flag
+                if flag_index + 1 < len(args) and not args[flag_index + 1].startswith("-"):
+                    video_path = args[flag_index + 1]
+                    if IS_DEBUG:
+                        print(f"🔍 Found video path argument: '{video_path}'")
+                break
+
     if IS_DEBUG:
         print(f"🔍 Debug - Args: {args}")
         print(f"🔍 Debug - save_last_redis: {save_last_redis}")
@@ -84,6 +114,27 @@ def main():
         print(f"🔍 Debug - source_bookmark_arg: {source_bookmark_arg}")
         print(f"🔍 Debug - blank_slate: {blank_slate}")
         print(f"🔍 Debug - load_only: {load_only}")
+        print(f"🔍 Debug - open_video: {open_video}")
+        print(f"🔍 Debug - video_path: {video_path}")
+
+    # Handle video opening mode
+    if open_video:
+        if not video_path:
+            print(f"❌ Video path required for --open-video flag")
+            print(OPTIONS_HELP)
+            return 1
+
+        print(f"🎬 Opening video in OBS: {video_path}")
+
+        # Import the open_video_in_obs function
+        from app.utils import open_video_in_obs
+
+        if open_video_in_obs(video_path):
+            print(f"✅ Video opened successfully!")
+            return 0
+        else:
+            print(f"❌ Failed to open video in OBS")
+            return 1
 
     # Parse session:bookmark format if present
     specified_session_name, bookmark_path = parse_session_bookmark_arg(bookmark_arg)
@@ -104,6 +155,8 @@ def main():
             print(f"🆕 Mode: Use initial blank slate Redis state")
         if load_only:
             print(f"📖 Mode: Load bookmark only (no main process)")
+        if open_video:
+            print(f"🎬 Mode: Open video in OBS (paused)")
 
     # Ensure Redis dump directory exists
     if not os.path.exists(REDIS_DUMP_DIR):
