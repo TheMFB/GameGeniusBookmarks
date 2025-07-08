@@ -36,7 +36,7 @@ def main():
     args = sys.argv[1:]
 
     # Print help/usage if no arguments or -h/--help is present
-    if not args or '-h' in args or '--help' in args:
+    if not args or '-h' in args or '--help' in args or '-ls' in args or '--ls' in args or 'ls' in args:
         print(OPTIONS_HELP)
         # List all sessions and bookmarks
         print_all_sessions_and_bookmarks()
