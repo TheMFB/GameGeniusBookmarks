@@ -20,6 +20,12 @@ def print_all_sessions_and_bookmarks(
     """Print all sessions and their bookmarks, highlighting the current one"""
     active_sessions = get_all_active_sessions()
 
+    print_color("YYYYY", 'red')
+    print_color('---- top_level_session_name:', 'red')
+    pprint(top_level_session_name)
+    print_color('---- current_bookmark_name:', 'red')
+    pprint(current_bookmark_name)
+
     if not active_sessions:
         print("❌ No active sessions found")
         return
