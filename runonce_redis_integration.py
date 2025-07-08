@@ -11,7 +11,7 @@ import json
 import obsws_python as obs
 from datetime import datetime
 
-from app.bookmarks_consts import IS_DEBUG, REDIS_DUMP_DIR, ASYNC_WAIT_TIME, OPTIONS_HELP, USAGE_HELP
+from app.bookmarks_consts import IS_DEBUG, REDIS_DUMP_DIR, ASYNC_WAIT_TIME, OPTIONS_HELP, USAGE_HELP, IS_PRINT_JUST_CURRENT_SESSION_BOOKMARKS
 from app.bookmarks_sessions import get_all_active_sessions, parse_session_bookmark_arg, create_new_session, find_session_by_name, create_session_with_name, select_session_for_new_bookmark
 from app.bookmarks_redis import copy_preceding_redis_state, copy_specific_bookmark_redis_state, copy_initial_redis_state, run_redis_command
 from app.bookmarks import get_bookmark_info, load_obs_bookmark_directly, load_bookmarks_from_session, normalize_path, is_strict_equal
@@ -19,6 +19,7 @@ from app.bookmarks_print import print_all_sessions_and_bookmarks
 from app.bookmarks_meta import create_bookmark_meta, create_folder_meta, create_session_meta
 from app.utils import print_color, get_media_source_info
 from redis_friendly_converter import convert_file as convert_redis_to_friendly
+
 
 def run_main_process():
     """Run the main game processor"""
@@ -37,7 +38,7 @@ def main():
     args = sys.argv[1:]
 
     # Print help/usage if no arguments or -h/--help is present
-    if not args or '-h' in args or '--help' in args or '-ls' in args or '--ls' in args or 'ls' in args:
+    if not args or '-h' in args or '--help' in args or '-ls' in args or '--ls' in args:
         print(OPTIONS_HELP)
         # List all sessions and bookmarks
         print_all_sessions_and_bookmarks()
@@ -56,8 +57,8 @@ def main():
         "--use-preceding-bookmark",
         "-b",
         "--blank-slate",
-        "-l",
-        "--load-only",
+        "-d",
+        "--dry-run",
         "--save-last-redis",
         "-v",
         "--open-video",
@@ -74,7 +75,7 @@ def main():
     overwrite_redis_after = "--save-redis-after" in args
     use_preceding_bookmark = "--use-preceding-bookmark" in args or "-p" in args
     blank_slate = "--blank-slate" in args or "-b" in args
-    load_only = "--load-only" in args or "-l" in args
+    is_dry_run = "--dry-run" in args or "-d" in args
     add_bookmark = "--add" in args or "-a" in args
 
     # Check for video opening flags
@@ -117,7 +118,7 @@ def main():
         print(f"🔍 Debug - use_preceding_bookmark: {use_preceding_bookmark}")
         print(f"🔍 Debug - source_bookmark_arg: {source_bookmark_arg}")
         print(f"🔍 Debug - blank_slate: {blank_slate}")
-        print(f"🔍 Debug - load_only: {load_only}")
+        print(f"🔍 Debug - is_dry_run: {is_dry_run}")
         print(f"🔍 Debug - open_video: {open_video}")
         print(f"🔍 Debug - video_path: {video_path}")
 
@@ -157,7 +158,7 @@ def main():
             print(f"📋 Mode: Use preceding bookmark's redis_after.json as redis_before.json")
         if blank_slate:
             print(f"🆕 Mode: Use initial blank slate Redis state")
-        if load_only:
+        if is_dry_run:
             print(f"📖 Mode: Load bookmark only (no main process)")
         if open_video:
             print(f"🎬 Mode: Open video in OBS (paused)")
@@ -554,7 +555,7 @@ def main():
                 print(f"❌ Error updating folder metadata: {e}")
 
     # Run the main process (unless load-only mode)
-    if not load_only:
+    if not is_dry_run:
         if IS_DEBUG:
             print(f"🚀 Running main process...")
         print('')
@@ -571,7 +572,7 @@ def main():
 
     # Check if redis_after.json already exists before saving final state (skip in load-only mode)
     should_save_redis_after = False  # Default value for load-only mode
-    if not load_only:
+    if not is_dry_run:
         redis_after_exists = False
         if session_dir:
             bookmark_dir = os.path.join(session_dir, bookmark_path)
@@ -637,7 +638,7 @@ def main():
 
 
 
-    if load_only:
+    if is_dry_run:
         print(f"✅ Load-only workflow completed successfully!")
         if IS_DEBUG:
             print(f"   Bookmark: '{bookmark_path}'")
@@ -659,7 +660,7 @@ def main():
     # Print all sessions and bookmarks with current one highlighted
     if session_dir:
         current_session_name = os.path.basename(session_dir)
-        print_all_sessions_and_bookmarks(current_session_name, bookmark_path)
+        print_all_sessions_and_bookmarks(current_session_name, bookmark_path, IS_PRINT_JUST_CURRENT_SESSION_BOOKMARKS)
 
     return 0
 

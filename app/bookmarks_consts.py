@@ -17,18 +17,23 @@ BOOKMARKS_DIR = os.path.join(REPO_ROOT, "obs_bookmark_saves")
 REDIS_DUMP_DIR = "/Users/mfb/dev/MFBTech/GameGeniusProject/GameGenius/game-genius/services/session_manager/utils/standalone/redis_dump"
 INITIAL_REDIS_STATE_DIR = os.path.join(REPO_ROOT, "app")
 
+IS_PRINT_JUST_CURRENT_SESSION_BOOKMARKS = True
+
 USAGE_HELP = """
 Usage: runonce_redis_integration.py <bookmark_name> [--save-redis-after] [-s] [--use-preceding-bookmark <session:bookmark>] [-p <session:bookmark>] [--blank-slate] [-b] [-v <video_path>] [--open-video <video_path>]
 """
 
+# TODO(MFB): Add an option to show redis before and after diffs.
 OPTIONS_HELP = USAGE_HELP + """
 
 Options:
+  -h, --help, -ls                            Show this help message and exit
+    (bmls / lsbm)
   -s, --save-redis-after                     Overwrite redis_after.json after running
+    (bmsave / savebm)
   -p <bookmark>, --use-preceding-bookmark    Use redis_after.json from preceding or specified bookmark as redis_before.json
+  -d, --dry-run                              Dry run, Load bookmark only (no main process)
   -b, --blank-slate                          Use initial blank slate Redis state
-  -h, --help                                 Show this help message and exit
-  -l, --load-only                            Load bookmark only (no main process)
   --save-last-redis                          Save current Redis state as redis_after.json
   -v <video_path>, --open-video <video_path> Open video file in OBS (paused) without saving or running anything
 
