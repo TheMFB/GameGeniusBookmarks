@@ -5,6 +5,7 @@ Integration script that coordinates OBS bookmarks with Redis state management
 import os
 import json
 import obsws_python as obs
+from datetime import datetime
 
 from app.bookmarks_consts import IS_DEBUG
 from app.bookmarks_sessions import get_all_active_sessions
@@ -365,3 +366,52 @@ def stepwise_match(user_parts, all_bookmarks):
         # More than one match, keep going deeper
         tokenized_bookmarks = matching
         depth += 1
+
+
+def save_last_used_bookmark(session_name, bookmark_name):
+    """Save the last used bookmark to a global state file."""
+    state_file = os.path.join(os.path.dirname(__file__), "..", "last_bookmark_state.json")
+    
+    # Ensure we're saving the session basename, not the full path
+    session_basename = os.path.basename(session_name) if '/' in session_name else session_name
+    
+    state_data = {
+        "session_name": session_basename,  # Save just the basename
+        "bookmark_name": bookmark_name,
+        "full_path": f"{session_basename}:{bookmark_name}",
+        "timestamp": datetime.now().isoformat()
+    }
+    
+    with open(state_file, 'w') as f:
+        json.dump(state_data, f, indent=2)
+
+
+def get_last_used_bookmark():
+    """Get the last used bookmark from the global state file."""
+    state_file = os.path.join(os.path.dirname(__file__), "..", "last_bookmark_state.json")
+
+    if os.path.exists(state_file):
+        try:
+            with open(state_file, 'r') as f:
+                return json.load(f)
+        except json.JSONDecodeError:
+            return None
+    return None
+
+def get_last_used_bookmark_display():
+    """Get a formatted string for displaying the last used bookmark."""
+    last_used = get_last_used_bookmark()
+    if last_used:
+        session_name = last_used.get("session_name", "unknown")
+        bookmark_name = last_used.get("bookmark_name", "unknown")
+        timestamp = last_used.get("timestamp", "")
+
+        # Format timestamp for display
+        try:
+            dt = datetime.fromisoformat(timestamp)
+            formatted_time = dt.strftime("%Y-%m-%d %H:%M:%S")
+        except:
+            formatted_time = timestamp
+
+        return f"{session_name}:{bookmark_name} (last used: {formatted_time})"
+    return None

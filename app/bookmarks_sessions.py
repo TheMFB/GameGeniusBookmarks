@@ -234,3 +234,30 @@ def parse_session_bookmark_arg(bookmark_arg):
 
     # No colon found, treat as just bookmark name
     return None, bookmark_arg
+
+
+def update_session_last_bookmark(session_dir, bookmark_name):
+    """Update the session metadata with the last used bookmark."""
+    session_meta_path = os.path.join(session_dir, "session_meta.json")
+    
+    # Load existing metadata or create new
+    if os.path.exists(session_meta_path):
+        try:
+            with open(session_meta_path, 'r') as f:
+                meta_data = json.load(f)
+        except json.JSONDecodeError:
+            meta_data = {}
+    else:
+        meta_data = {
+            "created_at": datetime.now().isoformat(),
+            "description": "",
+            "tags": []
+        }
+    
+    # Update last used bookmark
+    meta_data["last_used_bookmark"] = bookmark_name
+    meta_data["last_modified"] = datetime.now().isoformat()
+    
+    # Save updated metadata
+    with open(session_meta_path, 'w') as f:
+        json.dump(meta_data, f, indent=2)

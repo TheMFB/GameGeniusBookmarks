@@ -12,9 +12,9 @@ import obsws_python as obs
 from datetime import datetime
 
 from app.bookmarks_consts import IS_DEBUG, REDIS_DUMP_DIR, ASYNC_WAIT_TIME, OPTIONS_HELP, USAGE_HELP, IS_PRINT_JUST_CURRENT_SESSION_BOOKMARKS
-from app.bookmarks_sessions import get_all_active_sessions, parse_session_bookmark_arg, create_new_session, find_session_by_name, create_session_with_name, select_session_for_new_bookmark
+from app.bookmarks_sessions import get_all_active_sessions, parse_session_bookmark_arg, create_new_session, find_session_by_name, create_session_with_name, select_session_for_new_bookmark, update_session_last_bookmark
 from app.bookmarks_redis import copy_preceding_redis_state, copy_specific_bookmark_redis_state, copy_initial_redis_state, run_redis_command
-from app.bookmarks import get_bookmark_info, load_obs_bookmark_directly, load_bookmarks_from_session, normalize_path, is_strict_equal
+from app.bookmarks import get_bookmark_info, load_obs_bookmark_directly, load_bookmarks_from_session, normalize_path, is_strict_equal, save_last_used_bookmark, get_last_used_bookmark_display
 from app.bookmarks_print import print_all_sessions_and_bookmarks
 from app.bookmarks_meta import create_bookmark_meta, create_folder_meta, create_session_meta
 from app.utils import print_color, get_media_source_info
@@ -40,6 +40,12 @@ def main():
     # Print help/usage if no arguments or -h/--help is present
     if not args or '-h' in args or '--help' in args or '-ls' in args or '--ls' in args:
         print(OPTIONS_HELP)
+
+        # Show last used bookmark if available
+        last_used_display = get_last_used_bookmark_display()
+        if last_used_display:
+            print(f"\n Last used bookmark: {last_used_display}")
+
         # List all sessions and bookmarks
         print_all_sessions_and_bookmarks()
 
@@ -631,12 +637,17 @@ def main():
     else:
         print(f"📖 Load-only mode: Skipping final Redis state save")
 
+    # Save the last used bookmark at the end of successful operations
+    if session_dir:
+        session_name = os.path.basename(session_dir)
+        save_last_used_bookmark(session_name, bookmark_path)
+        if IS_DEBUG:
+            print(f"📋 Saved last used bookmark: '{session_name}:{bookmark_path}'")
+
     # Don't update session metadata at the end - only update when actually creating new sessions
     if IS_DEBUG and session_dir:
         session_name = os.path.basename(session_dir)
         print(f"📋 Skipping final session metadata update for '{session_name}'")
-
-
 
     if is_dry_run:
         print(f"✅ Load-only workflow completed successfully!")
