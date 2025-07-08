@@ -122,11 +122,6 @@ def load_bookmarks_from_session(session_dir):
 
 def find_matching_bookmark(bookmark_name, session_dir):
     """Find matching bookmark using step-through logic and fallback fuzzy matching."""
-    print('')
-    print('++++ find_matching_bookmark ++++')
-    print(f"bookmark_name: {bookmark_name}")
-    print(f"session_dir: {session_dir}")
-    print('')
 
     bookmarks = load_bookmarks_from_session(session_dir)
     if not bookmarks:

@@ -1,4 +1,4 @@
-IS_DEBUG = True
+IS_DEBUG = False
 # IS_DEBUG = False
 ASYNC_WAIT_TIME = 1
 
