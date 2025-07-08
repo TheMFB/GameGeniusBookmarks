@@ -47,6 +47,8 @@ def main():
 
     # Define supported flags
     supported_flags = [
+        "-a",
+        "--add",
         "-s",
         "--save-redis-after",
         "-p",
@@ -56,7 +58,7 @@ def main():
         "-l",
         "--load-only",
         "--save-last-redis",
-        "-v"
+        "-v",
         "--open-video",
     ]
 
@@ -72,6 +74,7 @@ def main():
     use_preceding_bookmark = "--use-preceding-bookmark" in args or "-p" in args
     blank_slate = "--blank-slate" in args or "-b" in args
     load_only = "--load-only" in args or "-l" in args
+    add_bookmark = "--add" in args or "-a" in args
 
     # Check for video opening flags
     open_video = "--open-video" in args or "-v" in args
@@ -167,55 +170,36 @@ def main():
     # Check if bookmark exists (with fuzzy matching)
     matched_bookmark_name, bookmark_info = get_bookmark_info(bookmark_arg)
 
-    # Handle --save-last-redis flag (requires existing bookmark)
-    if save_last_redis:
-        if not matched_bookmark_name:
-            print(f"❌ Bookmark '{bookmark_path}' not found. Cannot save Redis state to non-existent bookmark.")
-            return 1
+    if not add_bookmark and not matched_bookmark_name:
+        print(f"❌ Bookmark '{bookmark_arg}' not found. Use -a or --add to create it.")
+        return 1
+    # If the bookmark exists, continue as normal (do not return early)
 
-        print(f"💾 Saving current Redis state as redis_after.json for bookmark '{matched_bookmark_name}'...")
-
-        # Export current Redis state
-        if not run_redis_command(['export', 'bookmark_last_redis_temp']):
-            print("❌ Failed to export current Redis state")
-            return 1
-
-        # Find the correct session directory for this bookmark
-        session_dir = None
-        active_sessions = get_all_active_sessions()
-        for session_path in active_sessions:
-            bookmark_path_full = os.path.join(session_path, matched_bookmark_name)
-            if os.path.exists(bookmark_path_full):
-                session_dir = session_path
+    # If adding and bookmark exists, prompt for update
+    if add_bookmark and matched_bookmark_name:
+        print(f"⚠️  Bookmark '{matched_bookmark_name}' already exists.")
+        print("What would you like to do?")
+        print("  1. Update before redis json")
+        print("  2. Update after redis json")
+        print("  3. Update both")
+        print("  4. Cancel")
+        while True:
+            choice = input("Enter choice (1-4): ").strip()
+            if choice == "1":
+                overwrite_redis_after = False
                 break
-
-        if not session_dir:
-            print(f"❌ Could not determine session for bookmark '{matched_bookmark_name}'")
-            return 1
-
-        # Move to bookmark directory as redis_after.json
-        bookmark_dir = os.path.join(session_dir, matched_bookmark_name)
-        temp_redis_path = os.path.join(REDIS_DUMP_DIR, "bookmark_last_redis_temp.json")
-
-        if os.path.exists(temp_redis_path) and os.path.exists(bookmark_dir):
-            import shutil
-            final_after_path = os.path.join(bookmark_dir, "redis_after.json")
-            shutil.move(temp_redis_path, final_after_path)
-            print(f"✅ Saved current Redis state to: {final_after_path}")
-
-            # Generate friendly version
-            try:
-                convert_redis_to_friendly(final_after_path)
-                if IS_DEBUG:
-                    print(f"📋 Generated friendly Redis after")
-            except Exception as e:
-                print(f"⚠️  Could not generate friendly Redis after: {e}")
-        else:
-            print(f"❌ Could not save Redis state - temp file or bookmark directory missing")
-            return 1
-
-        print(f"✅ Redis after state updated successfully!")
-        return 0
+            elif choice == "2":
+                overwrite_redis_after = True
+                break
+            elif choice == "3":
+                overwrite_redis_after = True
+                # We'll handle both updates in the workflow below
+                break
+            elif choice == "4":
+                print("❌ Cancelled.")
+                return 1
+            else:
+                print("❌ Invalid choice. Please enter 1-4.")
 
     # Main workflow: Load existing bookmark OR create new one
     session_dir = None  # Track the session directory throughout the workflow
