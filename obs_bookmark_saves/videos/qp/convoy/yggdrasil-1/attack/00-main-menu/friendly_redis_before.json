@@ -1,0 +1,136 @@
+{
+  "gateway_listener_test": "Test value at 1751277898.39",
+  "game": {
+    "marvel_rivals": {
+      "session": {
+        "DEV_SESSION_ID": {
+          "meta_state": {
+            "session_id": "DEV_SESSION_ID",
+            "members": [
+              "DEV_GG_USER_ID"
+            ],
+            "leader": "DEV_GG_USER_ID",
+            "game_name": "marvel_rivals",
+            "created_at": 1751311420.78,
+            "state": {}
+          },
+          "players_meta_state": {
+            "is_opponent_names_found": false,
+            "is_opponent_nameplates_processed": false,
+            "ace_ally_player_id": null,
+            "ace_opponent_player_id": null,
+            "archived_players": {},
+            "team_ocr_error_times": {
+              "ally": {},
+              "opponent": {}
+            }
+          },
+          "game_state": {
+            "screen_statuses": {
+              "current_screen_name": null,
+              "current_screen_details": {},
+              "last_main_menu_screen_leader_ocr_check": null,
+              "last_css_ocr_check": null,
+              "last_css_hero_check": null
+            },
+            "battle_mode_statuses": {
+              "game_mode_name": null,
+              "battle_mode_name": null,
+              "stage_name": null,
+              "stage_location_name": null,
+              "team_objective_control_state": null,
+              "battle_timeline_phase": null,
+              "team_attack_or_defend": null,
+              "advantage_state_intensity": null,
+              "timestamps": {
+                "game_begins_timestamp": null,
+                "out_of_spawn_timestamp": null,
+                "battle_start_timestamp": null,
+                "overtime_timestamp": null,
+                "battle_end_timestamp": null
+              },
+              "archived_past_rounds": [],
+              "final_victory_or_defeat": null,
+              "banned_heroes": {
+                "ally": [],
+                "opponent": []
+              }
+            },
+            "players_meta_state": {
+              "is_opponent_names_found": false,
+              "is_opponent_nameplates_processed": false,
+              "ace_ally_player_id": null,
+              "ace_opponent_player_id": null,
+              "archived_players": {},
+              "team_ocr_error_times": {
+                "ally": {},
+                "opponent": {}
+              }
+            },
+            "last_updated": null
+          }
+        },
+        "8aebe84c-0118-4c54-8c05-9274e9bc6ff0": {
+          "players_meta_state": {
+            "is_opponent_names_found": false,
+            "is_opponent_nameplates_processed": false,
+            "ace_ally_player_id": null,
+            "ace_opponent_player_id": null,
+            "archived_players": {},
+            "team_ocr_error_times": {
+              "ally": {},
+              "opponent": {}
+            }
+          },
+          "game_state": {
+            "screen_statuses": {
+              "current_screen_name": null,
+              "current_screen_details": {},
+              "last_main_menu_screen_leader_ocr_check": null,
+              "last_css_ocr_check": null,
+              "last_css_hero_check": null
+            },
+            "battle_mode_statuses": {
+              "game_mode_name": null,
+              "battle_mode_name": null,
+              "stage_name": null,
+              "stage_location_name": null,
+              "team_objective_control_state": null,
+              "battle_timeline_phase": null,
+              "team_attack_or_defend": null,
+              "advantage_state_intensity": null,
+              "timestamps": {
+                "game_begins_timestamp": null,
+                "out_of_spawn_timestamp": null,
+                "battle_start_timestamp": null,
+                "overtime_timestamp": null,
+                "battle_end_timestamp": null
+              },
+              "archived_past_rounds": [],
+              "final_victory_or_defeat": null,
+              "banned_heroes": {
+                "ally": [],
+                "opponent": []
+              }
+            },
+            "players_meta_state": {
+              "is_opponent_names_found": false,
+              "is_opponent_nameplates_processed": false,
+              "ace_ally_player_id": null,
+              "ace_opponent_player_id": null,
+              "archived_players": {},
+              "team_ocr_error_times": {
+                "ally": {},
+                "opponent": {}
+              }
+            },
+            "last_updated": null
+          }
+        }
+      }
+    }
+  },
+  "user_session": {
+    "DEV_GG_USER_ID": "DEV_SESSION_ID"
+  }
+}
