@@ -411,31 +411,20 @@ def main():
                 print("❌ No session selected, cancelling")
                 return 1
 
-        # Save current Redis state first
-        if not run_redis_command(['export', 'bookmark_temp']):
-            print("❌ Failed to export current Redis state")
-            return 1
-
-        # Check if the export actually created the file
-        temp_redis_path = os.path.join(REDIS_DUMP_DIR, "bookmark_temp.json")
-        if IS_DEBUG:
-            print(f"🔍 Checking for exported Redis file at: {temp_redis_path}")
-
-        if not os.path.exists(temp_redis_path):
-            print(f"❌ Expected Redis export file not found: {temp_redis_path}")
-            # List what files are actually in the redis dump directory
-            if os.path.exists(REDIS_DUMP_DIR):
-                files = os.listdir(REDIS_DUMP_DIR)
-                print(f"🔍 Files in Redis dump directory: {files}")
-            return 1
-
-        # Create bookmark directory and take screenshot directly
+        # Create bookmark directory
         bookmark_dir = os.path.join(session_dir, bookmark_path)
         if not os.path.exists(bookmark_dir):
             os.makedirs(bookmark_dir)
 
-        # Handle --use-preceding-bookmark flag for new bookmark
-        if use_preceding_bookmark:
+        # Handle Redis state based on flags
+        if blank_slate:
+            # Handle --blank-slate flag for new bookmark
+            print(f"🆕 Using initial blank slate Redis state for new bookmark '{bookmark_path}'...")
+            if not copy_initial_redis_state(bookmark_path, session_dir):
+                print("❌ Failed to copy initial Redis state")
+                return 1
+        elif use_preceding_bookmark:
+            # Handle --use-preceding-bookmark flag for new bookmark
             if source_bookmark_arg:
                 print(f"📋 Using specified bookmark's Redis state for new bookmark '{bookmark_path}'...")
                 if not copy_specific_bookmark_redis_state(source_bookmark_arg, bookmark_path, session_dir):
@@ -446,22 +435,26 @@ def main():
                 if not copy_preceding_redis_state(bookmark_path, session_dir):
                     print("❌ Failed to copy preceding Redis state")
                     return 1
-            # Clean up the temp file since we're using preceding state
-            if os.path.exists(temp_redis_path):
-                os.remove(temp_redis_path)
-
-        # Handle --blank-slate flag for new bookmark
-        elif blank_slate:
-            print(f"🆕 Using initial blank slate Redis state for new bookmark '{bookmark_path}'...")
-            if not copy_initial_redis_state(bookmark_path, session_dir):
-                print("❌ Failed to copy initial Redis state")
-                return 1
-            # Clean up the temp file since we're using initial state
-            if os.path.exists(temp_redis_path):
-                os.remove(temp_redis_path)
-
-        # Normal flow - use current Redis state
         else:
+            # Normal flow - save current Redis state
+            print(f"💾 Saving current Redis state for new bookmark '{bookmark_path}'...")
+            if not run_redis_command(['export', 'bookmark_temp']):
+                print("❌ Failed to export current Redis state")
+                return 1
+
+            # Check if the export actually created the file
+            temp_redis_path = os.path.join(REDIS_DUMP_DIR, "bookmark_temp.json")
+            if IS_DEBUG:
+                print(f"🔍 Checking for exported Redis file at: {temp_redis_path}")
+
+            if not os.path.exists(temp_redis_path):
+                print(f"❌ Expected Redis export file not found: {temp_redis_path}")
+                # List what files are actually in the redis dump directory
+                if os.path.exists(REDIS_DUMP_DIR):
+                    files = os.listdir(REDIS_DUMP_DIR)
+                    print(f"🔍 Files in Redis dump directory: {files}")
+                return 1
+
             # Move the Redis export to the bookmark directory
             if os.path.exists(temp_redis_path) and os.path.exists(bookmark_dir):
                 import shutil

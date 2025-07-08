@@ -174,7 +174,9 @@ def print_all_sessions_and_bookmarks(current_session_name=None, current_bookmark
         print()  # Empty line between sessions
 
     print('')
-    print_color(f'{current_session_name}:{current_bookmark_name}', 'blue')
+    # Convert slashes to colons for display
+    display_bookmark_name = current_bookmark_name.replace('/', ':') if current_bookmark_name else ''
+    print_color(f'runonce-redis {current_session_name}:{display_bookmark_name}', 'blue')
     print(
         f"   {USAGE_HELP}")
 

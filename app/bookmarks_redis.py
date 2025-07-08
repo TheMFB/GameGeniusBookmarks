@@ -3,6 +3,7 @@
 # pylint: disable-all
 # flake8: noqa
 import subprocess
+import os
 
 from app.bookmarks_consts import IS_DEBUG, INITIAL_REDIS_STATE_DIR
 from app.bookmarks_sessions import get_all_active_sessions, parse_session_bookmark_arg, find_session_by_name
