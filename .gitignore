@@ -1,0 +1,25 @@
+*.DS_Store
+*.pyc
+*DS_Store*
+games/splatoon/assets/videos/
+virtual_camera_output.png
+main_image*.png
+bin/
+lib/
+pyvenv.cfg
+games/splatoon/data/splatoon_state_file.json
+*.rdb
+debug/
+.env
+venv/
+*.venv
+services/ocr_api/secrets/*
+notes/
+secrets/
+
+# Ignore submodules
+game_processor_backend/
+services/
+
+# Ignore temp files
+standalone_utils/obs_bookmarks_app/obs_bookmark_saves/temp*

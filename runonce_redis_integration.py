@@ -11,10 +11,11 @@ import obsws_python as obs
 from datetime import datetime
 
 from app.bookmarks_consts import IS_DEBUG, REDIS_DUMP_DIR, ASYNC_WAIT_TIME
-from app.bookmarks_sessions import get_all_active_sessions, parse_session_bookmark_arg, create_new_session, find_session_by_name, create_session_with_name
+from app.bookmarks_sessions import get_all_active_sessions, parse_session_bookmark_arg, create_new_session, find_session_by_name, create_session_with_name, select_session_for_new_bookmark
 from app.bookmarks_redis import copy_preceding_redis_state, copy_specific_bookmark_redis_state, copy_initial_redis_state, run_redis_command
-from app.bookmarks import get_bookmark_info, load_obs_bookmark_directly
+from app.bookmarks import get_bookmark_info, load_obs_bookmark_directly, load_bookmarks_from_session
 from app.bookmarks_print import print_all_sessions_and_bookmarks
+from app.bookmarks_meta import create_bookmark_meta, create_folder_meta, create_session_meta
 from app.utils import print_color, get_media_source_info
 from redis_friendly_converter import convert_file as convert_redis_to_friendly
 
