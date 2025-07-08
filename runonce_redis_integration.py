@@ -172,7 +172,6 @@ def main():
     matched_bookmark_name, bookmark_info = get_bookmark_info(bookmark_arg)
 
     print(f"🔍 Debug - Matched bookmark name: {matched_bookmark_name}")
-    pprint(bookmark_info)
 
     if not add_bookmark and not matched_bookmark_name:
         print(f"❌ Bookmark '{bookmark_arg}' not found. Use -a or --add to create it.")
