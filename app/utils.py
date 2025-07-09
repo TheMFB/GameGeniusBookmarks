@@ -1,4 +1,5 @@
 # type: ignore
+from pprint import pprint
 from typing import Literal
 import obsws_python as obs
 import os
@@ -65,30 +66,54 @@ def get_media_source_info():
     """Get media source information from OBS."""
     try:
         cl = obs.ReqClient(host="localhost", port=4455, password="", timeout=3)
-
+        
         # Get current media source settings
         settings = cl.send("GetInputSettings", {"inputName": "Media Source"})
         file_path = settings.input_settings.get("local_file", "")
-
-        # Try to get current cursor position, but handle errors gracefully
+        
+        # Initialize with default values
         timestamp = 0
         timestamp_formatted = "00:00:00"
-
-        try:
-            cursor_info = cl.send("GetMediaInputCursor", {"inputName": "Media Source"})
-            timestamp = cursor_info.media_cursor
-
-            # Format timestamp
-            hours = int(timestamp // 3600)
-            minutes = int((timestamp % 3600) // 60)
-            seconds = int(timestamp % 60)
-            timestamp_formatted = f"{hours:02d}:{minutes:02d}:{seconds:02d}"
-        except Exception as cursor_error:
-            # If we can't get the cursor position, use default values
-            if IS_DEBUG:
-                print(f"⚠️  Could not get media cursor position: {cursor_error}")
-                print(f"   Using default timestamp (00:00:00)")
-
+        
+        # Only try to get cursor position if we have a valid file path
+        if file_path and os.path.exists(file_path):
+            try:
+                # Get media status which includes cursor position
+                media_status = cl.send("GetMediaInputStatus", {"inputName": "Media Source"})
+                print(f"🔍 Debug - media_status: ")
+                pprint(media_status)
+                
+                # Get cursor position from media_status
+                if hasattr(media_status, 'media_cursor'):
+                    timestamp = media_status.media_cursor
+                    print(f"🔍 Raw timestamp: {timestamp}")
+                    
+                    # Convert timestamp to seconds if it's in milliseconds
+                    if timestamp > 3600:  # If timestamp is more than 1 hour, it's likely in milliseconds
+                        timestamp = timestamp / 1000
+                        print(f"🔍 Converted timestamp from ms to seconds: {timestamp}")
+                    
+                    # Format timestamp
+                    hours = int(timestamp // 3600)
+                    minutes = int((timestamp % 3600) // 60)
+                    seconds = int(timestamp % 60)
+                    timestamp_formatted = f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+                    print(f"🔍 Formatted timestamp: {timestamp_formatted}")
+                else:
+                    print(f"❌ No media_cursor attribute in media_status")
+                    raise Exception("No media_cursor attribute in media_status")
+                
+            except Exception as cursor_error:
+                print(f"❌ Failed to get media cursor position: {cursor_error}")
+                print(f"   File path: {file_path}")
+                print(f"   File exists: {os.path.exists(file_path)}")
+                raise cursor_error
+        else:
+            print(f"❌ No valid media file loaded")
+            print(f"   File path: {file_path}")
+            print(f"   Exists: {os.path.exists(file_path) if file_path else 'No file path'}")
+            raise Exception("No valid media file loaded in OBS")
+        
         return {
             'file_path': file_path,
             'video_filename': os.path.basename(file_path) if file_path else '',
@@ -96,16 +121,5 @@ def get_media_source_info():
             'timestamp_formatted': timestamp_formatted
         }
     except Exception as e:
-        print(f"❌ Failed to connect to OBS: {e}")
-        print(f"   Please ensure:")
-        print(f"   1. OBS is running")
-        print(f"   2. WebSocket server is enabled in OBS (Tools > WebSocket Server Settings)")
-        print(f"   3. Port 4455 is set in WebSocket settings")
-        print(f"   4. No password is set (or update the code to use your password)")
-        # Return a minimal info structure so the bookmark can still be created
-        return {
-            'file_path': '',
-            'video_filename': '',
-            'timestamp': 0,
-            'timestamp_formatted': '00:00:00'
-        }
+        print(f"❌ Failed to get media source info: {e}")
+        raise e

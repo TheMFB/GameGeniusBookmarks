@@ -21,7 +21,6 @@ def print_all_sessions_and_bookmarks(
     active_sessions = get_all_active_sessions()
 
     if IS_DEBUG:
-        print_color("YYYYY", 'red')
         print_color('---- top_level_session_name:', 'red')
         pprint(top_level_session_name)
         print_color('---- current_bookmark_name:', 'red')
