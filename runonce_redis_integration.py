@@ -349,7 +349,44 @@ def main():
             # Update the path since we just created/copied the file
             redis_before_path = os.path.join(bookmark_dir, "redis_before.json")
 
-        if os.path.exists(redis_before_path):
+        # Handle Redis state based on flags (skip if super dry run)
+        if is_super_dry_run:
+            print(f"💾 Super dry run mode: Skipping all Redis operations")
+        elif blank_slate:
+            # Handle --blank-slate flag for existing bookmark
+            print(f"🆕 Using initial blank slate Redis state for '{matched_bookmark_name}'...")
+            if not copy_initial_redis_state(matched_bookmark_name, session_dir):
+                print("❌ Failed to copy initial Redis state")
+                return 1
+            # Update the path since we just created/copied the file
+            redis_before_path = os.path.join(bookmark_dir, "redis_before.json")
+
+        elif use_preceding_bookmark:
+            # Handle --use-preceding-bookmark flag for existing bookmark
+            if source_bookmark_arg:
+                print(f"📋 Using specified bookmark's Redis state for '{matched_bookmark_name}'...")
+                if not copy_specific_bookmark_redis_state(source_bookmark_arg, matched_bookmark_name, session_dir):
+                    print("❌ Failed to copy specified bookmark's Redis state")
+                    return 1
+            else:
+                print(f"📋 Using preceding bookmark's Redis state for '{matched_bookmark_name}'...")
+                if not copy_preceding_redis_state(matched_bookmark_name, session_dir):
+                    print("❌ Failed to copy preceding Redis state")
+                    return 1
+
+            # If save_updates is enabled, save the pulled-in redis state as redis_before.json
+            if save_updates:
+                print(f"💾 Saving pulled-in Redis state as redis_before.json...")
+                # The copy functions already create redis_before.json, so we just need to ensure it exists
+                if os.path.exists(redis_before_path):
+                    if IS_DEBUG:
+                        print(f"📋 Redis before state saved: {redis_before_path}")
+
+            # Update the path since we just created/copied the file
+            redis_before_path = os.path.join(bookmark_dir, "redis_before.json")
+
+        # Load Redis state (skip if super dry run)
+        if not is_super_dry_run and os.path.exists(redis_before_path):
             if IS_DEBUG:
                 print(f"📊 Loading Redis state from bookmark...")
 
@@ -373,7 +410,7 @@ def main():
                 os.remove(temp_redis_path)
                 if IS_DEBUG:
                     print(f"🧹 Cleaned up temp file: {temp_redis_path}")
-        else:
+        elif not is_super_dry_run:
             print(f"💾 No existing Redis state found - saving current state...")
             # Save current Redis state as redis_before.json
             if not run_redis_command(['export', 'bookmark_temp']):
@@ -558,41 +595,42 @@ def main():
                     if IS_DEBUG:
                         print(f"📋 Redis before state saved: {redis_before_path}")
         else:
-            # Normal flow - save current Redis state
-            print(f"💾 Saving current Redis state for new bookmark '{bookmark_path}'...")
-            if not run_redis_command(['export', 'bookmark_temp']):
-                print("❌ Failed to export current Redis state")
-                return 1
+            # Normal flow - save current Redis state (skip if super dry run)
+            if not is_super_dry_run:
+                print(f"💾 Saving current Redis state for new bookmark '{bookmark_path}'...")
+                if not run_redis_command(['export', 'bookmark_temp']):
+                    print("❌ Failed to export current Redis state")
+                    return 1
 
-            # Check if the export actually created the file
-            temp_redis_path = os.path.join(REDIS_DUMP_DIR, "bookmark_temp.json")
-            if IS_DEBUG:
-                print(f"🔍 Checking for exported Redis file at: {temp_redis_path}")
+                # Check if the export actually created the file
+                temp_redis_path = os.path.join(REDIS_DUMP_DIR, "bookmark_temp.json")
+                if IS_DEBUG:
+                    print(f"🔍 Checking for exported Redis file at: {temp_redis_path}")
 
-            if not os.path.exists(temp_redis_path):
-                print(f"❌ Expected Redis export file not found: {temp_redis_path}")
-                # List what files are actually in the redis dump directory
-                if os.path.exists(REDIS_DUMP_DIR):
-                    files = os.listdir(REDIS_DUMP_DIR)
-                    print(f"🔍 Files in Redis dump directory: {files}")
-                return 1
+                if not os.path.exists(temp_redis_path):
+                    print(f"❌ Expected Redis export file not found: {temp_redis_path}")
+                    # List what files are actually in the redis dump directory
+                    if os.path.exists(REDIS_DUMP_DIR):
+                        files = os.listdir(REDIS_DUMP_DIR)
+                        print(f"🔍 Files in Redis dump directory: {files}")
+                    return 1
 
-            # Move the Redis export to the bookmark directory
-            if os.path.exists(temp_redis_path) and os.path.exists(bookmark_dir):
-                import shutil
-                final_path = os.path.join(bookmark_dir, "redis_before.json")
-                shutil.move(temp_redis_path, final_path)
-                print(f"💾 Saved Redis state to: {final_path}")
+                # Move the Redis export to the bookmark directory
+                if os.path.exists(temp_redis_path) and os.path.exists(bookmark_dir):
+                    import shutil
+                    final_path = os.path.join(bookmark_dir, "redis_before.json")
+                    shutil.move(temp_redis_path, final_path)
+                    print(f"💾 Saved Redis state to: {final_path}")
 
-                # Generate friendly version
-                try:
-                    convert_redis_to_friendly(final_path)
-                    if IS_DEBUG:
-                        print(f"📋 Generated friendly Redis before")
-                except Exception as e:
-                    print(f"⚠️  Could not generate friendly Redis before: {e}")
-            else:
-                print(f"❌ Could not move Redis file - temp_path exists: {os.path.exists(temp_redis_path)}, bookmark_dir exists: {os.path.exists(bookmark_dir) if bookmark_dir else 'bookmark_dir is None'}")
+                    # Generate friendly version
+                    try:
+                        convert_redis_to_friendly(final_path)
+                        if IS_DEBUG:
+                            print(f"📋 Generated friendly Redis before")
+                    except Exception as e:
+                        print(f"⚠️  Could not generate friendly Redis before: {e}")
+                else:
+                    print(f"❌ Could not move Redis file - temp_path exists: {os.path.exists(temp_redis_path)}, bookmark_dir exists: {os.path.exists(bookmark_dir) if bookmark_dir else 'bookmark_dir is None'}")
 
         # Take screenshot directly using existing function (skip if no-obs mode)
         if is_no_obs:
