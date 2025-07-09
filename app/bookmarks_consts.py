@@ -20,7 +20,7 @@ INITIAL_REDIS_STATE_DIR = os.path.join(REPO_ROOT, "app")
 IS_PRINT_JUST_CURRENT_SESSION_BOOKMARKS = True
 
 USAGE_HELP = """
-Usage: runonce_redis_integration.py <bookmark_name> [--save-updates] [-s] [--use-preceding-bookmark <session:bookmark>] [-p <session:bookmark>] [--blank-slate] [-b] [-v <video_path>] [--open-video <video_path>]
+Usage: runonce_redis_integration.py <bookmark_name> [--save-updates] [-s] [--use-preceding-bookmark <session:bookmark>] [-p <session:bookmark>] [--blank-slate] [-b] [-v <video_path>] [--open-video <video_path>] [--tags <tag1> <tag2> ...]
 
 Navigation commands:
   next, previous, first, last    Navigate to adjacent bookmarks in the same directory
@@ -39,6 +39,7 @@ Options:
   -b, --blank-slate                          Use initial blank slate Redis state
   --save-last-redis                          Save current Redis state as redis_after.json
   -v <video_path>, --open-video <video_path> Open video file in OBS (paused) without saving or running anything
+  -t, --tags <tag1> <tag2> ...              Add tags to bookmark metadata
 
 Navigation:
   next, previous, first, last                Navigate to adjacent bookmarks in the same directory
@@ -55,4 +56,5 @@ Examples:
   runonce_redis_integration.py last
   runonce_redis_integration.py -v /path/to/video.mp4
   runonce_redis_integration.py --open-video /path/to/video.mp4
+  runonce_redis_integration.py --tags tag1 tag2
 """

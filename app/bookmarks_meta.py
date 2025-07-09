@@ -108,24 +108,20 @@ def create_folder_meta(folder_path, folder_name, description="", tags=None):
         return False
 
 
-def create_bookmark_meta(bookmark_dir, bookmark_name, obs_info):
-    """Create bookmark_meta.json file in the bookmark directory"""
+def create_bookmark_meta(bookmark_dir, bookmark_name, media_info, tags=None):
+    """Create bookmark metadata with optional tags."""
     meta_data = {
-        "timestamp": obs_info["media_cursor"],
-        "timestamp_formatted": f"{(obs_info['media_cursor'] // 60000):02d}:{(obs_info['media_cursor'] % 60000) // 1000:02d}",
-        "source_name": obs_info["source_name"],
-        "file_path": obs_info["file_path"],
-        "media_duration": obs_info["media_duration"],
         "created_at": datetime.now().isoformat(),
-        "description": "",
-        "tags": []
+        "bookmark_name": bookmark_name,
+        "file_path": media_info.get('file_path', ''),
+        "timestamp": media_info.get('timestamp', 0),
+        "timestamp_formatted": media_info.get('timestamp_formatted', ''),
+        "tags": tags or []  # Add tags to metadata
     }
 
     meta_file = os.path.join(bookmark_dir, "bookmark_meta.json")
-    try:
-        with open(meta_file, 'w') as f:
-            json.dump(meta_data, f, indent=2)
-        return True
-    except Exception as e:
-        print(f"❌ Error creating bookmark metadata: {e}")
-        return False
+    with open(meta_file, 'w') as f:
+        json.dump(meta_data, f, indent=2)
+
+    if IS_DEBUG:
+        print(f"📋 Created bookmark metadata with tags: {tags}")

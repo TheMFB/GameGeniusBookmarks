@@ -72,6 +72,8 @@ def main():
         "--save-last-redis",
         "-v",
         "--open-video",
+        "-t",
+        "--tags",
     ]
 
     # Check for unsupported flags
@@ -121,6 +123,21 @@ def main():
                         print(f"🔍 Found video path argument: '{video_path}'")
                 break
 
+    # Parse tags from command line
+    tags = []
+    if "--tags" in args or "-t" in args:
+        # Find the index of the tags flag
+        tags_flags = ["--tags", "-t"]
+        for flag in tags_flags:
+            if flag in args:
+                flag_index = args.index(flag)
+                # Collect all arguments after the flag until we hit another flag
+                i = flag_index + 1
+                while i < len(args) and not args[i].startswith("-"):
+                    tags.append(args[i])
+                    i += 1
+                break
+
     if IS_DEBUG:
         print(f"🔍 Debug - Args: {args}")
         print(f"🔍 Debug - save_last_redis: {save_last_redis}")
@@ -131,6 +148,7 @@ def main():
         print(f"🔍 Debug - is_dry_run: {is_dry_run}")
         print(f"🔍 Debug - open_video: {open_video}")
         print(f"🔍 Debug - video_path: {video_path}")
+        print(f"🔍 Debug - tags: {tags}")
 
     # Handle video opening mode
     if open_video:
@@ -416,15 +434,38 @@ def main():
             media_info = get_media_source_info()
             if media_info:
                 if os.path.exists(bookmark_dir):
-                    create_bookmark_meta(bookmark_dir, matched_bookmark_name, media_info)
+                    create_bookmark_meta(bookmark_dir, matched_bookmark_name, media_info, tags)
                     if IS_DEBUG:
-                        print(f"📋 Created bookmark metadata")
+                        print(f"📋 Created bookmark metadata with tags: {tags}")
                 else:
                     print(f"❌ Could not create bookmark metadata - bookmark directory doesn't exist: {bookmark_dir}")
                     return 1
         else:
-            if IS_DEBUG:
-                print(f"📋 Bookmark metadata already exists, skipping creation")
+            # If metadata exists and tags were provided, update the tags
+            if tags:
+                try:
+                    with open(bookmark_meta_path, 'r') as f:
+                        meta_data = json.load(f)
+                    
+                    # Add new tags (avoid duplicates)
+                    existing_tags = meta_data.get('tags', [])
+                    for tag in tags:
+                        if tag not in existing_tags:
+                            existing_tags.append(tag)
+                    
+                    meta_data['tags'] = existing_tags
+                    meta_data['last_modified'] = datetime.now().isoformat()
+                    
+                    with open(bookmark_meta_path, 'w') as f:
+                        json.dump(meta_data, f, indent=2)
+                    
+                    if IS_DEBUG:
+                        print(f"📋 Updated existing bookmark metadata with tags: {tags}")
+                except Exception as e:
+                    print(f"⚠️  Could not update bookmark metadata with tags: {e}")
+            else:
+                if IS_DEBUG:
+                    print(f"📋 Bookmark metadata already exists, skipping creation")
 
         # Don't update session metadata for existing bookmarks - only for new ones
         if IS_DEBUG:
@@ -557,8 +598,8 @@ def main():
         media_info = get_media_source_info()
         if media_info:
             if os.path.exists(bookmark_dir):
-                create_bookmark_meta(bookmark_dir, bookmark_path, media_info)
-                print(f"📋 Created bookmark metadata")
+                create_bookmark_meta(bookmark_dir, bookmark_path, media_info, tags)
+                print(f"📋 Created bookmark metadata with tags: {tags}")
 
         # Check if this is the first bookmark in the session
         session_bookmarks = load_bookmarks_from_session(session_dir)
