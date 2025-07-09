@@ -36,6 +36,7 @@ Options:
     (bmsave / savebm)
   -p <bookmark>, --use-preceding-bookmark    Use redis_after.json from preceding or specified bookmark as redis_before.json
   -d, --dry-run                              Dry run, Load bookmark only (no main process)
+  -sd, --super-dry-run                       Super dry run, Load bookmark only (no main process, no Redis operations)
   -b, --blank-slate                          Use initial blank slate Redis state
   --save-last-redis                          Save current Redis state as redis_after.json
   -v <video_path>, --open-video <video_path> Open video file in OBS (paused) without saving or running anything
@@ -57,4 +58,5 @@ Examples:
   runonce_redis_integration.py -v /path/to/video.mp4
   runonce_redis_integration.py --open-video /path/to/video.mp4
   runonce_redis_integration.py --tags tag1 tag2
+  runonce_redis_integration.py my-bookmark -sd
 """

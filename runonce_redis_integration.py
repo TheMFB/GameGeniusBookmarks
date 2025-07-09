@@ -69,6 +69,8 @@ def main():
         "--blank-slate",
         "-d",
         "--dry-run",
+        "-sd",
+        "--super-dry-run",
         "--save-last-redis",
         "-v",
         "--open-video",
@@ -88,6 +90,7 @@ def main():
     use_preceding_bookmark = "--use-preceding-bookmark" in args or "-p" in args
     blank_slate = "--blank-slate" in args or "-b" in args
     is_dry_run = "--dry-run" in args or "-d" in args
+    is_super_dry_run = "--super-dry-run" in args or "-sd" in args
     add_bookmark = "--add" in args or "-a" in args
 
     # Check for video opening flags
@@ -146,6 +149,7 @@ def main():
         print(f"🔍 Debug - source_bookmark_arg: {source_bookmark_arg}")
         print(f"🔍 Debug - blank_slate: {blank_slate}")
         print(f"🔍 Debug - is_dry_run: {is_dry_run}")
+        print(f"🔍 Debug - is_super_dry_run: {is_super_dry_run}")
         print(f"🔍 Debug - open_video: {open_video}")
         print(f"🔍 Debug - video_path: {video_path}")
         print(f"🔍 Debug - tags: {tags}")
@@ -446,19 +450,19 @@ def main():
                 try:
                     with open(bookmark_meta_path, 'r') as f:
                         meta_data = json.load(f)
-                    
+
                     # Add new tags (avoid duplicates)
                     existing_tags = meta_data.get('tags', [])
                     for tag in tags:
                         if tag not in existing_tags:
                             existing_tags.append(tag)
-                    
+
                     meta_data['tags'] = existing_tags
                     meta_data['last_modified'] = datetime.now().isoformat()
-                    
+
                     with open(bookmark_meta_path, 'w') as f:
                         json.dump(meta_data, f, indent=2)
-                    
+
                     if IS_DEBUG:
                         print(f"📋 Updated existing bookmark metadata with tags: {tags}")
                 except Exception as e:
@@ -499,8 +503,10 @@ def main():
         if not os.path.exists(bookmark_dir):
             os.makedirs(bookmark_dir)
 
-        # Handle Redis state based on flags
-        if blank_slate:
+        # Handle Redis state based on flags (skip if super dry run)
+        if is_super_dry_run:
+            print(f"💾 Super dry run mode: Skipping all Redis operations")
+        elif blank_slate:
             # Handle --blank-slate flag for new bookmark
             print(f"🆕 Using initial blank slate Redis state for new bookmark '{bookmark_path}'...")
             if not copy_initial_redis_state(bookmark_path, session_dir):
@@ -655,8 +661,8 @@ def main():
             except Exception as e:
                 print(f"❌ Error updating folder metadata: {e}")
 
-    # Run the main process (unless load-only mode)
-    if not is_dry_run:
+    # Run the main process (unless dry run modes)
+    if not is_dry_run and not is_super_dry_run:
         if IS_DEBUG:
             print(f"🚀 Running main process...")
         print('')
@@ -669,11 +675,14 @@ def main():
             print(f"⏳ Waiting for async processes to complete...")
         time.sleep(ASYNC_WAIT_TIME)
     else:
-        print(f"📖 Load-only mode: Skipping main process execution")
+        if is_super_dry_run:
+            print(f"💾 Super dry run mode: Skipping main process execution")
+        else:
+            print(f"📖 Load-only mode: Skipping main process execution")
 
-    # Check if redis_after.json already exists before saving final state (skip in load-only mode)
-    should_save_redis_after = False  # Default value for load-only mode
-    if not is_dry_run:
+    # Check if redis_after.json already exists before saving final state (skip in dry run modes)
+    should_save_redis_after = False  # Default value for dry run modes
+    if not is_dry_run and not is_super_dry_run:
         redis_after_exists = False
         if session_dir:
             bookmark_dir = os.path.join(session_dir, bookmark_path)
@@ -706,7 +715,6 @@ def main():
                     if IS_DEBUG:
                         print(f"🔍 Looking for final Redis export at: {temp_redis_after_path}")
 
-
                     if os.path.exists(temp_redis_after_path) and os.path.exists(bookmark_dir):
                         import shutil
                         final_after_path = os.path.join(bookmark_dir, "redis_after.json")
@@ -727,7 +735,10 @@ def main():
                             files = os.listdir(REDIS_DUMP_DIR)
                             print(f"🔍 Files in Redis dump directory: {files}")
     else:
-        print(f"📖 Load-only mode: Skipping final Redis state save")
+        if is_super_dry_run:
+            print(f"💾 Super dry run mode: Skipping final Redis state save")
+        else:
+            print(f"📖 Load-only mode: Skipping final Redis state save")
 
     # Save the last used bookmark at the end of successful operations
     if session_dir:
@@ -741,7 +752,13 @@ def main():
         session_name = os.path.basename(session_dir)
         print(f"📋 Skipping final session metadata update for '{session_name}'")
 
-    if is_dry_run:
+    if is_super_dry_run:
+        print(f"✅ Super dry run workflow completed successfully!")
+        if IS_DEBUG:
+            print(f"   Bookmark: '{bookmark_path}'")
+            print(f"   OBS bookmark loaded")
+            print(f"   No Redis operations performed")
+    elif is_dry_run:
         print(f"✅ Load-only workflow completed successfully!")
         if IS_DEBUG:
             print(f"   Bookmark: '{bookmark_path}'")

@@ -9,6 +9,8 @@ import os
 import json
 from datetime import datetime
 
+from app.bookmarks_consts import IS_DEBUG
+
 
 def load_session_meta(session_dir):
     """Load session metadata from session_meta.json"""
