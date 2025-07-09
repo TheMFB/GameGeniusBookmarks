@@ -13,10 +13,10 @@ IS_DEBUG = False
 def set_nested_value(nested_dict: Dict[str, Any], key_parts: List[str], value: Any) -> None:
     """
     Set a value in a nested dictionary using a list of key parts
-    
+
     Args:
         nested_dict: The dictionary to modify
-        key_parts: List of key parts (e.g., ['game', 'marvel_rivals', 'session'])
+        key_parts: List of key parts (e.g., ['game', 'marvel_rivals', 'folder'])
         value: The value to set
     """
     current = nested_dict
@@ -34,10 +34,10 @@ def set_nested_value(nested_dict: Dict[str, Any], key_parts: List[str], value: A
 def convert_redis_to_friendly(redis_data: Dict[str, Any]) -> Dict[str, Any]:
     """
     Convert flat Redis key-value pairs to hierarchical structure
-    
+
     Args:
         redis_data: Dictionary with Redis keys as flat strings
-        
+
     Returns:
         Dictionary with hierarchical structure
     """
@@ -60,11 +60,11 @@ def convert_redis_to_friendly(redis_data: Dict[str, Any]) -> Dict[str, Any]:
 def convert_file(input_file_path: str, output_file_path: Optional[str] = None) -> bool:
     """
     Convert a Redis JSON export file to friendly format
-    
+
     Args:
         input_file_path: Path to the flat Redis JSON file
         output_file_path: Path for the friendly output file (optional)
-    
+
     Returns:
         True if successful, False otherwise
     """

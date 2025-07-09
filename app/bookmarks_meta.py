@@ -12,23 +12,23 @@ from datetime import datetime
 from app.bookmarks_consts import IS_DEBUG
 
 
-def load_session_meta(session_dir):
-    """Load session metadata from session_meta.json"""
-    session_meta_file = os.path.join(session_dir, "session_meta.json")
-    if os.path.exists(session_meta_file):
+def load_folder_meta(folder_dir):
+    """Load folder metadata from folder_meta.json"""
+    folder_meta_file = os.path.join(folder_dir, "folder_meta.json")
+    if os.path.exists(folder_meta_file):
         try:
-            with open(session_meta_file, 'r') as f:
+            with open(folder_meta_file, 'r') as f:
                 return json.load(f)
         except json.JSONDecodeError:
             if IS_DEBUG:
-                print(f"⚠️  Could not parse session_meta.json")
+                print(f"⚠️  Could not parse folder_meta.json")
             return {}
     return {}
 
 
 def load_folder_meta(folder_path):
-    """Load folder metadata from session_meta.json"""
-    folder_meta_file = os.path.join(folder_path, "session_meta.json")
+    """Load folder metadata from folder_meta.json"""
+    folder_meta_file = os.path.join(folder_path, "folder_meta.json")
     if os.path.exists(folder_meta_file):
         try:
             with open(folder_meta_file, 'r') as f:
@@ -36,19 +36,19 @@ def load_folder_meta(folder_path):
         except json.JSONDecodeError:
             if IS_DEBUG:
                 print(
-                    f"⚠️  Could not parse session_meta.json in {folder_path}")
+                    f"⚠️  Could not parse folder_meta.json in {folder_path}")
             return {}
     return {}
 
 
-def create_session_meta(session_dir, session_name):
-    """Create or update session_meta.json file"""
-    session_meta_file = os.path.join(session_dir, "session_meta.json")
+def create_folder_meta(folder_dir, folder_name):
+    """Create or update folder_meta.json file"""
+    folder_meta_file = os.path.join(folder_dir, "folder_meta.json")
 
     # Load existing or create new
-    if os.path.exists(session_meta_file):
+    if os.path.exists(folder_meta_file):
         try:
-            with open(session_meta_file, 'r') as f:
+            with open(folder_meta_file, 'r') as f:
                 meta_data = json.load(f)
         except json.JSONDecodeError:
             meta_data = {}
@@ -63,17 +63,17 @@ def create_session_meta(session_dir, session_name):
     meta_data["last_modified"] = datetime.now().isoformat()
 
     try:
-        with open(session_meta_file, 'w') as f:
+        with open(folder_meta_file, 'w') as f:
             json.dump(meta_data, f, indent=2)
         return True
     except Exception as e:
-        print(f"❌ Error creating session metadata: {e}")
+        print(f"❌ Error creating folder metadata: {e}")
         return False
 
 
 def create_folder_meta(folder_path, folder_name, description="", tags=None):
-    """Create or update session_meta.json file"""
-    folder_meta_file = os.path.join(folder_path, "session_meta.json")
+    """Create or update folder_meta.json file"""
+    folder_meta_file = os.path.join(folder_path, "folder_meta.json")
 
     if tags is None:
         tags = []

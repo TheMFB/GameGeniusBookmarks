@@ -11,12 +11,12 @@ import json
 import obsws_python as obs
 from datetime import datetime
 
-from app.bookmarks_consts import IS_DEBUG, REDIS_DUMP_DIR, ASYNC_WAIT_TIME, OPTIONS_HELP, USAGE_HELP, IS_PRINT_JUST_CURRENT_SESSION_BOOKMARKS
-from app.bookmarks_sessions import get_all_active_sessions, parse_session_bookmark_arg, create_new_session, find_session_by_name, create_session_with_name, select_session_for_new_bookmark, update_session_last_bookmark
+from app.bookmarks_consts import IS_DEBUG, REDIS_DUMP_DIR, ASYNC_WAIT_TIME, OPTIONS_HELP, USAGE_HELP, IS_PRINT_JUST_CURRENT_FOLDER_BOOKMARKS
+from app.bookmarks_folders import get_all_active_folders, parse_folder_bookmark_arg, create_new_folder, find_folder_by_name, create_folder_with_name, select_folder_for_new_bookmark, update_folder_last_bookmark
 from app.bookmarks_redis import copy_preceding_redis_state, copy_specific_bookmark_redis_state, copy_initial_redis_state, run_redis_command
-from app.bookmarks import get_bookmark_info, load_obs_bookmark_directly, load_bookmarks_from_session, normalize_path, is_strict_equal, save_last_used_bookmark, get_last_used_bookmark_display, resolve_navigation_bookmark, get_last_used_bookmark
-from app.bookmarks_print import print_all_sessions_and_bookmarks
-from app.bookmarks_meta import create_bookmark_meta, create_folder_meta, create_session_meta
+from app.bookmarks import get_bookmark_info, load_obs_bookmark_directly, load_bookmarks_from_folder, normalize_path, is_strict_equal, save_last_used_bookmark, get_last_used_bookmark_display, resolve_navigation_bookmark, get_last_used_bookmark
+from app.bookmarks_print import print_all_folders_and_bookmarks
+from app.bookmarks_meta import create_bookmark_meta, create_folder_meta, create_folder_meta
 from app.utils import print_color, get_media_source_info
 from redis_friendly_converter import convert_file as convert_redis_to_friendly
 
@@ -46,8 +46,8 @@ def main():
         if last_used_display:
             print(f"\n Last used bookmark: {last_used_display}")
 
-        # List all sessions and bookmarks
-        print_all_sessions_and_bookmarks()
+        # List all folders and bookmarks
+        print_all_folders_and_bookmarks()
 
         return 0
 
@@ -176,45 +176,51 @@ def main():
             print(f"❌ Failed to open video in OBS")
             return 1
 
-    # Parse session:bookmark format if present (only if not navigation)
-    specified_session_name, bookmark_path = parse_session_bookmark_arg(bookmark_arg)
+    # Parse folder:bookmark format if present (only if not navigation)
+    specified_folder_name, bookmark_path = parse_folder_bookmark_arg(bookmark_arg)
 
-    if specified_session_name:
-        print(f"🎯 Specified session: '{specified_session_name}', bookmark path: '{bookmark_path}'")
+    if specified_folder_name:
+        print(f"🎯 Specified folder: '{specified_folder_name}', bookmark path: '{bookmark_path}'")
 
     # Handle navigation commands
     if is_navigation:
-        # Get the last used bookmark to determine the session
+        # Get the last used bookmark to determine the folder
         last_used_info = get_last_used_bookmark()
         if not last_used_info:
             print(f"❌ No last used bookmark found. Cannot navigate with '{bookmark_arg}'")
             return 1
 
-        session_name = last_used_info.get("session_name")
+        folder_name = last_used_info.get("folder_name")
 
-        # Find the session directory
-        session_dir = None
-        active_sessions = get_all_active_sessions()
-        for session_path in active_sessions:
-            if os.path.basename(session_path) == session_name:
-                session_dir = session_path
+        # Find the folder directory
+        folder_dir = None
+        active_folders = get_all_active_folders()
+        for folder_path in active_folders:
+            if os.path.basename(folder_path) == folder_name:
+                folder_dir = folder_path
                 break
 
-        if not session_dir:
-            print(f"❌ Could not find session directory for '{session_name}'")
+        if not folder_dir:
+            print(f"❌ Could not find folder directory for '{folder_name}'")
             return 1
 
         # Resolve the navigation command
-        bookmark_path, bookmark_info = resolve_navigation_bookmark(bookmark_arg, session_dir)
+        bookmark_path, bookmark_info = resolve_navigation_bookmark(bookmark_arg, folder_dir)
         if not bookmark_path:
             return 1
 
-        # Set the session directory for the rest of the workflow
-        session_dir = session_dir
+        # Set the folder directory for the rest of the workflow
+        folder_dir = folder_dir
         matched_bookmark_name = bookmark_path
     else:
         # Normal bookmark lookup
         matched_bookmark_name, bookmark_info = get_bookmark_info(bookmark_arg)
+        # If the match is not exact, treat it as new
+        if matched_bookmark_name and not is_strict_equal(matched_bookmark_name, bookmark_arg):
+            if IS_DEBUG:
+                print(f"⚠️  Ignoring fuzzy match: '{matched_bookmark_name}' (not strictly equal to '{bookmark_arg}')")
+            matched_bookmark_name = None
+            bookmark_info = None
 
     if IS_DEBUG:
         print(f"🎯 Starting integrated runonce-redis workflow for bookmark: '{matched_bookmark_name}'")
@@ -280,7 +286,7 @@ def main():
             matched_bookmark_name = None
 
     # Main workflow: Load existing bookmark OR create new one
-    session_dir = None  # Track the session directory throughout the workflow
+    folder_dir = None  # Track the folder directory throughout the workflow
 
     if matched_bookmark_name:
         # EXISTING BOOKMARK WORKFLOW
@@ -295,22 +301,22 @@ def main():
         # Update the bookmark name for the rest of the process
         bookmark_path = matched_bookmark_name
 
-        # Find which session this bookmark belongs to
-        active_sessions = get_all_active_sessions()
-        for session_path in active_sessions:
-            bookmark_path_full = os.path.join(session_path, matched_bookmark_name)
+        # Find which folder this bookmark belongs to
+        active_folders = get_all_active_folders()
+        for folder_path in active_folders:
+            bookmark_path_full = os.path.join(folder_path, matched_bookmark_name)
             if os.path.exists(bookmark_path_full):
-                session_dir = session_path
-                session_name = os.path.basename(session_dir)
-                print(f"🎯 Using session: {session_name}")
+                folder_dir = folder_path
+                folder_name = os.path.basename(folder_dir)
+                print(f"🎯 Using folder: {folder_name}")
                 break
 
-        if not session_dir:
-            print(f"❌ Could not determine session for bookmark '{matched_bookmark_name}'")
+        if not folder_dir:
+            print(f"❌ Could not determine folder for bookmark '{matched_bookmark_name}'")
             return 1
 
         # Check if redis_before.json exists in the bookmark directory
-        bookmark_dir = os.path.join(session_dir, matched_bookmark_name)
+        bookmark_dir = os.path.join(folder_dir, matched_bookmark_name)
         redis_before_path = os.path.join(bookmark_dir, "redis_before.json")
 
         if IS_DEBUG:
@@ -320,12 +326,12 @@ def main():
         if use_preceding_bookmark:
             if source_bookmark_arg:
                 print(f"📋 Using specified bookmark's Redis state for '{matched_bookmark_name}'...")
-                if not copy_specific_bookmark_redis_state(source_bookmark_arg, matched_bookmark_name, session_dir):
+                if not copy_specific_bookmark_redis_state(source_bookmark_arg, matched_bookmark_name, folder_dir):
                     print("❌ Failed to copy specified bookmark's Redis state")
                     return 1
             else:
                 print(f"📋 Using preceding bookmark's Redis state for '{matched_bookmark_name}'...")
-                if not copy_preceding_redis_state(matched_bookmark_name, session_dir):
+                if not copy_preceding_redis_state(matched_bookmark_name, folder_dir):
                     print("❌ Failed to copy preceding Redis state")
                     return 1
 
@@ -343,7 +349,7 @@ def main():
         # Handle --blank-slate flag for existing bookmark
         elif blank_slate:
             print(f"🆕 Using initial blank slate Redis state for '{matched_bookmark_name}'...")
-            if not copy_initial_redis_state(matched_bookmark_name, session_dir):
+            if not copy_initial_redis_state(matched_bookmark_name, folder_dir):
                 print("❌ Failed to copy initial Redis state")
                 return 1
             # Update the path since we just created/copied the file
@@ -355,7 +361,7 @@ def main():
         elif blank_slate:
             # Handle --blank-slate flag for existing bookmark
             print(f"🆕 Using initial blank slate Redis state for '{matched_bookmark_name}'...")
-            if not copy_initial_redis_state(matched_bookmark_name, session_dir):
+            if not copy_initial_redis_state(matched_bookmark_name, folder_dir):
                 print("❌ Failed to copy initial Redis state")
                 return 1
             # Update the path since we just created/copied the file
@@ -365,12 +371,12 @@ def main():
             # Handle --use-preceding-bookmark flag for existing bookmark
             if source_bookmark_arg:
                 print(f"📋 Using specified bookmark's Redis state for '{matched_bookmark_name}'...")
-                if not copy_specific_bookmark_redis_state(source_bookmark_arg, matched_bookmark_name, session_dir):
+                if not copy_specific_bookmark_redis_state(source_bookmark_arg, matched_bookmark_name, folder_dir):
                     print("❌ Failed to copy specified bookmark's Redis state")
                     return 1
             else:
                 print(f"📋 Using preceding bookmark's Redis state for '{matched_bookmark_name}'...")
-                if not copy_preceding_redis_state(matched_bookmark_name, session_dir):
+                if not copy_preceding_redis_state(matched_bookmark_name, folder_dir):
                     print("❌ Failed to copy preceding Redis state")
                     return 1
 
@@ -401,7 +407,7 @@ def main():
                 print("❌ Failed to load Redis state")
                 # Debug: Check what keys exist after load
                 print("🔍 Checking Redis keys after failed load...")
-                debug_cmd = 'docker exec -it session_manager redis-cli keys "*" | head -20'
+                debug_cmd = 'docker exec -it folder_manager redis-cli keys "*" | head -20'
                 subprocess.run(debug_cmd, shell=True)
                 return 1
 
@@ -531,35 +537,35 @@ def main():
                 if IS_DEBUG:
                     print(f"📋 Bookmark metadata already exists, skipping creation")
 
-        # Don't update session metadata for existing bookmarks - only for new ones
+        # Don't update folder metadata for existing bookmarks - only for new ones
         if IS_DEBUG:
-            print(f"📋 Skipping session metadata update for existing bookmark")
+            print(f"📋 Skipping folder metadata update for existing bookmark")
 
     else:
         # NEW BOOKMARK WORKFLOW (either no matches found OR user chose to create new)
         print(f"🆕 Bookmark '{bookmark_path}' doesn't exist - creating new bookmark...")
 
-        # Handle session:bookmark format
-        if specified_session_name:
-            # Check if specified session exists
-            session_dir = find_session_by_name(specified_session_name)
-            if not session_dir:
-                print(f"📁 Session '{specified_session_name}' doesn't exist - creating it...")
-                session_dir = create_session_with_name(specified_session_name)
-                if not session_dir:
-                    print(f"❌ Failed to create session '{specified_session_name}'")
+        # Handle folder:bookmark format
+        if specified_folder_name:
+            # Check if specified folder exists
+            folder_dir = find_folder_by_name(specified_folder_name)
+            if not folder_dir:
+                print(f"📁 Folder '{specified_folder_name}' doesn't exist - creating it...")
+                folder_dir = create_folder_with_name(specified_folder_name)
+                if not folder_dir:
+                    print(f"❌ Failed to create folder '{specified_folder_name}'")
                     return 1
             else:
-                print(f"✅ Using existing session: '{specified_session_name}'")
+                print(f"✅ Using existing folder: '{specified_folder_name}'")
         else:
-            # Let user select which session to create the bookmark in
-            session_dir = select_session_for_new_bookmark(bookmark_path)
-            if not session_dir:
-                print("❌ No session selected, cancelling")
+            # Let user select which folder to create the bookmark in
+            folder_dir = select_folder_for_new_bookmark(bookmark_path)
+            if not folder_dir:
+                print("❌ No folder selected, cancelling")
                 return 1
 
         # Create bookmark directory
-        bookmark_dir = os.path.join(session_dir, bookmark_path)
+        bookmark_dir = os.path.join(folder_dir, bookmark_path)
         if not os.path.exists(bookmark_dir):
             os.makedirs(bookmark_dir)
 
@@ -569,19 +575,19 @@ def main():
         elif blank_slate:
             # Handle --blank-slate flag for new bookmark
             print(f"🆕 Using initial blank slate Redis state for new bookmark '{bookmark_path}'...")
-            if not copy_initial_redis_state(bookmark_path, session_dir):
+            if not copy_initial_redis_state(bookmark_path, folder_dir):
                 print("❌ Failed to copy initial Redis state")
                 return 1
         elif use_preceding_bookmark:
             # Handle --use-preceding-bookmark flag for new bookmark
             if source_bookmark_arg:
                 print(f"📋 Using specified bookmark's Redis state for new bookmark '{bookmark_path}'...")
-                if not copy_specific_bookmark_redis_state(source_bookmark_arg, bookmark_path, session_dir):
+                if not copy_specific_bookmark_redis_state(source_bookmark_arg, bookmark_path, folder_dir):
                     print("❌ Failed to copy specified bookmark's Redis state")
                     return 1
             else:
                 print(f"📋 Using preceding bookmark's Redis state for new bookmark '{bookmark_path}'...")
-                if not copy_preceding_redis_state(bookmark_path, session_dir):
+                if not copy_preceding_redis_state(bookmark_path, folder_dir):
                     print("❌ Failed to copy preceding Redis state")
                     return 1
 
@@ -589,7 +595,7 @@ def main():
             if save_updates:
                 print(f"💾 Saving pulled-in Redis state as redis_before.json...")
                 # The copy functions already create redis_before.json, so we just need to ensure it exists
-                bookmark_dir = os.path.join(session_dir, bookmark_path)
+                bookmark_dir = os.path.join(folder_dir, bookmark_path)
                 redis_before_path = os.path.join(bookmark_dir, "redis_before.json")
                 if os.path.exists(redis_before_path):
                     if IS_DEBUG:
@@ -683,14 +689,14 @@ def main():
                     create_bookmark_meta(bookmark_dir, bookmark_path, media_info, tags)
                     print(f"📋 Created bookmark metadata with tags: {tags}")
 
-        # Check if this is the first bookmark in the session
-        session_bookmarks = load_bookmarks_from_session(session_dir)
-        is_first_bookmark = len(session_bookmarks) == 0
+        # Check if this is the first bookmark in the folder
+        folder_bookmarks = load_bookmarks_from_folder(folder_dir)
+        is_first_bookmark = len(folder_bookmarks) == 0
 
         # Create folder metadata for nested bookmarks
         if '/' in bookmark_path:
             path_parts = bookmark_path.split('/')
-            current_path = session_dir
+            current_path = folder_dir
 
             # Create metadata for each folder level (except the bookmark itself)
             for i, folder_name in enumerate(path_parts[:-1]):
@@ -701,15 +707,15 @@ def main():
                     os.makedirs(current_path)
 
                 # Create folder metadata if it doesn't exist
-                folder_meta_file = os.path.join(current_path, "session_meta.json")
+                folder_meta_file = os.path.join(current_path, "folder_meta.json")
                 if not os.path.exists(folder_meta_file):
                     create_folder_meta(current_path, folder_name)
                     if IS_DEBUG:
                         print(f"📋 Created folder metadata for: {folder_name}")
 
-            # Set description in the last directory of the bookmark path (not the session root)
-            last_dir_path = os.path.join(session_dir, *path_parts[:-1])
-            folder_meta_file = os.path.join(last_dir_path, "session_meta.json")
+            # Set description in the last directory of the bookmark path (not the folder root)
+            last_dir_path = os.path.join(folder_dir, *path_parts[:-1])
+            folder_meta_file = os.path.join(last_dir_path, "folder_meta.json")
             video_filename = ""
             if media_info and media_info.get('file_path'):
                 video_filename = os.path.basename(media_info['file_path'])
@@ -760,8 +766,8 @@ def main():
     should_save_redis_after = False  # Default value for dry run modes
     if not is_dry_run and not is_super_dry_run:
         redis_after_exists = False
-        if session_dir:
-            bookmark_dir = os.path.join(session_dir, bookmark_path)
+        if folder_dir:
+            bookmark_dir = os.path.join(folder_dir, bookmark_path)
             final_after_path = os.path.join(bookmark_dir, "redis_after.json")
             redis_after_exists = os.path.exists(final_after_path)
 
@@ -784,8 +790,8 @@ def main():
                     return 1
 
                 # Move the final Redis export to the bookmark directory
-                if session_dir:
-                    bookmark_dir = os.path.join(session_dir, bookmark_path)
+                if folder_dir:
+                    bookmark_dir = os.path.join(folder_dir, bookmark_path)
                     temp_redis_after_path = os.path.join(REDIS_DUMP_DIR, "bookmark_temp_after.json")
 
                     if IS_DEBUG:
@@ -817,16 +823,16 @@ def main():
             print(f"📖 Load-only mode: Skipping final Redis state save")
 
     # Save the last used bookmark at the end of successful operations
-    if session_dir:
-        session_name = os.path.basename(session_dir)
-        save_last_used_bookmark(session_name, bookmark_path)
+    if folder_dir:
+        folder_name = os.path.basename(folder_dir)
+        save_last_used_bookmark(folder_name, bookmark_path)
         if IS_DEBUG:
-            print(f"📋 Saved last used bookmark: '{session_name}:{bookmark_path}'")
+            print(f"📋 Saved last used bookmark: '{folder_name}:{bookmark_path}'")
 
-    # Don't update session metadata at the end - only update when actually creating new sessions
-    if IS_DEBUG and session_dir:
-        session_name = os.path.basename(session_dir)
-        print(f"📋 Skipping final session metadata update for '{session_name}'")
+    # Don't update folder metadata at the end - only update when actually creating new folders
+    if IS_DEBUG and folder_dir:
+        folder_name = os.path.basename(folder_dir)
+        print(f"📋 Skipping final folder metadata update for '{folder_name}'")
 
     if is_super_dry_run:
         print(f"✅ Super dry run workflow completed successfully!")
@@ -859,10 +865,10 @@ def main():
     print('=' * 60)
     print('')
 
-    # Print all sessions and bookmarks with current one highlighted
-    if session_dir:
-        current_session_name = os.path.basename(session_dir)
-        print_all_sessions_and_bookmarks(current_session_name, bookmark_path, IS_PRINT_JUST_CURRENT_SESSION_BOOKMARKS)
+    # Print all folders and bookmarks with current one highlighted
+    if folder_dir:
+        current_folder_name = os.path.basename(folder_dir)
+        print_all_folders_and_bookmarks(current_folder_name, bookmark_path, IS_PRINT_JUST_CURRENT_FOLDER_BOOKMARKS)
 
     return 0
 

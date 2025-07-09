@@ -8,16 +8,16 @@ import obsws_python as obs
 from datetime import datetime
 
 from app.bookmarks_consts import IS_DEBUG
-from app.bookmarks_sessions import get_all_active_sessions
+from app.bookmarks_folders import get_all_active_folders
 
 import re
 
 
-def load_bookmarks_from_session(session_dir):
-    """Load bookmarks from session directory by scanning for bookmark directories recursively"""
+def load_bookmarks_from_folder(folder_dir):
+    """Load bookmarks from folder directory by scanning for bookmark directories recursively"""
     bookmarks = {}
 
-    if not os.path.exists(session_dir):
+    if not os.path.exists(folder_dir):
         return bookmarks
 
     def scan_for_bookmarks(directory, current_path=""):
@@ -52,13 +52,13 @@ def load_bookmarks_from_session(session_dir):
                         new_path = item
                     scan_for_bookmarks(item_path, new_path)
 
-    scan_for_bookmarks(session_dir)
+    scan_for_bookmarks(folder_dir)
     return bookmarks
 
 
-# def find_matching_bookmark(bookmark_name, session_dir):
+# def find_matching_bookmark(bookmark_name, folder_dir):
 #     """Find matching bookmark using fuzzy matching logic with support for nested folders"""
-#     bookmarks = load_bookmarks_from_session(session_dir)
+#     bookmarks = load_bookmarks_from_folder(folder_dir)
 
 #     if not bookmarks:
 #         return None, None
@@ -128,10 +128,10 @@ def is_strict_equal(path1, path2):
     return normalized1 == normalized2
 
 
-def find_matching_bookmark(bookmark_name, session_dir):
+def find_matching_bookmark(bookmark_name, folder_dir):
     """Find matching bookmark using step-through logic and fallback fuzzy matching."""
 
-    bookmarks = load_bookmarks_from_session(session_dir)
+    bookmarks = load_bookmarks_from_folder(folder_dir)
     if not bookmarks:
         return None, None
 
@@ -243,25 +243,25 @@ def find_matching_bookmark(bookmark_name, session_dir):
 
 
 def get_bookmark_info(bookmark_name):
-    """Get information about a bookmark if it exists, with fuzzy matching across all sessions"""
-    # Get all active sessions
-    active_sessions = get_all_active_sessions()
-    if not active_sessions:
+    """Get information about a bookmark if it exists, with fuzzy matching across all folders"""
+    # Get all active folders
+    active_folders = get_all_active_folders()
+    if not active_folders:
         return None, None
 
-    # Search for bookmark across all sessions
-    for session_dir in active_sessions:
+    # Search for bookmark across all folders
+    for folder_dir in active_folders:
         matched_name, bookmark_info = find_matching_bookmark(
-            bookmark_name, session_dir)
+            bookmark_name, folder_dir)
         if matched_name:
-            session_name = os.path.basename(session_dir)
+            folder_name = os.path.basename(folder_dir)
             if IS_DEBUG:
                 print(
-                    f"🎯 Found bookmark '{matched_name}' in session '{session_name}'")
+                    f"🎯 Found bookmark '{matched_name}' in folder '{folder_name}'")
             return matched_name, bookmark_info
 
     print(f"❌ No bookmarks found matching '{bookmark_name}'")
-    # Bookmark not found in any session
+    # Bookmark not found in any folder
     return None, None
 
 
@@ -307,9 +307,9 @@ def load_obs_bookmark_directly(bookmark_name, bookmark_info):
         return False
 
 
-def find_preceding_bookmark(bookmark_name, session_dir):
+def find_preceding_bookmark(bookmark_name, folder_dir):
     """Find the bookmark that comes alphabetically/numerically before the given bookmark"""
-    bookmarks = load_bookmarks_from_session(session_dir)
+    bookmarks = load_bookmarks_from_folder(folder_dir)
     if not bookmarks:
         return None
 
@@ -368,18 +368,18 @@ def stepwise_match(user_parts, all_bookmarks):
         depth += 1
 
 
-def save_last_used_bookmark(session_name, bookmark_name):
+def save_last_used_bookmark(folder_name, bookmark_name):
     """Save the last used bookmark to a global state file."""
     state_file = os.path.join(os.path.dirname(__file__), "..", "last_bookmark_state.json")
 
-    # Ensure we're saving the session basename, not the full path
-    session_basename = os.path.basename(session_name) if '/' in session_name else session_name
+    # Ensure we're saving the folder basename, not the full path
+    folder_basename = os.path.basename(folder_name) if '/' in folder_name else folder_name
 
     # Convert slashes to colons in bookmark name for consistency
     bookmark_name_colons = bookmark_name.replace('/', ':')
 
     state_data = {
-        "session_name": session_basename,  # Save just the basename
+        "folder_name": folder_basename,  # Save just the basename
         "bookmark_name": bookmark_name_colons,  # Use colons instead of slashes
         "timestamp": datetime.now().isoformat()
     }
@@ -404,7 +404,7 @@ def get_last_used_bookmark_display():
     """Get a formatted string for displaying the last used bookmark."""
     last_used = get_last_used_bookmark()
     if last_used:
-        session_name = last_used.get("session_name", "unknown")
+        folder_name = last_used.get("folder_name", "unknown")
         bookmark_name = last_used.get("bookmark_name", "unknown")
         timestamp = last_used.get("timestamp", "")
 
@@ -415,13 +415,13 @@ def get_last_used_bookmark_display():
         except:
             formatted_time = timestamp
 
-        return f"{session_name}:{bookmark_name} (last used: {formatted_time})"
+        return f"{folder_name}:{bookmark_name} (last used: {formatted_time})"
     return None
 
 
-def find_next_bookmark_in_session(current_bookmark_name, session_dir):
+def find_next_bookmark_in_folder(current_bookmark_name, folder_dir):
     """Find the next bookmark in the same directory as the current bookmark."""
-    bookmarks = load_bookmarks_from_session(session_dir)
+    bookmarks = load_bookmarks_from_folder(folder_dir)
     if not bookmarks:
         return None
 
@@ -464,9 +464,9 @@ def find_next_bookmark_in_session(current_bookmark_name, session_dir):
     return None
 
 
-def find_previous_bookmark_in_session(current_bookmark_name, session_dir):
+def find_previous_bookmark_in_folder(current_bookmark_name, folder_dir):
     """Find the previous bookmark in the same directory as the current bookmark."""
-    bookmarks = load_bookmarks_from_session(session_dir)
+    bookmarks = load_bookmarks_from_folder(folder_dir)
     if not bookmarks:
         return None
 
@@ -509,9 +509,9 @@ def find_previous_bookmark_in_session(current_bookmark_name, session_dir):
     return None
 
 
-def find_first_bookmark_in_session(current_bookmark_name, session_dir):
+def find_first_bookmark_in_folder(current_bookmark_name, folder_dir):
     """Find the first bookmark in the same directory as the current bookmark."""
-    bookmarks = load_bookmarks_from_session(session_dir)
+    bookmarks = load_bookmarks_from_folder(folder_dir)
     if not bookmarks:
         return None
 
@@ -545,9 +545,9 @@ def find_first_bookmark_in_session(current_bookmark_name, session_dir):
         return f"{current_folder_path}/{first_bookmark_basename}"
 
 
-def find_last_bookmark_in_session(current_bookmark_name, session_dir):
+def find_last_bookmark_in_folder(current_bookmark_name, folder_dir):
     """Find the last bookmark in the same directory as the current bookmark."""
-    bookmarks = load_bookmarks_from_session(session_dir)
+    bookmarks = load_bookmarks_from_folder(folder_dir)
     if not bookmarks:
         return None
 
@@ -581,7 +581,7 @@ def find_last_bookmark_in_session(current_bookmark_name, session_dir):
         return f"{current_folder_path}/{last_bookmark_basename}"
 
 
-def resolve_navigation_bookmark(navigation_command, session_dir):
+def resolve_navigation_bookmark(navigation_command, folder_dir):
     """Resolve navigation commands (next, previous, first, last) to actual bookmark names."""
     # Get the last used bookmark to determine the current position
     last_used_info = get_last_used_bookmark()
@@ -589,36 +589,36 @@ def resolve_navigation_bookmark(navigation_command, session_dir):
         print(f"❌ No last used bookmark found. Cannot navigate with '{navigation_command}'")
         return None, None
 
-    session_name = last_used_info.get("session_name")
+    folder_name = last_used_info.get("folder_name")
     bookmark_name = last_used_info.get("bookmark_name")
 
     # Convert colons back to slashes for internal processing
     bookmark_name_slashes = bookmark_name.replace(':', '/')
 
-    # Verify the session matches
-    session_basename = os.path.basename(session_dir)
-    if session_basename != session_name:
-        print(f"❌ Session mismatch. Last used bookmark is in '{session_name}', but current session is '{session_basename}'")
+    # Verify the folder matches
+    folder_basename = os.path.basename(folder_dir)
+    if folder_basename != folder_name:
+        print(f"❌ Folder mismatch. Last used bookmark is in '{folder_name}', but current folder is '{folder_basename}'")
         return None, None
 
     # Resolve the navigation command
     if navigation_command == "next":
-        target_bookmark = find_next_bookmark_in_session(bookmark_name_slashes, session_dir)
+        target_bookmark = find_next_bookmark_in_folder(bookmark_name_slashes, folder_dir)
         if not target_bookmark:
             print(f"❌ No next bookmark found after '{bookmark_name}'")
             return None, None
     elif navigation_command == "previous":
-        target_bookmark = find_previous_bookmark_in_session(bookmark_name_slashes, session_dir)
+        target_bookmark = find_previous_bookmark_in_folder(bookmark_name_slashes, folder_dir)
         if not target_bookmark:
             print(f"❌ No previous bookmark found before '{bookmark_name}'")
             return None, None
     elif navigation_command == "first":
-        target_bookmark = find_first_bookmark_in_session(bookmark_name_slashes, session_dir)
+        target_bookmark = find_first_bookmark_in_folder(bookmark_name_slashes, folder_dir)
         if not target_bookmark:
             print(f"❌ No bookmarks found in the same directory as '{bookmark_name}'")
             return None, None
     elif navigation_command == "last":
-        target_bookmark = find_last_bookmark_in_session(bookmark_name_slashes, session_dir)
+        target_bookmark = find_last_bookmark_in_folder(bookmark_name_slashes, folder_dir)
         if not target_bookmark:
             print(f"❌ No bookmarks found in the same directory as '{bookmark_name}'")
             return None, None
@@ -627,11 +627,11 @@ def resolve_navigation_bookmark(navigation_command, session_dir):
         return None, None
 
     # Load the bookmark info for the target bookmark
-    bookmarks = load_bookmarks_from_session(session_dir)
+    bookmarks = load_bookmarks_from_folder(folder_dir)
     if target_bookmark not in bookmarks:
-        print(f"❌ Target bookmark '{target_bookmark}' not found in session")
+        print(f"❌ Target bookmark '{target_bookmark}' not found in folder")
         return None, None
 
     bookmark_info = bookmarks[target_bookmark]
-    print(f"🎯 Navigating to: {session_name}:{target_bookmark.replace('/', ':')}")
+    print(f"🎯 Navigating to: {folder_name}:{target_bookmark.replace('/', ':')}")
     return target_bookmark, bookmark_info

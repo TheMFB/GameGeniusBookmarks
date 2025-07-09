@@ -14,13 +14,13 @@ REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BOOKMARKS_DIR = os.path.join(REPO_ROOT, "obs_bookmark_saves")
 
 # Redis dump directory - you may want to adjust this path for your new setup
-REDIS_DUMP_DIR = "/Users/mfb/dev/MFBTech/GameGeniusProject/GameGenius/game-genius/services/session_manager/utils/standalone/redis_dump"
+REDIS_DUMP_DIR = "~/dev/GameGenius/services/folder_manager/utils/standalone/redis_dump"
 INITIAL_REDIS_STATE_DIR = os.path.join(REPO_ROOT, "app")
 
-IS_PRINT_JUST_CURRENT_SESSION_BOOKMARKS = True
+IS_PRINT_JUST_CURRENT_FOLDER_BOOKMARKS = True
 
 USAGE_HELP = """
-Usage: runonce_redis_integration.py <bookmark_name> [--save-updates] [-s] [--use-preceding-bookmark <session:bookmark>] [-p <session:bookmark>] [--blank-slate] [-b] [-v <video_path>] [--open-video <video_path>] [--tags <tag1> <tag2> ...]
+Usage: runonce_redis_integration.py <bookmark_name> [--save-updates] [-s] [--use-preceding-bookmark <folder:bookmark>] [-p <folder:bookmark>] [--blank-slate] [-b] [-v <video_path>] [--open-video <video_path>] [--tags <tag1> <tag2> ...]
 
 Navigation commands:
   next, previous, first, last    Navigate to adjacent bookmarks in the same directory
@@ -50,7 +50,7 @@ Navigation:
 Examples:
   runonce_redis_integration.py my-bookmark
   runonce_redis_integration.py my-bookmark
-  runonce_redis_integration.py my-bookmark session:other-bookmark
+  runonce_redis_integration.py my-bookmark folder:other-bookmark
   runonce_redis_integration.py my-bookmark --blank-slate
   runonce_redis_integration.py next -p -s
   runonce_redis_integration.py previous
