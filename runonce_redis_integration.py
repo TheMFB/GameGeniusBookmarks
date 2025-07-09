@@ -71,6 +71,7 @@ def main():
         "--dry-run",
         "-sd",
         "--super-dry-run",
+        "--no-obs",
         "--save-last-redis",
         "-v",
         "--open-video",
@@ -91,6 +92,7 @@ def main():
     blank_slate = "--blank-slate" in args or "-b" in args
     is_dry_run = "--dry-run" in args or "-d" in args
     is_super_dry_run = "--super-dry-run" in args or "-sd" in args
+    is_no_obs = "--no-obs" in args
     add_bookmark = "--add" in args or "-a" in args
 
     # Check for video opening flags
@@ -153,6 +155,7 @@ def main():
         print(f"🔍 Debug - open_video: {open_video}")
         print(f"🔍 Debug - video_path: {video_path}")
         print(f"🔍 Debug - tags: {tags}")
+        print(f"🔍 Debug - is_no_obs: {is_no_obs}")
 
     # Handle video opening mode
     if open_video:
@@ -228,6 +231,10 @@ def main():
             print(f"📖 Mode: Load bookmark only (no main process)")
         if open_video:
             print(f"🎬 Mode: Open video in OBS (paused)")
+        if is_super_dry_run:
+            print(f"💾 Super dry run mode: Skipping all OBS operations")
+        if is_no_obs:
+            print(f"📷 No-OBS mode: Skipping all OBS operations")
 
     # Ensure Redis dump directory exists
     if not os.path.exists(REDIS_DUMP_DIR):
@@ -403,47 +410,63 @@ def main():
                     files = os.listdir(REDIS_DUMP_DIR)
                     print(f"🔍 Files in Redis dump directory: {files}")
 
-        # Take screenshot directly using existing function
-        screenshot_path = os.path.join(bookmark_dir, "screenshot.png")
-        if not os.path.exists(screenshot_path):
-            try:
-                cl = obs.ReqClient(host="localhost", port=4455, password="", timeout=3)
-
-                # Take screenshot
-                response = cl.send("GetSourceScreenshot", {
-                    "sourceName": "Media Source",  # or make this configurable
-                    "imageFormat": "png"
-                })
-
-                image_data = response.image_data
-                if image_data.startswith("data:image/png;base64,"):
-                    image_data = image_data.replace("data:image/png;base64,", "")
-
-                import base64
-                with open(screenshot_path, "wb") as f:
-                    f.write(base64.b64decode(image_data))
-
-                if IS_DEBUG:
-                    print(f"📋 Screenshot saved to: {screenshot_path}")
-                print(f"📸 Screenshot saved to: {matched_bookmark_name}/screenshot.png")
-            except Exception as e:
-                print(f"⚠️  Could not take screenshot: {e}")
+        # Take screenshot directly using existing function (skip if no-obs mode)
+        if is_no_obs:
+            print(f"📷 No-OBS mode: Skipping screenshot capture")
         else:
-            if IS_DEBUG:
-                print(f"📋 Screenshot already exists, skipping creation")
+            screenshot_path = os.path.join(bookmark_dir, "screenshot.png")
+            if not os.path.exists(screenshot_path):
+                try:
+                    cl = obs.ReqClient(host="localhost", port=4455, password="", timeout=3)
+
+                    # Take screenshot
+                    response = cl.send("GetSourceScreenshot", {
+                        "sourceName": "Media Source",  # or make this configurable
+                        "imageFormat": "png"
+                    })
+
+                    image_data = response.image_data
+                    if image_data.startswith("data:image/png;base64,"):
+                        image_data = image_data.replace("data:image/png;base64,", "")
+
+                    import base64
+                    with open(screenshot_path, "wb") as f:
+                        f.write(base64.b64decode(image_data))
+
+                    if IS_DEBUG:
+                        print(f"📋 Screenshot saved to: {screenshot_path}")
+                    print(f"📸 Screenshot saved to: {matched_bookmark_name}/screenshot.png")
+                except Exception as e:
+                    print(f"⚠️  Could not take screenshot: {e}")
+                    print(f"   Please ensure OBS is running and WebSocket server is enabled")
+            else:
+                if IS_DEBUG:
+                    print(f"📋 Screenshot already exists, skipping creation")
 
         # Get media source info and create bookmark metadata (only if it doesn't exist)
         bookmark_meta_path = os.path.join(bookmark_dir, "bookmark_meta.json")
         if not os.path.exists(bookmark_meta_path):
-            media_info = get_media_source_info()
-            if media_info:
-                if os.path.exists(bookmark_dir):
-                    create_bookmark_meta(bookmark_dir, matched_bookmark_name, media_info, tags)
-                    if IS_DEBUG:
-                        print(f"📋 Created bookmark metadata with tags: {tags}")
-                else:
-                    print(f"❌ Could not create bookmark metadata - bookmark directory doesn't exist: {bookmark_dir}")
-                    return 1
+            if is_no_obs:
+                # Create minimal metadata without OBS info
+                minimal_media_info = {
+                    'file_path': '',
+                    'video_filename': '',
+                    'timestamp': 0,
+                    'timestamp_formatted': '00:00:00'
+                }
+                create_bookmark_meta(bookmark_dir, matched_bookmark_name, minimal_media_info, tags)
+                if IS_DEBUG:
+                    print(f"📋 Created minimal bookmark metadata (no OBS info)")
+            else:
+                media_info = get_media_source_info()
+                if media_info:
+                    if os.path.exists(bookmark_dir):
+                        create_bookmark_meta(bookmark_dir, matched_bookmark_name, media_info, tags)
+                        if IS_DEBUG:
+                            print(f"📋 Created bookmark metadata with tags: {tags}")
+                    else:
+                        print(f"❌ Could not create bookmark metadata - bookmark directory doesn't exist: {bookmark_dir}")
+                        return 1
         else:
             # If metadata exists and tags were provided, update the tags
             if tags:
@@ -571,41 +594,56 @@ def main():
             else:
                 print(f"❌ Could not move Redis file - temp_path exists: {os.path.exists(temp_redis_path)}, bookmark_dir exists: {os.path.exists(bookmark_dir) if bookmark_dir else 'bookmark_dir is None'}")
 
-        # Take screenshot directly using existing function
-        screenshot_path = os.path.join(bookmark_dir, "screenshot.png")
-        if not os.path.exists(screenshot_path):
-            try:
-                cl = obs.ReqClient(host="localhost", port=4455, password="", timeout=3)
-
-                # Take screenshot
-                response = cl.send("GetSourceScreenshot", {
-                    "sourceName": "Media Source",  # or make this configurable
-                    "imageFormat": "png"
-                })
-
-                image_data = response.image_data
-                if image_data.startswith("data:image/png;base64,"):
-                    image_data = image_data.replace("data:image/png;base64,", "")
-
-                import base64
-                with open(screenshot_path, "wb") as f:
-                    f.write(base64.b64decode(image_data))
-
-                if IS_DEBUG:
-                    print(f"📋 Screenshot saved to: {screenshot_path}")
-                print(f"📸 Screenshot saved to: {bookmark_path}/screenshot.png")
-            except Exception as e:
-                print(f"⚠️  Could not take screenshot: {e}")
+        # Take screenshot directly using existing function (skip if no-obs mode)
+        if is_no_obs:
+            print(f"📷 No-OBS mode: Skipping screenshot capture")
         else:
-            if IS_DEBUG:
-                print(f"📋 Screenshot already exists, skipping creation")
+            screenshot_path = os.path.join(bookmark_dir, "screenshot.png")
+            if not os.path.exists(screenshot_path):
+                try:
+                    cl = obs.ReqClient(host="localhost", port=4455, password="", timeout=3)
+
+                    # Take screenshot
+                    response = cl.send("GetSourceScreenshot", {
+                        "sourceName": "Media Source",  # or make this configurable
+                        "imageFormat": "png"
+                    })
+
+                    image_data = response.image_data
+                    if image_data.startswith("data:image/png;base64,"):
+                        image_data = image_data.replace("data:image/png;base64,", "")
+
+                    import base64
+                    with open(screenshot_path, "wb") as f:
+                        f.write(base64.b64decode(image_data))
+
+                    if IS_DEBUG:
+                        print(f"📋 Screenshot saved to: {screenshot_path}")
+                    print(f"📸 Screenshot saved to: {bookmark_path}/screenshot.png")
+                except Exception as e:
+                    print(f"⚠️  Could not take screenshot: {e}")
+                    print(f"   Please ensure OBS is running and WebSocket server is enabled")
+            else:
+                if IS_DEBUG:
+                    print(f"📋 Screenshot already exists, skipping creation")
 
         # Get media source info and create bookmark metadata
-        media_info = get_media_source_info()
-        if media_info:
-            if os.path.exists(bookmark_dir):
-                create_bookmark_meta(bookmark_dir, bookmark_path, media_info, tags)
-                print(f"📋 Created bookmark metadata with tags: {tags}")
+        if is_no_obs:
+            # Create minimal metadata without OBS info
+            minimal_media_info = {
+                'file_path': '',
+                'video_filename': '',
+                'timestamp': 0,
+                'timestamp_formatted': '00:00:00'
+            }
+            create_bookmark_meta(bookmark_dir, bookmark_path, minimal_media_info, tags)
+            print(f"📋 Created minimal bookmark metadata (no OBS info) with tags: {tags}")
+        else:
+            media_info = get_media_source_info()
+            if media_info:
+                if os.path.exists(bookmark_dir):
+                    create_bookmark_meta(bookmark_dir, bookmark_path, media_info, tags)
+                    print(f"📋 Created bookmark metadata with tags: {tags}")
 
         # Check if this is the first bookmark in the session
         session_bookmarks = load_bookmarks_from_session(session_dir)
@@ -764,6 +802,12 @@ def main():
             print(f"   Bookmark: '{bookmark_path}'")
             print(f"   OBS bookmark loaded")
             print(f"   Redis before: {bookmark_path}/redis_before.json")
+    elif is_no_obs:
+        print(f"✅ No-OBS workflow completed successfully!")
+        if IS_DEBUG:
+            print(f"   Bookmark: '{bookmark_path}'")
+            print(f"   No OBS operations performed")
+            print(f"   No Redis operations performed")
     else:
         print(f"✅ Integrated workflow completed successfully!")
         if IS_DEBUG:
