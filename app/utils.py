@@ -66,15 +66,15 @@ def get_media_source_info():
     """Get media source information from OBS."""
     try:
         cl = obs.ReqClient(host="localhost", port=4455, password="", timeout=3)
-        
+
         # Get current media source settings
         settings = cl.send("GetInputSettings", {"inputName": "Media Source"})
         file_path = settings.input_settings.get("local_file", "")
-        
+
         # Initialize with default values
         timestamp = 0
         timestamp_formatted = "00:00:00"
-        
+
         # Only try to get cursor position if we have a valid file path
         if file_path and os.path.exists(file_path):
             try:
@@ -82,22 +82,28 @@ def get_media_source_info():
                 media_status = cl.send("GetMediaInputStatus", {"inputName": "Media Source"})
                 print(f"🔍 Debug - media_status: ")
                 pprint(media_status)
-                
+
                 # Get cursor position from media_status
                 if hasattr(media_status, 'media_cursor'):
                     timestamp = media_status.media_cursor
                     print(f"🔍 Raw timestamp: {timestamp}")
-                    
+
                     # Convert timestamp to seconds if it's in milliseconds
                     if timestamp > 3600:  # If timestamp is more than 1 hour, it's likely in milliseconds
                         timestamp = timestamp / 1000
                         print(f"🔍 Converted timestamp from ms to seconds: {timestamp}")
-                    
+
                     # Format timestamp
                     hours = int(timestamp // 3600)
                     minutes = int((timestamp % 3600) // 60)
                     seconds = int(timestamp % 60)
-                    timestamp_formatted = f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+                    
+                    # Only show hours if they exist
+                    if hours > 0:
+                        timestamp_formatted = f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+                    else:
+                        timestamp_formatted = f"{minutes:02d}:{seconds:02d}"
+                    
                     print(f"🔍 Formatted timestamp: {timestamp_formatted}")
                 else:
                     print(f"❌ No media_cursor attribute in media_status")
