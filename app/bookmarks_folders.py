@@ -216,24 +216,22 @@ def create_folder_with_name(folder_name):
 
 def parse_folder_bookmark_arg(bookmark_arg):
     """
-    Parse bookmark argument that may contain folder:bookmark format or nested folder structure
+    Parses a bookmark path in the format 'folder:subfolder:bookmark'
+    and returns (folder_path, bookmark_name).
 
-    Args:
-        bookmark_arg: String that may be "bookmark", "folder:bookmark", or "folder:folder1:folder2:bookmark"
-
-    Returns:
-        tuple: (folder_name, bookmark_path) where folder_name may be None and bookmark_path is the full nested path
+    - Example: 'kerch:comp:m01:01-np' becomes:
+        folder_path: 'kerch/comp/m01'
+        bookmark_name: '01-np'
     """
-    if ':' in bookmark_arg:
-        parts = bookmark_arg.split(':')  # Split on all colons
-        if len(parts) >= 2:
-            folder_name = parts[0].strip()
-            # Join all remaining parts as the nested bookmark path
-            bookmark_path = '/'.join(parts[1:])
-            return folder_name, bookmark_path
+    if not bookmark_arg or ':' not in bookmark_arg:
+        return None, bookmark_arg  # no folder path
 
-    # No colon found, treat as just bookmark name
-    return None, bookmark_arg
+    parts = bookmark_arg.split(':')
+    folder_path = os.path.join(*parts[:-1])  # everything but the last part
+    bookmark_name = parts[-1]  # just the last part
+
+    return folder_path, bookmark_name
+
 
 
 def update_folder_last_bookmark(folder_dir, bookmark_name):

@@ -38,7 +38,7 @@ def main():
     args = sys.argv[1:]
 
     # Print help/usage if no arguments or -h/--help is present
-    if not args or '-h' in args or '--help' in args or '-ls' in args or '--ls' in args:
+    if not args or '-h' in args or '--help' in args:
         print(OPTIONS_HELP)
 
         # Show last used bookmark if available
@@ -46,10 +46,68 @@ def main():
         if last_used_display:
             print(f"\n Last used bookmark: {last_used_display}")
 
-        # List all folders and bookmarks
         print_all_folders_and_bookmarks()
-
         return 0
+
+        # Handle -ls or --ls
+    if '-ls' in args or '--ls' in args:
+        # Remove -ls so we can check what came before it
+        args_copy = args.copy()
+        args_copy.remove('-ls') if '-ls' in args_copy else args_copy.remove('--ls')
+
+        # If no folder path is provided: list everything
+        if not args_copy:
+            print_all_folders_and_bookmarks()
+            return 0
+
+        # If a folder path is provided, list only that folder
+        folder_arg = args_copy[0]
+        from app.bookmarks_print import print_bookmarks_in_folder
+
+        folder_path = find_folder_by_name(folder_arg)
+        if folder_path:
+            print_bookmarks_in_folder(folder_path)
+            return 0
+        else:
+            print(f"❌ Folder '{folder_arg}' not found (no fuzzy matching allowed with -ls)")
+            return 1
+
+    # Handle --which or -w (fuzzy bookmark match check)
+    if '--which' in args or '-w' in args:
+        which_flag = '--which' if '--which' in args else '-w'
+        args_copy = args.copy()
+        args_copy.remove(which_flag)
+
+        # If no bookmark search term is given, show error
+        if not args_copy:
+            print(f"❌ No bookmark name provided before {which_flag}")
+            print("Usage: bm <bookmark_path> --which")
+            return 1
+
+        fuzzy_input = args_copy[0]
+
+        from app.bookmarks import find_matching_bookmark
+
+        # Perform fuzzy matching
+        matches = find_matching_bookmark(fuzzy_input, "obs_bookmark_saves")
+
+        if not matches:
+            print(f"❌ No bookmarks matched '{fuzzy_input}'")
+            return 1
+
+        if len(matches) == 1:
+            print("✅ Match found:")
+            print(f"  • {matches[0]}")
+            return 0
+
+        # If multiple matches found
+        print(f"⚠️  Multiple bookmarks matched '{fuzzy_input}':")
+        for m in matches:
+            print(f"  • {m}")
+        print("Please be more specific.")
+        return 1
+
+
 
     bookmark_arg = args[0]
 
@@ -215,12 +273,6 @@ def main():
     else:
         # Normal bookmark lookup
         matched_bookmark_name, bookmark_info = get_bookmark_info(bookmark_arg)
-        # If the match is not exact, treat it as new
-        if matched_bookmark_name and not is_strict_equal(matched_bookmark_name, bookmark_arg):
-            if IS_DEBUG:
-                print(f"⚠️  Ignoring fuzzy match: '{matched_bookmark_name}' (not strictly equal to '{bookmark_arg}')")
-            matched_bookmark_name = None
-            bookmark_info = None
 
     if IS_DEBUG:
         print(f"🎯 Starting integrated runonce-redis workflow for bookmark: '{matched_bookmark_name}'")
