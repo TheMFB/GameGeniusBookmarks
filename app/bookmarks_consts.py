@@ -1,5 +1,5 @@
-# IS_DEBUG = True
 IS_DEBUG = False
+# IS_DEBUG = False
 ASYNC_WAIT_TIME = 1
 
 SHOW_HIDDEN_COPY_LINE = True
@@ -20,7 +20,15 @@ INITIAL_REDIS_STATE_DIR = os.path.join(REPO_ROOT, "app")
 IS_PRINT_JUST_CURRENT_SESSION_BOOKMARKS = True
 
 USAGE_HELP = """
-Usage: runonce_redis_integration.py <bookmark_name> [--save-updates] [-s] [--use-preceding-bookmark <session:bookmark>] [-p <session:bookmark>] [--blank-slate] [-b] [-v <video_path>] [--open-video <video_path>] [--tags <tag1> <tag2> ...]
+Usage: runonce_redis_integration.py <bookmark_name> 
+  [-s] [--save-updates] 
+  [-p <session:bookmark>] [--use-preceding-bookmark <session:bookmark>] 
+  [-d] [--dry-run]
+  [-sd] [--super-dry-run]
+  [-b] [--blank-slate] 
+  [--save-last-redis]
+  [-t <tag1> <tag2> ...] [--tags <tag1> <tag2> ...]
+  [-v <video_path>] [--open-video <video_path>] 
 
 Navigation commands:
   next, previous, first, last    Navigate to adjacent bookmarks in the same directory
@@ -34,7 +42,7 @@ Options:
     (bmls / lsbm)
   -s, --save-updates                         Save redis state updates (before and after)
     (bmsave / savebm)
-  -p <bookmark>, --use-preceding-bookmark    Use redis_after.json from preceding or specified bookmark as redis_before.json
+  -p [bookmark], --use-preceding-bookmark    Use redis_after.json from preceding bookmark (or specified bookmark if provided) as redis_before.json
   -d, --dry-run                              Dry run, Load bookmark only (no main process)
   -sd, --super-dry-run                       Super dry run, Load bookmark only (no main process, no Redis operations)
   --no-obs                                   No OBS mode, Create bookmarks without OBS connection (for tagging only)

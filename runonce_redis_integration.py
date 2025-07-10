@@ -352,40 +352,13 @@ def main():
         # Handle Redis state based on flags (skip if super dry run)
         if is_super_dry_run:
             print(f"💾 Super dry run mode: Skipping all Redis operations")
-        elif blank_slate:
-            # Handle --blank-slate flag for existing bookmark
-            print(f"🆕 Using initial blank slate Redis state for '{matched_bookmark_name}'...")
-            if not copy_initial_redis_state(matched_bookmark_name, session_dir):
-                print("❌ Failed to copy initial Redis state")
-                return 1
-            # Update the path since we just created/copied the file
-            redis_before_path = os.path.join(bookmark_dir, "redis_before.json")
-
-        elif use_preceding_bookmark:
-            # Handle --use-preceding-bookmark flag for existing bookmark
-            if source_bookmark_arg:
-                print(f"📋 Using specified bookmark's Redis state for '{matched_bookmark_name}'...")
-                if not copy_specific_bookmark_redis_state(source_bookmark_arg, matched_bookmark_name, session_dir):
-                    print("❌ Failed to copy specified bookmark's Redis state")
-                    return 1
-            else:
-                print(f"📋 Using preceding bookmark's Redis state for '{matched_bookmark_name}'...")
-                if not copy_preceding_redis_state(matched_bookmark_name, session_dir):
-                    print("❌ Failed to copy preceding Redis state")
-                    return 1
-
-            # If save_updates is enabled, save the pulled-in redis state as redis_before.json
-            if save_updates:
-                print(f"💾 Saving pulled-in Redis state as redis_before.json...")
-                # The copy functions already create redis_before.json, so we just need to ensure it exists
-                if os.path.exists(redis_before_path):
-                    if IS_DEBUG:
-                        print(f"📋 Redis before state saved: {redis_before_path}")
-
-            # Update the path since we just created/copied the file
-            redis_before_path = os.path.join(bookmark_dir, "redis_before.json")
 
         # Load Redis state (skip if super dry run)
+        if IS_DEBUG:
+            print(f"🔍 Debug - is_super_dry_run: {is_super_dry_run}")
+            print(f"🔍 Debug - redis_before_path exists: {os.path.exists(redis_before_path)}")
+            print(f"🔍 Debug - redis_before_path: {redis_before_path}")
+        
         if not is_super_dry_run and os.path.exists(redis_before_path):
             if IS_DEBUG:
                 print(f"📊 Loading Redis state from bookmark...")

@@ -85,7 +85,7 @@ def copy_preceding_redis_state(bookmark_name, session_dir):
 
 
 def copy_specific_bookmark_redis_state(source_bookmark_arg, target_bookmark_name, target_session_dir):
-    """Copy redis_after.json from a specific bookmark to redis_before.json of target bookmark"""
+    """Copy redis_after.json from a specific bookmark to redis_before.json of target bookmark and load into Redis"""
     # Parse the source bookmark argument (may be "bookmark" or "session:bookmark")
     source_session_name, source_bookmark_name = parse_session_bookmark_arg(
         source_bookmark_arg)
@@ -116,20 +116,37 @@ def copy_specific_bookmark_redis_state(source_bookmark_arg, target_bookmark_name
     else:
         # Search across all sessions
         active_sessions = get_all_active_sessions()
+        source_bookmark_candidates = []
+        
         for session_path in active_sessions:
             matched_name, bookmark_info = find_matching_bookmark(
                 source_bookmark_name, session_path)
             if matched_name:
-                source_bookmark_name = matched_name
-                source_bookmark_info = bookmark_info
-                source_session_dir = session_path
-                source_session_name = os.path.basename(session_path)
-                break
+                source_bookmark_candidates.append({
+                    'name': matched_name,
+                    'info': bookmark_info,
+                    'session_dir': session_path,
+                    'session_name': os.path.basename(session_path)
+                })
 
-        if not source_bookmark_info:
+        if len(source_bookmark_candidates) == 0:
             print(
                 f"❌ Source bookmark '{source_bookmark_name}' not found in any session")
             return False
+        elif len(source_bookmark_candidates) > 1:
+            print(f"❌ Multiple source bookmarks found matching '{source_bookmark_name}':")
+            for i, candidate in enumerate(source_bookmark_candidates, 1):
+                display_name = candidate['name'].replace('/', ' : ')
+                print(f"   {i}. {candidate['session_name']}:{display_name}")
+            print(f"   Please be more specific or use session:bookmark format")
+            return False
+        else:
+            # Single match found
+            candidate = source_bookmark_candidates[0]
+            source_bookmark_name = candidate['name']
+            source_bookmark_info = candidate['info']
+            source_session_dir = candidate['session_dir']
+            source_session_name = candidate['session_name']
 
     print(
         f"📋 Copying Redis state from '{source_session_name}:{source_bookmark_name}' to '{target_bookmark_name}'")
@@ -168,6 +185,25 @@ def copy_specific_bookmark_redis_state(source_bookmark_arg, target_bookmark_name
         else:
             print(f"⚠️  Source bookmark has no friendly_redis_after.json")
 
+        # Load the copied state into Redis
+        print(f"📊 Loading copied Redis state into Redis...")
+        
+        # Copy the copied state to the redis dump directory and load it
+        from app.bookmarks_consts import REDIS_DUMP_DIR
+        temp_redis_path = os.path.join(REDIS_DUMP_DIR, "temp_specific.json")
+        shutil.copy2(source_after, temp_redis_path)
+        
+        if not run_redis_command(['load', 'temp_specific']):
+            print("❌ Failed to load copied Redis state")
+            return False
+
+        # Clean up temp file
+        if os.path.exists(temp_redis_path):
+            os.remove(temp_redis_path)
+            if IS_DEBUG:
+                print(f"🧹 Cleaned up temp specific Redis file")
+
+        print(f"✅ Copied Redis state loaded successfully")
         return True
     except Exception as e:
         print(
@@ -176,7 +212,7 @@ def copy_specific_bookmark_redis_state(source_bookmark_arg, target_bookmark_name
 
 
 def copy_initial_redis_state(bookmark_name, session_dir):
-    """Copy initial Redis state files to the bookmark directory"""
+    """Copy initial Redis state files to the bookmark directory and load into Redis"""
     current_dir = os.path.join(session_dir, bookmark_name)
 
     # Ensure current bookmark directory exists
@@ -211,6 +247,25 @@ def copy_initial_redis_state(bookmark_name, session_dir):
                 f"❌ Initial friendly Redis state file not found: {initial_friendly}")
             return False
 
+        # Load the initial state into Redis
+        print(f"📊 Loading initial Redis state into Redis...")
+
+        # Copy the initial state to the redis dump directory and load it
+        from app.bookmarks_consts import REDIS_DUMP_DIR
+        temp_redis_path = os.path.join(REDIS_DUMP_DIR, "temp_initial.json")
+        shutil.copy2(initial_redis, temp_redis_path)
+
+        if not run_redis_command(['load', 'temp_initial']):
+            print("❌ Failed to load initial Redis state")
+            return False
+
+        # Clean up temp file
+        if os.path.exists(temp_redis_path):
+            os.remove(temp_redis_path)
+            if IS_DEBUG:
+                print(f"🧹 Cleaned up temp initial Redis file")
+
+        print(f"✅ Initial Redis state loaded successfully")
         return True
     except Exception as e:
         print(f"❌ Error copying initial Redis state: {e}")
