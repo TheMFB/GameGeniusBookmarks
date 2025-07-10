@@ -7,7 +7,7 @@ import os
 import json
 from app.bookmarks_consts import IS_DEBUG, HIDDEN_COLOR, RESET_COLOR, USAGE_HELP
 from app.bookmarks_folders import get_all_active_folders, find_folder_by_name
-from app.bookmarks_meta import load_folder_meta, load_folder_meta
+from app.bookmarks_meta import load_folder_meta
 from app.bookmarks import load_bookmarks_from_folder, get_last_used_bookmark
 from app.utils import print_color
 
@@ -54,7 +54,7 @@ def print_all_folders_and_bookmarks(
                     break
 
             if found_folder:
-                top_level_folder_name = os.path.basename(found_folder)
+                top_level_folder_name = found_folder  # use full folder path instead of just basename
                 current_bookmark_name = bookmark_name_slashes  # Use the slash version for internal processing
                 if IS_DEBUG:
                     print(f"📌 Using last used bookmark: {top_level_folder_name}:{bookmark_name_from_state}")
@@ -81,7 +81,7 @@ def print_all_folders_and_bookmarks(
 
     for folder_path in active_folders:
         folder_name = os.path.basename(folder_path)
-        is_current_folder = folder_name == top_level_folder_name
+        is_current_folder = folder_path == top_level_folder_name
 
         # Print folder name
         if is_current_folder:
@@ -162,35 +162,34 @@ def print_all_folders_and_bookmarks(
                 indent = "   " * indent_level
 
                 # Print folder (skip for 'root')
-                if folder_path != 'root':
-                    folder_name = folder_path.split('/')[-1]
+                folder_name = folder_path.split('/')[-1] if folder_path != 'root' else 'root'
 
                     # Highlight if this folder contains current bookmark
-                    folder_contains_current = False
-                    if current_bookmark_name and is_current_folder:
-                        current_path_parts = current_bookmark_name.split('/')
-                        current_folder_path = '/'.join(current_path_parts[:-1])
-                        folder_contains_current = folder_path == current_folder_path or current_folder_path.startswith(
-                            folder_path + '/')
+                folder_contains_current = False
+                if current_bookmark_name and is_current_folder:
+                    current_path_parts = current_bookmark_name.split('/')
+                    current_folder_path = '/'.join(current_path_parts[:-1])
+                    folder_contains_current = folder_path == current_folder_path or current_folder_path.startswith(
+                        folder_path + '/')
 
-                    if folder_contains_current:
-                        print_color(f"{indent}📁 {folder_name}", 'green')
-                    else:
-                        if not is_print_just_current_folder_bookmarks:
-                            print(f"{indent}📁 {folder_name}")
+                if folder_contains_current:
+                    print_color(f"{indent}📁 {folder_name}", 'green')
+                else:
+                    if not is_print_just_current_folder_bookmarks:
+                        print(f"{indent}📁 {folder_name}")
 
-                    # Load and display folder metadata
-                    folder_meta = load_folder_meta(
-                        os.path.join(folder_path, folder_path))
-                    folder_description = folder_meta.get('description', '')
-                    folder_tags = folder_meta.get('tags', [])
+                # Load and display folder metadata
+                folder_meta = load_folder_meta(
+                    os.path.join(folder_path, folder_path))
+                folder_description = folder_meta.get('description', '')
+                folder_tags = folder_meta.get('tags', [])
 
-                    if folder_description:
-                        print_color(f"{indent}   {folder_description}", 'cyan')
+                if folder_description:
+                    print_color(f"{indent}   {folder_description}", 'cyan')
 
-                    if folder_tags:
-                        print_color(
-                            f"{indent}   {' '.join(f'•{tag}' for tag in folder_tags)}", 'cyan')
+                if folder_tags:
+                    print_color(
+                        f"{indent}   {' '.join(f'•{tag}' for tag in folder_tags)}", 'cyan')
 
                 # Print bookmarks directly in this folder
                 bookmarks_in_folder = folder_hierarchy.get(folder_path, [])
@@ -282,9 +281,45 @@ def print_all_folders_and_bookmarks(
 
     print('')
     # Convert slashes to colons for display
+    # Convert slashes to colons for display
     display_bookmark_name = current_bookmark_name.replace('/', ':') if current_bookmark_name else ''
-    print(f"runonce-redis \033[34m{top_level_folder_name}:{display_bookmark_name}\033[0m")
-    print(
-        f"   {USAGE_HELP}")
+    folder_display_name = top_level_folder_name.replace('/', ':') if top_level_folder_name else ''
+
+    print(f"runonce-redis \033[34m{folder_display_name}:{display_bookmark_name}\033[0m")
+    print(f"   {USAGE_HELP}")
+
 
     print("=" * 50)
+
+
+def print_bookmarks_in_folder(folder_path):
+    """Helper for -ls <folder>: Print bookmarks in the given folder only."""
+    from app.bookmarks_consts import BOOKMARKS_DIR
+
+    # Normalize input: convert relative folder to absolute
+    full_folder_path = os.path.join(BOOKMARKS_DIR, folder_path)
+    full_folder_path = os.path.normpath(full_folder_path)
+
+    # DEBUG: Show the folder we're trying to match
+    print("🔍 Checking for exact match:")
+    print(f"   full_folder_path: {full_folder_path}")
+
+    active_folders = get_all_active_folders()
+
+    print("📂 Active folders:")
+    for f in active_folders:
+        print(f"   {f}")
+
+    # Now test for match
+    if full_folder_path not in active_folders:
+        print(f"❌ Folder '{folder_path}' not found (no fuzzy matching allowed with -ls)")
+        return
+
+    print_all_folders_and_bookmarks(
+        top_level_folder_name=full_folder_path,
+        current_bookmark_name=None,
+        is_print_just_current_folder_bookmarks=True
+    )
+
+
+

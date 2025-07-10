@@ -14,27 +14,33 @@ from app.bookmarks_consts import IS_DEBUG, BOOKMARKS_DIR
 from app.bookmarks_meta import load_folder_meta, create_folder_meta
 
 def get_all_active_folders():
-    """Get all active folder directories (excluding archive and screenshots)"""
+    """Recursively collect all folder paths under BOOKMARKS_DIR (excluding archive)"""
     try:
         if IS_DEBUG:
-            print(f"🔍 Looking for folders in: {BOOKMARKS_DIR}")
+            print(f"🔍 Scanning for folders inside: {BOOKMARKS_DIR}")
 
         if not os.path.exists(BOOKMARKS_DIR):
             print(f"❌ Bookmarks directory does not exist: {BOOKMARKS_DIR}")
             return []
 
-        # Get existing folders (excluding archive and screenshots dirs)
         excluded_dirs = {"archive"}
-        folders = []
-        for item in os.listdir(BOOKMARKS_DIR):
-            item_path = os.path.join(BOOKMARKS_DIR, item)
-            if os.path.isdir(item_path) and item not in excluded_dirs:
-                folders.append(item_path)
+        active_folders = []
 
-        return folders
+        for root, dirs, files in os.walk(BOOKMARKS_DIR):
+            # Skip excluded dirs
+            dirs[:] = [d for d in dirs if d not in excluded_dirs]
+
+            # ✅ Include this folder if it contains a bookmark_meta.json
+            if "bookmark_meta.json" in files:
+                active_folders.append(root)
+
+        return active_folders
+
     except Exception as e:
-        print(f"⚠️  Could not determine folder directories: {e}")
+        print(f"⚠️  Error while finding active folders: {e}")
         return []
+
+
 
 
 def select_folder_for_new_bookmark(bookmark_name):
@@ -178,12 +184,15 @@ def get_current_folder_dir():
 
 
 def find_folder_by_name(folder_name):
-    """Find folder directory by name"""
+    """Find folder directory by name or full relative path (e.g. kerch/comp/m02)"""
     active_folders = get_all_active_folders()
     for folder_path in active_folders:
-        if os.path.basename(folder_path) == folder_name:
+        # Match either exact basename or full relative path from BOOKMARKS_DIR
+        rel_path = os.path.relpath(folder_path, BOOKMARKS_DIR)
+        if folder_name == os.path.basename(folder_path) or folder_name == rel_path:
             return folder_path
     return None
+
 
 
 def create_folder_with_name(folder_name):
