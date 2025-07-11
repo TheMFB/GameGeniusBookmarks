@@ -1,4 +1,3 @@
-# type: ignore
 """
 Integration script that coordinates OBS bookmarks with Redis state management
 """
@@ -10,6 +9,9 @@ import time
 import json
 import obsws_python as obs
 from datetime import datetime
+from PIL import Image
+import io
+
 
 from app.bookmarks_consts import IS_DEBUG, REDIS_DUMP_DIR, ASYNC_WAIT_TIME, OPTIONS_HELP, USAGE_HELP, IS_PRINT_JUST_CURRENT_FOLDER_BOOKMARKS
 from app.bookmarks_folders import get_all_active_folders, parse_folder_bookmark_arg, create_new_folder, find_folder_by_name, create_folder_with_name, select_folder_for_new_bookmark, update_folder_last_bookmark
@@ -20,6 +22,7 @@ from app.bookmarks_meta import create_bookmark_meta, create_folder_meta, create_
 from app.utils import print_color, get_media_source_info
 from redis_friendly_converter import convert_file as convert_redis_to_friendly
 
+SCREENSHOT_SAVE_SCALE = 0.25  # Scale screenshots to 25% of original size
 
 def run_main_process():
     """Run the main game processor"""
@@ -91,6 +94,9 @@ def main():
         # Perform fuzzy matching
         matches = find_matching_bookmark(fuzzy_input, "obs_bookmark_saves")
 
+        # Filter out non-string matches (like metadata dicts)
+        matches = [m for m in matches if isinstance(m, str)]
+
         if not matches:
             print(f"❌ No bookmarks matched '{fuzzy_input}'")
             return 1
@@ -106,7 +112,6 @@ def main():
             print(f"  • {m}")
         print("Please be more specific.")
         return 1
-
 
 
     bookmark_arg = args[0]
@@ -150,7 +155,13 @@ def main():
     blank_slate = "--blank-slate" in args or "-b" in args
     is_dry_run = "--dry-run" in args or "-d" in args
     is_super_dry_run = "--super-dry-run" in args or "-sd" in args
-    is_no_obs = "--no-obs" in args
+    is_no_obs = "--no-obs" in args  # ✅ FIXED this line
+
+    if is_super_dry_run:
+        print("💧 SUPER DRY RUN: Skipping all Redis and OBS integration.")
+        print("💧 No state changes, screenshotting, or Docker commands will run.")
+        return 0
+
     add_bookmark = "--add" in args or "-a" in args
 
     # Check for video opening flags
@@ -506,37 +517,42 @@ def main():
                     print(f"🔍 Files in Redis dump directory: {files}")
 
         # Take screenshot directly using existing function (skip if no-obs mode)
+        print(f"🧪 DEBUG: is_no_obs={is_no_obs}, matched_bookmark_name={matched_bookmark_name}, bookmark_dir={bookmark_dir}")
+        print("🧪 DEBUG: Reached screenshot check for new bookmark")
         if is_no_obs:
             print(f"📷 No-OBS mode: Skipping screenshot capture")
         else:
             screenshot_path = os.path.join(bookmark_dir, "screenshot.png")
-            if not os.path.exists(screenshot_path):
-                try:
-                    cl = obs.ReqClient(host="localhost", port=4455, password="", timeout=3)
+            try:
+                cl = obs.ReqClient(host="localhost", port=4455, password="", timeout=3)
+                response = cl.send("GetSourceScreenshot", {
+                    "sourceName": "Media Source",  # TODO: Make configurable if needed
+                    "imageFormat": "png"
+                })
+                image_data = response.image_data
+                if image_data.startswith("data:image/png;base64,"):
+                    image_data = image_data.replace("data:image/png;base64,", "")
 
-                    # Take screenshot
-                    response = cl.send("GetSourceScreenshot", {
-                        "sourceName": "Media Source",  # or make this configurable
-                        "imageFormat": "png"
-                    })
+                import base64
+                decoded_bytes = base64.b64decode(image_data)
+                image = Image.open(io.BytesIO(decoded_bytes))
 
-                    image_data = response.image_data
-                    if image_data.startswith("data:image/png;base64,"):
-                        image_data = image_data.replace("data:image/png;base64,", "")
+                # Resize using SCREENSHOT_SAVE_SCALE
+                width = int(image.width * SCREENSHOT_SAVE_SCALE)
+                height = int(image.height * SCREENSHOT_SAVE_SCALE)
+                resized_image = image.resize((width, height))
 
-                    import base64
-                    with open(screenshot_path, "wb") as f:
-                        f.write(base64.b64decode(image_data))
+                # Save resized image (overwrite if it already exists)
+                resized_image.save(screenshot_path)
 
-                    if IS_DEBUG:
-                        print(f"📋 Screenshot saved to: {screenshot_path}")
-                    print(f"📸 Screenshot saved to: {matched_bookmark_name}/screenshot.png")
-                except Exception as e:
-                    print(f"⚠️  Could not take screenshot: {e}")
-                    print(f"   Please ensure OBS is running and WebSocket server is enabled")
-            else:
                 if IS_DEBUG:
-                    print(f"📋 Screenshot already exists, skipping creation")
+                    print(f"📋 Screenshot saved to: {screenshot_path}")
+                print(f"📸 Screenshot saved to: {matched_bookmark_name or bookmark_path}/screenshot.png")
+
+            except Exception as e:
+                print(f"⚠️  Could not take screenshot: {e}")
+                print(f"   Please ensure OBS is running and WebSocket server is enabled")
+
 
         # Get media source info and create bookmark metadata (only if it doesn't exist)
         bookmark_meta_path = os.path.join(bookmark_dir, "bookmark_meta.json")
@@ -594,6 +610,7 @@ def main():
             print(f"📋 Skipping folder metadata update for existing bookmark")
 
     else:
+        print("🧪 DEBUG: Entering new bookmark workflow")
         # NEW BOOKMARK WORKFLOW (either no matches found OR user chose to create new)
         print(f"🆕 Bookmark '{bookmark_path}' doesn't exist - creating new bookmark...")
 
@@ -657,8 +674,8 @@ def main():
             if not is_super_dry_run:
                 print(f"💾 Saving current Redis state for new bookmark '{bookmark_path}'...")
                 if not run_redis_command(['export', 'bookmark_temp']):
-                    print("❌ Failed to export current Redis state")
-                    return 1
+                    print("⚠️ Failed to export current Redis state — continuing anyway for debug purposes")
+                    # Don't return here — keep going so screenshot can run
 
                 # Check if the export actually created the file
                 temp_redis_path = os.path.join(REDIS_DUMP_DIR, "bookmark_temp.json")
@@ -671,7 +688,6 @@ def main():
                     if os.path.exists(REDIS_DUMP_DIR):
                         files = os.listdir(REDIS_DUMP_DIR)
                         print(f"🔍 Files in Redis dump directory: {files}")
-                    return 1
 
                 # Move the Redis export to the bookmark directory
                 if os.path.exists(temp_redis_path) and os.path.exists(bookmark_dir):
@@ -695,33 +711,36 @@ def main():
             print(f"📷 No-OBS mode: Skipping screenshot capture")
         else:
             screenshot_path = os.path.join(bookmark_dir, "screenshot.png")
-            if not os.path.exists(screenshot_path):
-                try:
-                    cl = obs.ReqClient(host="localhost", port=4455, password="", timeout=3)
+            try:
+                cl = obs.ReqClient(host="localhost", port=4455, password="", timeout=3)
+                response = cl.send("GetSourceScreenshot", {
+                    "sourceName": "Media Source",  # TODO: Make configurable if needed
+                    "imageFormat": "png"
+                })
+                image_data = response.image_data
+                if image_data.startswith("data:image/png;base64,"):
+                    image_data = image_data.replace("data:image/png;base64,", "")
 
-                    # Take screenshot
-                    response = cl.send("GetSourceScreenshot", {
-                        "sourceName": "Media Source",  # or make this configurable
-                        "imageFormat": "png"
-                    })
+                import base64
+                decoded_bytes = base64.b64decode(image_data)
+                image = Image.open(io.BytesIO(decoded_bytes))
 
-                    image_data = response.image_data
-                    if image_data.startswith("data:image/png;base64,"):
-                        image_data = image_data.replace("data:image/png;base64,", "")
+                # Resize using SCREENSHOT_SAVE_SCALE
+                width = int(image.width * SCREENSHOT_SAVE_SCALE)
+                height = int(image.height * SCREENSHOT_SAVE_SCALE)
+                resized_image = image.resize((width, height))
 
-                    import base64
-                    with open(screenshot_path, "wb") as f:
-                        f.write(base64.b64decode(image_data))
+                # Save resized image (overwrite if it already exists)
+                resized_image.save(screenshot_path)
 
-                    if IS_DEBUG:
-                        print(f"📋 Screenshot saved to: {screenshot_path}")
-                    print(f"📸 Screenshot saved to: {bookmark_path}/screenshot.png")
-                except Exception as e:
-                    print(f"⚠️  Could not take screenshot: {e}")
-                    print(f"   Please ensure OBS is running and WebSocket server is enabled")
-            else:
                 if IS_DEBUG:
-                    print(f"📋 Screenshot already exists, skipping creation")
+                    print(f"📋 Screenshot saved to: {screenshot_path}")
+                print(f"📸 Screenshot saved to: {matched_bookmark_name or bookmark_path}/screenshot.png")
+
+            except Exception as e:
+                print(f"⚠️  Could not take screenshot: {e}")
+                print(f"   Please ensure OBS is running and WebSocket server is enabled")
+
 
         # Get media source info and create bookmark metadata
         if is_no_obs:
