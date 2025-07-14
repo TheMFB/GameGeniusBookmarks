@@ -234,17 +234,22 @@ def print_all_folders_and_bookmarks(
                     is_last_used = False
                     if current_bookmark_name and is_current_folder:
                         is_last_used = full_path == current_bookmark_name
+                    ref_path = full_path.replace('/', ':') if full_path else ''
+                    hidden_ref_text = f" {HIDDEN_COLOR} {ref_path}{RESET_COLOR}"
 
                     if is_current:
-                        print_color(
-                            f"{indent}   • {timestamp} 📖 {bookmark_name} (current)", 'green')
-                    elif is_last_used:
-                        print_color(
-                            f"{indent}   • {timestamp} 📌 {bookmark_name} (last used)", 'yellow')
-                    else:
-                        ref_path = f"{folder_name}:{full_path.replace('/', ':')}"
+                        # print_color(
+                        #     f"{indent}   • {timestamp} 📖 {bookmark_name} (current)", 'green')
                         print(
-                            f"{indent}   • {timestamp} 📖 {bookmark_name} {HIDDEN_COLOR} {ref_path}{RESET_COLOR}")
+                            f"\033[32m{indent}   • {timestamp} 📖 {bookmark_name} (current)\033[0m" + hidden_ref_text)
+                    elif is_last_used:
+                        # print_color(
+                        #     f"{indent}   • {timestamp} 📌 {bookmark_name} (last used)", 'yellow')
+                        print(
+                            f"\033[32m{indent}   • {timestamp} 📖 {bookmark_name} (last used)\033[0m" + hidden_ref_text)
+                    else:
+                        print(
+                            f"{indent}   • {timestamp} 📖 {bookmark_name} {hidden_ref_text}")
 
                     # Bookmark description
                     bookmark_description = bookmark_info.get('description', '')
