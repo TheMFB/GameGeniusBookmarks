@@ -38,29 +38,34 @@ def print_all_folders_and_bookmarks(
             folder_name_from_state = last_used_info.get("folder_name")
             bookmark_name_from_state = last_used_info.get("bookmark_name")
 
-            # Convert colons back to slashes for internal processing
-            bookmark_name_slashes = bookmark_name_from_state.replace(':', '/')
+            # Only proceed if both folder_name and bookmark_name are not None
+            if folder_name_from_state and bookmark_name_from_state:
+                # Convert colons back to slashes for internal processing
+                bookmark_name_slashes = bookmark_name_from_state.replace(':', '/')
 
-            # The folder_name in the state file might be the full path or just the basename
-            # Let's try to find the correct folder by matching against all folder paths
-            found_folder = None
-            for folder_path in active_folders:
-                folder_basename = os.path.basename(folder_path)
-                # Check if the folder name from state matches either the full path or basename
-                if (folder_name_from_state == folder_path or
-                    folder_name_from_state == folder_basename or
-                    folder_name_from_state in folder_path):
-                    found_folder = folder_path
-                    break
+                # The folder_name in the state file might be the full path or just the basename
+                # Let's try to find the correct folder by matching against all folder paths
+                found_folder = None
+                for folder_path in active_folders:
+                    folder_basename = os.path.basename(folder_path)
+                    # Check if the folder name from state matches either the full path or basename
+                    if (folder_name_from_state == folder_path or
+                        folder_name_from_state == folder_basename or
+                        folder_name_from_state in folder_path):
+                        found_folder = folder_path
+                        break
 
-            if found_folder:
-                top_level_folder_name = found_folder  # use full folder path instead of just basename
-                current_bookmark_name = bookmark_name_slashes  # Use the slash version for internal processing
-                if IS_DEBUG:
-                    print(f"📌 Using last used bookmark: {top_level_folder_name}:{bookmark_name_from_state}")
+                if found_folder:
+                    top_level_folder_name = found_folder  # use full folder path instead of just basename
+                    current_bookmark_name = bookmark_name_slashes  # Use the slash version for internal processing
+                    if IS_DEBUG:
+                        print(f"📌 Using last used bookmark: {top_level_folder_name}:{bookmark_name_from_state}")
+                else:
+                    if IS_DEBUG:
+                        print(f"⚠️  Could not find folder '{folder_name_from_state}' in active folders")
             else:
                 if IS_DEBUG:
-                    print(f"⚠️  Could not find folder '{folder_name_from_state}' in active folders")
+                    print(f"⚠️  Last used bookmark info incomplete: folder_name='{folder_name_from_state}', bookmark_name='{bookmark_name_from_state}'")
 
     # Filter folders if we only want to show current folder
     if is_print_just_current_folder_bookmarks and top_level_folder_name:

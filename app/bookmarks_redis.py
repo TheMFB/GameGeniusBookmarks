@@ -13,7 +13,7 @@ from app.bookmarks import find_preceding_bookmark, find_matching_bookmark
 def run_redis_command(command_args):
     """Run Redis management command"""
     try:
-        cmd = f"docker exec -it folder_manager python -m utils.standalone.redis_{command_args[0]} {' '.join(command_args[1:])}"
+        cmd = f"docker exec -it session_manager python -m utils.standalone.redis_{command_args[0]} {' '.join(command_args[1:])}"
         if IS_DEBUG:
             print(f"🔧 Running Redis command: {' '.join(command_args)}")
         result = subprocess.run(

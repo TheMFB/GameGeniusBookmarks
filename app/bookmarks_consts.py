@@ -14,7 +14,7 @@ REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BOOKMARKS_DIR = os.path.join(REPO_ROOT, "obs_bookmark_saves")
 
 # Redis dump directory - you may want to adjust this path for your new setup
-REDIS_DUMP_DIR = "~/dev/GameGenius/services/folder_manager/utils/standalone/redis_dump"
+REDIS_DUMP_DIR = "~/dev/GameGenius/services/session_manager/utils/standalone/redis_dump"
 INITIAL_REDIS_STATE_DIR = os.path.join(REPO_ROOT, "app")
 
 IS_PRINT_JUST_CURRENT_FOLDER_BOOKMARKS = True
