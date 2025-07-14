@@ -516,42 +516,47 @@ def main():
                     files = os.listdir(REDIS_DUMP_DIR)
                     print(f"🔍 Files in Redis dump directory: {files}")
 
-        # Take screenshot directly using existing function (skip if no-obs mode)
+        # Take screenshot only if it doesn't exist (skip if no-obs mode)
         print(f"🧪 DEBUG: is_no_obs={is_no_obs}, matched_bookmark_name={matched_bookmark_name}, bookmark_dir={bookmark_dir}")
-        print("🧪 DEBUG: Reached screenshot check for new bookmark")
+        print("🧪 DEBUG: Reached screenshot check for existing bookmark")
         if is_no_obs:
             print(f"📷 No-OBS mode: Skipping screenshot capture")
         else:
             screenshot_path = os.path.join(bookmark_dir, "screenshot.png")
-            try:
-                cl = obs.ReqClient(host="localhost", port=4455, password="", timeout=3)
-                response = cl.send("GetSourceScreenshot", {
-                    "sourceName": "Media Source",  # TODO: Make configurable if needed
-                    "imageFormat": "png"
-                })
-                image_data = response.image_data
-                if image_data.startswith("data:image/png;base64,"):
-                    image_data = image_data.replace("data:image/png;base64,", "")
-
-                import base64
-                decoded_bytes = base64.b64decode(image_data)
-                image = Image.open(io.BytesIO(decoded_bytes))
-
-                # Resize using SCREENSHOT_SAVE_SCALE
-                width = int(image.width * SCREENSHOT_SAVE_SCALE)
-                height = int(image.height * SCREENSHOT_SAVE_SCALE)
-                resized_image = image.resize((width, height))
-
-                # Save resized image (overwrite if it already exists)
-                resized_image.save(screenshot_path)
-
+            if os.path.exists(screenshot_path):
                 if IS_DEBUG:
-                    print(f"📋 Screenshot saved to: {screenshot_path}")
-                print(f"📸 Screenshot saved to: {matched_bookmark_name or bookmark_path}/screenshot.png")
+                    print(f"📸 Screenshot already exists, preserving: {screenshot_path}")
+                print(f"📸 Using existing screenshot: {matched_bookmark_name or bookmark_path}/screenshot.png")
+            else:
+                try:
+                    cl = obs.ReqClient(host="localhost", port=4455, password="", timeout=3)
+                    response = cl.send("GetSourceScreenshot", {
+                        "sourceName": "Media Source",  # TODO: Make configurable if needed
+                        "imageFormat": "png"
+                    })
+                    image_data = response.image_data
+                    if image_data.startswith("data:image/png;base64,"):
+                        image_data = image_data.replace("data:image/png;base64,", "")
 
-            except Exception as e:
-                print(f"⚠️  Could not take screenshot: {e}")
-                print(f"   Please ensure OBS is running and WebSocket server is enabled")
+                    import base64
+                    decoded_bytes = base64.b64decode(image_data)
+                    image = Image.open(io.BytesIO(decoded_bytes))
+
+                    # Resize using SCREENSHOT_SAVE_SCALE
+                    width = int(image.width * SCREENSHOT_SAVE_SCALE)
+                    height = int(image.height * SCREENSHOT_SAVE_SCALE)
+                    resized_image = image.resize((width, height))
+
+                    # Save resized image
+                    resized_image.save(screenshot_path)
+
+                    if IS_DEBUG:
+                        print(f"📋 Screenshot saved to: {screenshot_path}")
+                    print(f"📸 Screenshot saved to: {matched_bookmark_name or bookmark_path}/screenshot.png")
+
+                except Exception as e:
+                    print(f"⚠️  Could not take screenshot: {e}")
+                    print(f"   Please ensure OBS is running and WebSocket server is enabled")
 
 
         # Get media source info and create bookmark metadata (only if it doesn't exist)
