@@ -111,6 +111,17 @@ def print_all_folders_and_bookmarks(
 
         # Load and print bookmarks for this folder
         bookmarks = load_bookmarks_from_folder(folder_path)
+        if IS_DEBUG:
+            print('')
+            print('')
+            print('')
+            print('')
+            print('')
+            print('')
+
+            print(f"🔍 Debug - All bookmarks in {folder_name}:")
+            pprint(bookmarks)
+
         if bookmarks:
             from collections import defaultdict
 

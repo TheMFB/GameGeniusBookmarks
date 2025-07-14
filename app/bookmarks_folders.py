@@ -14,7 +14,7 @@ from app.bookmarks_consts import IS_DEBUG, BOOKMARKS_DIR
 from app.bookmarks_meta import load_folder_meta, create_folder_meta
 
 def get_all_active_folders():
-    """Recursively collect all folder paths under BOOKMARKS_DIR (excluding archive)"""
+    """Collect all folder paths under BOOKMARKS_DIR that contain folder_meta.json (excluding archive)"""
     try:
         if IS_DEBUG:
             print(f"🔍 Scanning for folders inside: {BOOKMARKS_DIR}")
@@ -26,13 +26,16 @@ def get_all_active_folders():
         excluded_dirs = {"archive"}
         active_folders = []
 
-        for root, dirs, files in os.walk(BOOKMARKS_DIR):
-            # Skip excluded dirs
-            dirs[:] = [d for d in dirs if d not in excluded_dirs]
-
-            # ✅ Include this folder if it contains a bookmark_meta.json
-            if "bookmark_meta.json" in files:
-                active_folders.append(root)
+        # Only scan the immediate subdirectories of BOOKMARKS_DIR
+        for item in os.listdir(BOOKMARKS_DIR):
+            item_path = os.path.join(BOOKMARKS_DIR, item)
+            if os.path.isdir(item_path) and item not in excluded_dirs:
+                # Check if this directory contains a folder_meta.json (indicating it's a folder, not a bookmark)
+                folder_meta_file = os.path.join(item_path, "folder_meta.json")
+                if os.path.exists(folder_meta_file):
+                    active_folders.append(item_path)
+                    if IS_DEBUG:
+                        print(f"✅ Found active folder: {item_path}")
 
         return active_folders
 

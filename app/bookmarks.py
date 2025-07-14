@@ -9,6 +9,7 @@ from datetime import datetime
 
 from app.bookmarks_consts import IS_DEBUG
 from app.bookmarks_folders import get_all_active_folders
+from app.utils import print_color
 
 import re
 
@@ -16,6 +17,7 @@ import re
 def load_bookmarks_from_folder(folder_dir):
     """Load bookmarks from folder directory by scanning for bookmark directories recursively"""
     bookmarks = {}
+    print_color('Loading bookmarks from folder: ' + folder_dir, 'cyan')
 
     if not os.path.exists(folder_dir):
         return bookmarks
@@ -282,10 +284,10 @@ def load_obs_bookmark_directly(bookmark_name, bookmark_info):
         current_settings = cl.send(
             "GetInputSettings", {"inputName": "Media Source"})
         current_file = current_settings.input_settings.get("local_file", "")
-        
+
         # Use the full_file_path from bookmark_info (constructed by load_bookmark_meta)
         bookmarked_file = bookmark_info.get('full_file_path', '')
-        
+
         if not bookmarked_file:
             print(f"❌ No file path found in bookmark metadata")
             return False
@@ -307,7 +309,7 @@ def load_obs_bookmark_directly(bookmark_name, bookmark_info):
             "inputName": "Media Source",
             "mediaAction": "OBS_WEBSOCKET_MEDIA_INPUT_ACTION_PLAY"
         })
-        
+
         # Wait a moment for playback to start
         import time
         time.sleep(0.5)
