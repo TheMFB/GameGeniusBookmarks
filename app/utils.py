@@ -80,8 +80,6 @@ def get_media_source_info():
             try:
                 # Get media status which includes cursor position
                 media_status = cl.send("GetMediaInputStatus", {"inputName": "Media Source"})
-                print(f"🔍 Debug - media_status: ")
-                pprint(media_status)
 
                 # Get cursor position from media_status
                 if hasattr(media_status, 'media_cursor'):
@@ -97,18 +95,18 @@ def get_media_source_info():
                     hours = int(timestamp // 3600)
                     minutes = int((timestamp % 3600) // 60)
                     seconds = int(timestamp % 60)
-                    
+
                     # Only show hours if they exist
                     if hours > 0:
                         timestamp_formatted = f"{hours:02d}:{minutes:02d}:{seconds:02d}"
                     else:
                         timestamp_formatted = f"{minutes:02d}:{seconds:02d}"
-                    
+
                     print(f"🔍 Formatted timestamp: {timestamp_formatted}")
                 else:
                     print(f"❌ No media_cursor attribute in media_status")
                     raise Exception("No media_cursor attribute in media_status")
-                
+
             except Exception as cursor_error:
                 print(f"❌ Failed to get media cursor position: {cursor_error}")
                 print(f"   File path: {file_path}")
@@ -119,7 +117,7 @@ def get_media_source_info():
             print(f"   File path: {file_path}")
             print(f"   Exists: {os.path.exists(file_path) if file_path else 'No file path'}")
             raise Exception("No valid media file loaded in OBS")
-        
+
         return {
             'file_path': file_path,
             'video_filename': os.path.basename(file_path) if file_path else '',

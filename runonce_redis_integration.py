@@ -421,6 +421,7 @@ def main():
         # Handle Redis state based on flags (skip if super dry run)
         if is_super_dry_run:
             print(f"💾 Super dry run mode: Skipping all Redis operations")
+            
         elif blank_slate:
             # Handle --blank-slate flag for existing bookmark
             print(f"🆕 Using initial blank slate Redis state for '{matched_bookmark_name}'...")
@@ -454,7 +455,13 @@ def main():
             # Update the path since we just created/copied the file
             redis_before_path = os.path.join(bookmark_dir, "redis_before.json")
 
+
         # Load Redis state (skip if super dry run)
+        if IS_DEBUG:
+            print(f"🔍 Debug - is_super_dry_run: {is_super_dry_run}")
+            print(f"🔍 Debug - redis_before_path exists: {os.path.exists(redis_before_path)}")
+            print(f"🔍 Debug - redis_before_path: {redis_before_path}")
+        
         if not is_super_dry_run and os.path.exists(redis_before_path):
             if IS_DEBUG:
                 print(f"📊 Loading Redis state from bookmark...")

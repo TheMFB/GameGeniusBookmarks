@@ -285,12 +285,20 @@ def load_obs_bookmark_directly(bookmark_name, bookmark_info):
                 }
             })
             import time
-            time.sleep(1)
+            time.sleep(2)  # Give more time for the media to load
+
+        # Convert timestamp from seconds to milliseconds for OBS WebSocket
+        timestamp_seconds = bookmark_info['timestamp']
+        timestamp_milliseconds = int(timestamp_seconds * 1000)
+
+        if IS_DEBUG:
+            print(f"🔍 Debug - Original timestamp (seconds): {timestamp_seconds}")
+            print(f"🔍 Debug - Converted timestamp (milliseconds): {timestamp_milliseconds}")
 
         # Set the timestamp
         cl.send("SetMediaInputCursor", {
             "inputName": "Media Source",
-            "mediaCursor": bookmark_info['timestamp']
+            "mediaCursor": timestamp_milliseconds
         })
 
         # Pause the media

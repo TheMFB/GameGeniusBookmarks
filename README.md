@@ -48,3 +48,7 @@ obsopen() { bookmark "$@" -v; }
 openobs() { bookmark "$@" -v; }
 
 ```
+
+# Requirements
+- loading in an existing bookmark should load that bookmark's redis_before.json into redis, open the video in OBS and then seek to the timestamp, where it will be shown paused.
+
