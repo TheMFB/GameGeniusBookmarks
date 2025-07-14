@@ -2,7 +2,7 @@ from PIL import Image
 import os
 
 # Path to your test screenshot
-path = "obs_bookmark_saves/test-compression-folder/test-compression-bookmark/screenshot.png"
+path = "obs_bookmark_saves/test-compression-folder/test-compression-bookmark/screenshot.jpeg"
 
 # Load the image
 image = Image.open(path)
