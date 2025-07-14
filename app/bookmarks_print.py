@@ -180,7 +180,7 @@ def print_all_folders_and_bookmarks(
                 # Print folder (skip for 'root')
                 folder_name = folder_path.split('/')[-1] if folder_path != 'root' else 'root'
 
-                    # Highlight if this folder contains current bookmark
+                # Highlight if this folder contains current bookmark
                 folder_contains_current = False
                 if current_bookmark_name and is_current_folder:
                     current_path_parts = current_bookmark_name.split('/')
@@ -188,11 +188,13 @@ def print_all_folders_and_bookmarks(
                     folder_contains_current = folder_path == current_folder_path or current_folder_path.startswith(
                         folder_path + '/')
 
-                if folder_contains_current:
-                    print_color(f"{indent}📁 {folder_name}", 'green')
-                else:
-                    if not is_print_just_current_folder_bookmarks:
-                        print(f"{indent}📁 {folder_name}")
+                # Don't print the "root" folder name - just show bookmarks directly under the main folder
+                if folder_path != 'root':
+                    if folder_contains_current:
+                        print_color(f"{indent}📁 {folder_name}", 'green')
+                    else:
+                        if not is_print_just_current_folder_bookmarks:
+                            print(f"{indent}📁 {folder_name}")
 
                 # Load and display folder metadata
                 folder_meta = load_folder_meta(
@@ -241,7 +243,7 @@ def print_all_folders_and_bookmarks(
                     if len(timestamp) < 5:
                         timestamp = '0' + timestamp
 
-                    # Construct full path
+                    # Construct full path - treat all bookmarks the same way
                     full_path = f"{folder_path}/{bookmark_name}" if folder_path != 'root' else bookmark_name
                     is_current = (
                         folder_name == top_level_folder_name and full_path == current_bookmark_name)
@@ -250,7 +252,11 @@ def print_all_folders_and_bookmarks(
                     is_last_used = False
                     if current_bookmark_name and is_current_folder:
                         is_last_used = full_path == current_bookmark_name
-                    ref_path = full_path.replace('/', ':') if full_path else ''
+
+                    # Construct ref_path including the top-level folder name - treat all bookmarks consistently
+                    # Use the current folder_name (which is the basename of the folder_path)
+                    ref_path = f"{folder_name}:{full_path}" if folder_name else full_path
+                    ref_path = ref_path.replace('/', ':')
                     hidden_ref_text = f" {HIDDEN_COLOR} {ref_path}{RESET_COLOR}"
 
                     if is_current:

@@ -17,7 +17,7 @@ import re
 def load_bookmarks_from_folder(folder_dir):
     """Load bookmarks from folder directory by scanning for bookmark directories recursively"""
     bookmarks = {}
-    print_color('Loading bookmarks from folder: ' + folder_dir, 'cyan')
+    # print_color('Loading bookmarks from folder: ' + folder_dir, 'cyan')
 
     if not os.path.exists(folder_dir):
         return bookmarks
