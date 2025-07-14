@@ -7,12 +7,13 @@ import sys
 import subprocess
 import time
 import json
+from networkx import to_dict_of_dicts
 import obsws_python as obs
 from datetime import datetime
 from PIL import Image
 import io
 
-
+from app.bookmarks import interactive_fuzzy_lookup
 from app.bookmarks_consts import IS_DEBUG, REDIS_DUMP_DIR, ASYNC_WAIT_TIME, OPTIONS_HELP, USAGE_HELP, IS_PRINT_JUST_CURRENT_FOLDER_BOOKMARKS
 from app.bookmarks_folders import get_all_active_folders, parse_folder_bookmark_arg, create_new_folder, find_folder_by_name, create_folder_with_name, select_folder_for_new_bookmark, update_folder_last_bookmark
 from app.bookmarks_redis import copy_preceding_redis_state, copy_specific_bookmark_redis_state, copy_initial_redis_state, run_redis_command
@@ -21,8 +22,33 @@ from app.bookmarks_print import print_all_folders_and_bookmarks
 from app.bookmarks_meta import create_bookmark_meta, create_folder_meta, create_folder_meta
 from app.utils import print_color, get_media_source_info
 from redis_friendly_converter import convert_file as convert_redis_to_friendly
+from app.flag_handlers import help, ls, which, find_preceding_bookmark, open_video, find_tags
+
 
 SCREENSHOT_SAVE_SCALE = 0.25  # Scale screenshots to 25% of original size
+
+# Define supported flags
+supported_flags = [
+    "-a",
+    "--add",
+    "-s",
+    "--save-updates",
+    "-p",
+    "--use-preceding-bookmark",
+    "-b",
+    "--blank-slate",
+    "-d",
+    "--dry-run",
+    "-sd",
+    "--super-dry-run",
+    "--no-obs",
+    "--save-last-redis",
+    "-v",
+    "--open-video",
+    "-t",
+    "--tags",
+    "--show-image",
+]
 
 def run_main_process():
     """Run the main game processor"""
@@ -40,107 +66,31 @@ def main():
     # Parse command line arguments
     args = sys.argv[1:]
 
+    # All of these will halt the process and only do what it does here:
+
     # Print help/usage if no arguments or -h/--help is present
     if not args or '-h' in args or '--help' in args:
-        print(OPTIONS_HELP)
+        return help()
 
-        # Show last used bookmark if available
-        last_used_display = get_last_used_bookmark_display()
-        if last_used_display:
-            print(f"\n Last used bookmark: {last_used_display}")
-
-        print_all_folders_and_bookmarks()
-        return 0
-
-        # Handle -ls or --ls
+    # Handle -ls or --ls
     if '-ls' in args or '--ls' in args:
-        # Remove -ls so we can check what came before it
-        args_copy = args.copy()
-        args_copy.remove('-ls') if '-ls' in args_copy else args_copy.remove('--ls')
-
-        # If no folder path is provided: list everything
-        if not args_copy:
-            print_all_folders_and_bookmarks()
-            return 0
-
-        # If a folder path is provided, list only that folder
-        folder_arg = args_copy[0]
-        from app.bookmarks_print import print_bookmarks_in_folder
-
-        folder_path = find_folder_by_name(folder_arg)
-        if folder_path:
-            print_bookmarks_in_folder(folder_path)
-            return 0
-        else:
-            print(f"❌ Folder '{folder_arg}' not found (no fuzzy matching allowed with -ls)")
-            return 1
+        return ls(args)
 
     # Handle --which or -w (fuzzy bookmark match check)
     if '--which' in args or '-w' in args:
-        which_flag = '--which' if '--which' in args else '-w'
-        args_copy = args.copy()
-        args_copy.remove(which_flag)
+        return which(args)
 
-        # If no bookmark search term is given, show error
-        if not args_copy:
-            print(f"❌ No bookmark name provided before {which_flag}")
-            print("Usage: bm <bookmark_path> --which")
-            return 1
+    # Check for video opening flags
+    if "--open-video" in args or "-v" in args:
+        return open_video(args)
 
-        fuzzy_input = args_copy[0]
-
-        from app.bookmarks import find_matching_bookmark
-
-        # Perform fuzzy matching
-        matches = find_matching_bookmark(fuzzy_input, "obs_bookmark_saves")
-
-        # Filter out non-string matches (like metadata dicts)
-        matches = [m for m in matches if isinstance(m, str)]
-
-        if not matches:
-            print(f"❌ No bookmarks matched '{fuzzy_input}'")
-            return 1
-
-        if len(matches) == 1:
-            print("✅ Match found:")
-            print(f"  • {matches[0]}")
-            return 0
-
-        # If multiple matches found
-        print(f"⚠️  Multiple bookmarks matched '{fuzzy_input}':")
-        for m in matches:
-            print(f"  • {m}")
-        print("Please be more specific.")
-        return 1
-
+    # Otherwise, we have a bookmark/reserved bookmark name
 
     bookmark_arg = args[0]
 
     # Check if this is a navigation command
     navigation_commands = ["next", "previous", "first", "last"]
     is_navigation = bookmark_arg in navigation_commands
-
-    # Define supported flags
-    supported_flags = [
-        "-a",
-        "--add",
-        "-s",
-        "--save-updates",
-        "-p",
-        "--use-preceding-bookmark",
-        "-b",
-        "--blank-slate",
-        "-d",
-        "--dry-run",
-        "-sd",
-        "--super-dry-run",
-        "--no-obs",
-        "--save-last-redis",
-        "-v",
-        "--open-video",
-        "-t",
-        "--tags",
-    ]
 
     # Check for unsupported flags
     unsupported_flags = [arg for arg in args if arg.startswith("--") and arg not in supported_flags]
@@ -149,101 +99,46 @@ def main():
         print(OPTIONS_HELP)
         print()
 
-    save_last_redis = "--save-last-redis" in args or "-s" in args
-    save_updates = "--save-updates" in args or "-s" in args
-    use_preceding_bookmark = "--use-preceding-bookmark" in args or "-p" in args
-    blank_slate = "--blank-slate" in args or "-b" in args
+
+
+    is_save_last_redis = "--save-last-redis" in args or "-s" in args
+    is_save_updates = "--save-updates" in args or "-s" in args
+    is_use_preceding_bookmark = "--use-preceding-bookmark" in args or "-p" in args
+    is_blank_slate = "--blank-slate" in args or "-b" in args
     is_dry_run = "--dry-run" in args or "-d" in args
     is_super_dry_run = "--super-dry-run" in args or "-sd" in args
     is_no_obs = "--no-obs" in args  # ✅ FIXED this line
+    is_show_image = "--show-image" in args
+    is_add_bookmark = "--add" in args or "-a" in args
 
     if is_super_dry_run:
         print("💧 SUPER DRY RUN: Skipping all Redis and OBS integration.")
         print("💧 No state changes, screenshotting, or Docker commands will run.")
+        # TODO(?): This should not return here...
         return 0
 
-    add_bookmark = "--add" in args or "-a" in args
-
-    # Check for video opening flags
-    open_video = "--open-video" in args or "-v" in args
-
     # Parse the source bookmark for --use-preceding-bookmark if specified
-    source_bookmark_arg = None
-    if use_preceding_bookmark:
-        # Find the index of the use_preceding_bookmark flag
-        preceding_flags = ["--use-preceding-bookmark", "-p"]
-        for flag in preceding_flags:
-            if flag in args:
-                flag_index = args.index(flag)
-                # Check if there's an argument after the flag that's not another flag
-                if flag_index + 1 < len(args) and not args[flag_index + 1].startswith("-"):
-                    source_bookmark_arg = args[flag_index + 1]
-                    if IS_DEBUG:
-                        print(f"🔍 Found source bookmark argument: '{source_bookmark_arg}'")
-                break
 
-    # Parse the video path for --open-video if specified
-    video_path = None
-    if open_video:
-        # Find the index of the open_video flag
-        video_flags = ["--open-video", "-v"]
-        for flag in video_flags:
-            if flag in args:
-                flag_index = args.index(flag)
-                # Check if there's an argument after the flag that's not another flag
-                if flag_index + 1 < len(args) and not args[flag_index + 1].startswith("-"):
-                    video_path = args[flag_index + 1]
-                    if IS_DEBUG:
-                        print(f"🔍 Found video path argument: '{video_path}'")
-                break
+    if is_use_preceding_bookmark:
+        source_bookmark_arg = find_preceding_bookmark(args)
 
     # Parse tags from command line
-    tags = []
     if "--tags" in args or "-t" in args:
-        # Find the index of the tags flag
-        tags_flags = ["--tags", "-t"]
-        for flag in tags_flags:
-            if flag in args:
-                flag_index = args.index(flag)
-                # Collect all arguments after the flag until we hit another flag
-                i = flag_index + 1
-                while i < len(args) and not args[i].startswith("-"):
-                    tags.append(args[i])
-                    i += 1
-                break
+        tags = find_tags(args)
+
+    # TODO(KERCH): ++++ Pick up cleanup from here.
 
     if IS_DEBUG:
         print(f"🔍 Debug - Args: {args}")
-        print(f"🔍 Debug - save_last_redis: {save_last_redis}")
-        print(f"🔍 Debug - save_updates: {save_updates}")
-        print(f"🔍 Debug - use_preceding_bookmark: {use_preceding_bookmark}")
+        print(f"🔍 Debug - is_save_last_redis: {is_save_last_redis}")
+        print(f"🔍 Debug - is_save_updates: {is_save_updates}")
+        print(f"🔍 Debug - is_use_preceding_bookmark: {is_use_preceding_bookmark}")
         print(f"🔍 Debug - source_bookmark_arg: {source_bookmark_arg}")
-        print(f"🔍 Debug - blank_slate: {blank_slate}")
+        print(f"🔍 Debug - is_blank_slate: {is_blank_slate}")
         print(f"🔍 Debug - is_dry_run: {is_dry_run}")
         print(f"🔍 Debug - is_super_dry_run: {is_super_dry_run}")
-        print(f"🔍 Debug - open_video: {open_video}")
-        print(f"🔍 Debug - video_path: {video_path}")
         print(f"🔍 Debug - tags: {tags}")
         print(f"🔍 Debug - is_no_obs: {is_no_obs}")
-
-    # Handle video opening mode
-    if open_video:
-        if not video_path:
-            print(f"❌ Video path required for --open-video flag")
-            print(OPTIONS_HELP)
-            return 1
-
-        print(f"🎬 Opening video in OBS: {video_path}")
-
-        # Import the open_video_in_obs function
-        from app.utils import open_video_in_obs
-
-        if open_video_in_obs(video_path):
-            print(f"✅ Video opened successfully!")
-            return 0
-        else:
-            print(f"❌ Failed to open video in OBS")
-            return 1
 
     # Parse folder:bookmark format if present (only if not navigation)
     specified_folder_name, bookmark_path = parse_folder_bookmark_arg(bookmark_arg)
@@ -288,13 +183,13 @@ def main():
     if IS_DEBUG:
         print(f"🎯 Starting integrated runonce-redis workflow for bookmark: '{matched_bookmark_name}'")
         print(f"🔧 Redis dump directory: {REDIS_DUMP_DIR}")
-        if save_last_redis:
+        if is_save_last_redis:
             print(f"💾 Mode: Save current Redis state as redis_after.json")
-        if save_updates:
+        if is_save_updates:
             print(f"💾 Mode: Save redis state updates (before and after)")
-        if use_preceding_bookmark:
+        if is_use_preceding_bookmark:
             print(f"📋 Mode: Use preceding bookmark's redis_after.json as redis_before.json")
-        if blank_slate:
+        if is_blank_slate:
             print(f"🆕 Mode: Use initial blank slate Redis state")
         if is_dry_run:
             print(f"📖 Mode: Load bookmark only (no main process)")
@@ -313,13 +208,13 @@ def main():
 
     # Check if bookmark exists (with fuzzy matching)
     # This check is now redundant if we are resolving a navigation command
-    # if not add_bookmark and not matched_bookmark_name:
+    # if not is_add_bookmark and not matched_bookmark_name:
     #     print(f"❌ Bookmark '{bookmark_arg}' not found. Use -a or --add to create it.")
     #     return 1
     # If the bookmark exists, continue as normal (do not return early)
 
     # If adding and bookmark exists, prompt for update
-    if add_bookmark and matched_bookmark_name:
+    if is_add_bookmark and matched_bookmark_name:
         if is_strict_equal(matched_bookmark_name, bookmark_arg):
             print(
                 f"⚠️  Bookmark '{matched_bookmark_name}' already exists (partial match).")
@@ -367,11 +262,34 @@ def main():
         # Find which folder this bookmark belongs to
         active_folders = get_all_active_folders()
         for folder_path in active_folders:
+            print(f"🔍 Searching in folder: {folder_path}")  # ← add this here
             bookmark_path_full = os.path.join(folder_path, matched_bookmark_name)
             if os.path.exists(bookmark_path_full):
                 folder_dir = folder_path
                 folder_name = os.path.basename(folder_dir)
                 print(f"🎯 Using folder: {folder_name}")
+
+                if is_show_image:
+                    screenshot_path = os.path.join(folder_dir, bookmark_path, "screenshot.jpg")
+                    if os.path.exists(screenshot_path):
+                        print(f"🖼️ Displaying screenshot in terminal: {screenshot_path}")
+                        try:
+                            pass
+                            # result = subprocess.run(
+                            #     ["imgcat", screenshot_path],
+                            #     check=True,
+                            #     capture_output=True,
+                            #     text=True
+                            # )
+                            # print(result.stdout)
+                            # TODO(): Add this.
+                        except subprocess.CalledProcessError as e:
+                            print(f"❌ imgcat failed with error:\n{e.stderr}")
+                        except Exception as e:
+                            print(f"⚠️  Failed to display image in terminal: {e}")
+                    else:
+                        print(f"❌ No screenshot.jpg found at: {screenshot_path}")
+
                 break
 
         if not folder_dir:
@@ -386,7 +304,7 @@ def main():
             print(f"🔍 Checking for existing Redis state at: {redis_before_path}")
 
         # Handle --use-preceding-bookmark flag for existing bookmark
-        if use_preceding_bookmark:
+        if is_use_preceding_bookmark:
             if source_bookmark_arg:
                 print(f"📋 Using specified bookmark's Redis state for '{matched_bookmark_name}'...")
                 if not copy_specific_bookmark_redis_state(source_bookmark_arg, matched_bookmark_name, folder_dir):
@@ -398,8 +316,8 @@ def main():
                     print("❌ Failed to copy preceding Redis state")
                     return 1
 
-            # If save_updates is enabled, save the pulled-in redis state as redis_before.json
-            if save_updates:
+            # If is_save_updates is enabled, save the pulled-in redis state as redis_before.json
+            if is_save_updates:
                 print(f"💾 Saving pulled-in Redis state as redis_before.json...")
                 # The copy functions already create redis_before.json, so we just need to ensure it exists
                 if os.path.exists(redis_before_path):
@@ -410,7 +328,7 @@ def main():
             redis_before_path = os.path.join(bookmark_dir, "redis_before.json")
 
         # Handle --blank-slate flag for existing bookmark
-        elif blank_slate:
+        elif is_blank_slate:
             print(f"🆕 Using initial blank slate Redis state for '{matched_bookmark_name}'...")
             if not copy_initial_redis_state(matched_bookmark_name, folder_dir):
                 print("❌ Failed to copy initial Redis state")
@@ -421,7 +339,7 @@ def main():
         # Handle Redis state based on flags (skip if super dry run)
         if is_super_dry_run:
             print(f"💾 Super dry run mode: Skipping all Redis operations")
-        elif blank_slate:
+        elif is_blank_slate:
             # Handle --blank-slate flag for existing bookmark
             print(f"🆕 Using initial blank slate Redis state for '{matched_bookmark_name}'...")
             if not copy_initial_redis_state(matched_bookmark_name, folder_dir):
@@ -430,7 +348,7 @@ def main():
             # Update the path since we just created/copied the file
             redis_before_path = os.path.join(bookmark_dir, "redis_before.json")
 
-        elif use_preceding_bookmark:
+        elif is_use_preceding_bookmark:
             # Handle --use-preceding-bookmark flag for existing bookmark
             if source_bookmark_arg:
                 print(f"📋 Using specified bookmark's Redis state for '{matched_bookmark_name}'...")
@@ -443,8 +361,8 @@ def main():
                     print("❌ Failed to copy preceding Redis state")
                     return 1
 
-            # If save_updates is enabled, save the pulled-in redis state as redis_before.json
-            if save_updates:
+            # If is_save_updates is enabled, save the pulled-in redis state as redis_before.json
+            if is_save_updates:
                 print(f"💾 Saving pulled-in Redis state as redis_before.json...")
                 # The copy functions already create redis_before.json, so we just need to ensure it exists
                 if os.path.exists(redis_before_path):
@@ -522,11 +440,11 @@ def main():
         if is_no_obs:
             print(f"📷 No-OBS mode: Skipping screenshot capture")
         else:
-            screenshot_path = os.path.join(bookmark_dir, "screenshot.png")
+            screenshot_path = os.path.join(bookmark_dir, "screenshot.jpg")
             if os.path.exists(screenshot_path):
                 if IS_DEBUG:
                     print(f"📸 Screenshot already exists, preserving: {screenshot_path}")
-                print(f"📸 Using existing screenshot: {matched_bookmark_name or bookmark_path}/screenshot.png")
+                print(f"📸 Using existing screenshot: {matched_bookmark_name or bookmark_path}/screenshot.jpg")
             else:
                 try:
                     cl = obs.ReqClient(host="localhost", port=4455, password="", timeout=3)
@@ -548,11 +466,12 @@ def main():
                     resized_image = image.resize((width, height))
 
                     # Save resized image
-                    resized_image.save(screenshot_path)
+                    jpeg_path = os.path.join(bookmark_dir, "screenshot.jpg")
+                    resized_image.save(jpeg_path, format="JPEG", quality=85)
 
                     if IS_DEBUG:
                         print(f"📋 Screenshot saved to: {screenshot_path}")
-                    print(f"📸 Screenshot saved to: {matched_bookmark_name or bookmark_path}/screenshot.png")
+                    print(f"📸 Screenshot saved to: {matched_bookmark_name or bookmark_path}/screenshot.jpg")
 
                 except Exception as e:
                     print(f"⚠️  Could not take screenshot: {e}")
@@ -646,13 +565,13 @@ def main():
         # Handle Redis state based on flags (skip if super dry run)
         if is_super_dry_run:
             print(f"💾 Super dry run mode: Skipping all Redis operations")
-        elif blank_slate:
+        elif is_blank_slate:
             # Handle --blank-slate flag for new bookmark
             print(f"🆕 Using initial blank slate Redis state for new bookmark '{bookmark_path}'...")
             if not copy_initial_redis_state(bookmark_path, folder_dir):
                 print("❌ Failed to copy initial Redis state")
                 return 1
-        elif use_preceding_bookmark:
+        elif is_use_preceding_bookmark:
             # Handle --use-preceding-bookmark flag for new bookmark
             if source_bookmark_arg:
                 print(f"📋 Using specified bookmark's Redis state for new bookmark '{bookmark_path}'...")
@@ -665,8 +584,8 @@ def main():
                     print("❌ Failed to copy preceding Redis state")
                     return 1
 
-            # If save_updates is enabled, save the pulled-in redis state as redis_before.json
-            if save_updates:
+            # If is_save_updates is enabled, save the pulled-in redis state as redis_before.json
+            if is_save_updates:
                 print(f"💾 Saving pulled-in Redis state as redis_before.json...")
                 # The copy functions already create redis_before.json, so we just need to ensure it exists
                 bookmark_dir = os.path.join(folder_dir, bookmark_path)
@@ -715,7 +634,7 @@ def main():
         if is_no_obs:
             print(f"📷 No-OBS mode: Skipping screenshot capture")
         else:
-            screenshot_path = os.path.join(bookmark_dir, "screenshot.png")
+            screenshot_path = os.path.join(bookmark_dir, "screenshot.jpg")
             try:
                 cl = obs.ReqClient(host="localhost", port=4455, password="", timeout=3)
                 response = cl.send("GetSourceScreenshot", {
@@ -736,11 +655,13 @@ def main():
                 resized_image = image.resize((width, height))
 
                 # Save resized image (overwrite if it already exists)
-                resized_image.save(screenshot_path)
+                jpeg_path = os.path.join(bookmark_dir, "screenshot.jpg")
+                resized_image.save(jpeg_path, format="JPEG", quality=85)
+
 
                 if IS_DEBUG:
                     print(f"📋 Screenshot saved to: {screenshot_path}")
-                print(f"📸 Screenshot saved to: {matched_bookmark_name or bookmark_path}/screenshot.png")
+                print(f"📸 Screenshot saved to: {matched_bookmark_name or bookmark_path}/screenshot.jpg")
 
             except Exception as e:
                 print(f"⚠️  Could not take screenshot: {e}")
@@ -849,14 +770,14 @@ def main():
 
             if IS_DEBUG:
                 print(f"🔍 Debug - redis_after_exists: {redis_after_exists}")
-                print(f"🔍 Debug - save_updates: {save_updates}")
+                print(f"🔍 Debug - is_save_updates: {is_save_updates}")
                 print(f"🔍 Debug - final_after_path: {final_after_path}")
 
-            # Save final Redis state if save_updates is enabled or if it doesn't exist
-            should_save_redis_after = save_updates or not redis_after_exists
+            # Save final Redis state if is_save_updates is enabled or if it doesn't exist
+            should_save_redis_after = is_save_updates or not redis_after_exists
 
             if should_save_redis_after:
-                if save_updates and redis_after_exists:
+                if is_save_updates and redis_after_exists:
                     print(f"💾 Overwriting existing Redis after state...")
                 else:
                     print(f"💾 Saving final Redis state...")
@@ -905,6 +826,26 @@ def main():
         if IS_DEBUG:
             print(f"📋 Saved last used bookmark: '{folder_name}:{bookmark_path}'")
 
+        # Handle --preview flag
+    if '--preview' in args or '-pv' in args:
+        import platform
+
+        screenshot_path = os.path.join(folder_dir, bookmark_path, "screenshot.jpg")
+        if os.path.exists(screenshot_path):
+            print(f"🖼️ Previewing screenshot: {screenshot_path}")
+            if platform.system() == "Darwin":
+                subprocess.run(["open", screenshot_path])
+            elif platform.system() == "Linux":
+                subprocess.run(["xdg-open", screenshot_path])
+            elif platform.system() == "Windows":
+                os.startfile(screenshot_path)
+            else:
+                print(f"⚠️ Preview not supported on this platform.")
+            return 0
+        else:
+            print(f"❌ No screenshot.jpg found for bookmark '{bookmark_path}'")
+            return 1
+
     # Don't update folder metadata at the end - only update when actually creating new folders
     if IS_DEBUG and folder_dir:
         folder_name = os.path.basename(folder_dir)
@@ -932,7 +873,7 @@ def main():
         print(f"✅ Integrated workflow completed successfully!")
         if IS_DEBUG:
             print(f"   Bookmark: '{bookmark_path}'")
-            print(f"   OBS screenshot: {bookmark_path}/screenshot.png")
+            print(f"   OBS screenshot: {bookmark_path}/screenshot.jpg")
             print(f"   Redis before: {bookmark_path}/redis_before.json")
             if should_save_redis_after:
                 print(f"   Redis after: {bookmark_path}/redis_after.json (new)")
@@ -941,13 +882,15 @@ def main():
     print('=' * 60)
     print('')
 
+
+
     # Print all folders and bookmarks with current one highlighted
     if folder_dir:
         current_folder_name = os.path.basename(folder_dir)
         print_all_folders_and_bookmarks(current_folder_name, bookmark_path, IS_PRINT_JUST_CURRENT_FOLDER_BOOKMARKS)
 
+
     return 0
 
 if __name__ == "__main__":
     sys.exit(main())
-
