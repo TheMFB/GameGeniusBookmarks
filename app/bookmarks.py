@@ -34,7 +34,7 @@ def load_bookmarks_from_folder(folder_dir):
                         bookmark_key = f"{current_path}/{item}"
                     else:
                         bookmark_key = item
-                    
+
                     # Use the new load_bookmark_meta function
                     from app.bookmarks_meta import load_bookmark_meta
                     bookmark_meta = load_bookmark_meta(item_path)
@@ -196,9 +196,17 @@ def find_matching_bookmark(bookmark_name, folder_dir):
     # Fallback fuzzy match
     matches = []
     for path in bookmarks.keys():
+        # Check for exact prefix match first
         if path.lower().startswith(bookmark_name.lower()):
             matches.append(path)
+        # Check if the bookmark name appears anywhere in the path
         elif bookmark_name.lower() in path.lower():
+            matches.append(path)
+        # Check for partial matches (e.g., 'ra-00' should match 'ra-00-main-screen')
+        elif any(part.lower().startswith(bookmark_name.lower()) for part in path.split('/')):
+            matches.append(path)
+        # Check for wildcard-like matching (e.g., 'ra-00*' should match 'ra-00-main-screen')
+        elif bookmark_name.lower().replace('*', '') in path.lower():
             matches.append(path)
 
     if len(matches) == 0:

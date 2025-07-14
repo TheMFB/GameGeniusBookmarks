@@ -1,0 +1,13 @@
+{
+    "python.analysis.typeCheckingMode": "off",
+    "python.analysis.autoImportCompletions": true,
+    "python.analysis.autoSearchPaths": true,
+    "python.analysis.diagnosticMode": "workspace",
+    "python.analysis.stubPath": "./typings",
+    "python.analysis.extraPaths": ["./app"],
+    "python.analysis.ignore": [
+        "**/__pycache__/**",
+        "**/.venv/**",
+        "**/venv/**"
+    ]
+} 

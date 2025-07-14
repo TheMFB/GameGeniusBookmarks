@@ -293,7 +293,7 @@ def print_all_folders_and_bookmarks(
     # Convert slashes to colons for display
     # Convert slashes to colons for display
     display_bookmark_name = current_bookmark_name.replace('/', ':') if current_bookmark_name else ''
-    folder_display_name = top_level_folder_name.replace('/', ':') if top_level_folder_name else ''
+    folder_display_name = os.path.basename(top_level_folder_name) if top_level_folder_name else ''
 
     print(f"runonce-redis \033[34m{folder_display_name}:{display_bookmark_name}\033[0m")
     print(f"   {USAGE_HELP}")
