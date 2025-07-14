@@ -278,7 +278,6 @@ def main():
             return 1
 
         # Set the folder directory for the rest of the workflow
-        folder_dir = folder_dir
         matched_bookmark_name = bookmark_path
     else:
         # Normal bookmark lookup
@@ -349,6 +348,10 @@ def main():
 
     # Main workflow: Load existing bookmark OR create new one
     folder_dir = None  # Track the folder directory throughout the workflow
+
+
+    ## MATCHED BOOKMARK ##
+
 
     if matched_bookmark_name:
         # EXISTING BOOKMARK WORKFLOW
@@ -612,6 +615,10 @@ def main():
         # Don't update folder metadata for existing bookmarks - only for new ones
         if IS_DEBUG:
             print(f"📋 Skipping folder metadata update for existing bookmark")
+
+
+    ## NEW BOOKMARK ##
+
 
     else:
         print("🧪 DEBUG: Entering new bookmark workflow")
