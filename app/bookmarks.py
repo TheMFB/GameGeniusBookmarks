@@ -34,15 +34,15 @@ def load_bookmarks_from_folder(folder_dir):
                         bookmark_key = f"{current_path}/{item}"
                     else:
                         bookmark_key = item
-                    try:
-                        with open(meta_file, 'r') as f:
-                            bookmark_meta = json.load(f)
-                            bookmarks[bookmark_key] = bookmark_meta
-                    except json.JSONDecodeError:
+                    
+                    # Use the new load_bookmark_meta function
+                    from app.bookmarks_meta import load_bookmark_meta
+                    bookmark_meta = load_bookmark_meta(item_path)
+                    if bookmark_meta:
+                        bookmarks[bookmark_key] = bookmark_meta
+                    else:
                         if IS_DEBUG:
-                            print(
-                                f"⚠️  Could not parse bookmark_meta.json in {item_path}")
-                        continue
+                            print(f"⚠️  Could not load bookmark metadata from {item_path}")
                 else:
                     # This is a regular directory, scan recursively
                     # Use forward slashes for consistency across platforms
@@ -274,7 +274,13 @@ def load_obs_bookmark_directly(bookmark_name, bookmark_info):
         current_settings = cl.send(
             "GetInputSettings", {"inputName": "Media Source"})
         current_file = current_settings.input_settings.get("local_file", "")
-        bookmarked_file = bookmark_info['file_path']
+        
+        # Use the full_file_path from bookmark_info (constructed by load_bookmark_meta)
+        bookmarked_file = bookmark_info.get('full_file_path', '')
+        
+        if not bookmarked_file:
+            print(f"❌ No file path found in bookmark metadata")
+            return False
 
         if current_file != bookmarked_file:
             print(f"📁 Loading video file: {os.path.basename(bookmarked_file)}")
@@ -284,8 +290,19 @@ def load_obs_bookmark_directly(bookmark_name, bookmark_info):
                     "local_file": bookmarked_file
                 }
             })
+            # Wait longer for the media to load before trying to set cursor
             import time
-            time.sleep(1)
+            time.sleep(2)  # Increased from 1 to 2 seconds
+
+        # Start playing the media first
+        cl.send("TriggerMediaInputAction", {
+            "inputName": "Media Source",
+            "mediaAction": "OBS_WEBSOCKET_MEDIA_INPUT_ACTION_PLAY"
+        })
+        
+        # Wait a moment for playback to start
+        import time
+        time.sleep(0.5)
 
         # Set the timestamp
         cl.send("SetMediaInputCursor", {
