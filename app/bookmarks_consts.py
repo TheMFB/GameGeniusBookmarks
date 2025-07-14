@@ -1,5 +1,5 @@
-# IS_DEBUG = True
-IS_DEBUG = False
+IS_DEBUG = True
+# IS_DEBUG = False
 ASYNC_WAIT_TIME = 1
 
 SHOW_HIDDEN_COPY_LINE = True
@@ -8,13 +8,19 @@ RESET_COLOR = "\033[0m"
 
 # Base directory is now the current repo root
 import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
+
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Bookmarks directory is now in the repo root
 BOOKMARKS_DIR = os.path.join(REPO_ROOT, "obs_bookmark_saves")
 
-# Redis dump directory - local to the current project
-REDIS_DUMP_DIR = os.path.join(REPO_ROOT, "redis_dump")
+# Redis dump directory - use the GameGenius directory from environment variable
+GAME_GENIUS_DIR = os.environ.get('GAME_GENIUS_DIRECTORY', '')
+REDIS_DUMP_DIR = os.path.join(GAME_GENIUS_DIR, "game-genius/services/session_manager/utils/standalone/redis_dump")
 INITIAL_REDIS_STATE_DIR = os.path.join(REPO_ROOT, "app")
 
 IS_PRINT_JUST_CURRENT_FOLDER_BOOKMARKS = True
