@@ -1,4 +1,5 @@
 # README
+
 `python -m venv .venv`
 `source .venv/bin/activate`
 `pip install -r requirements.txt`
@@ -6,6 +7,15 @@
 # Run
 
 `python ./runonce_redis_integration.py --help`
+
+# .ENV File
+
+Be sure to add the following as a '.env' file in the root of GameGeniusBookmarks:
+
+```
+VIDEO_PATH="/Volumes/GG_SSD/PS5/CREATE/Video Clips/Marvel Rivals"
+GAME_GENIUS_DIRECTORY="/Users/kerch/dev/GameGenius"
+```
 
 # Aliases:
 
