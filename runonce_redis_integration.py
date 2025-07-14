@@ -470,7 +470,7 @@ def main():
                 print("❌ Failed to load Redis state")
                 # Debug: Check what keys exist after load
                 print("🔍 Checking Redis keys after failed load...")
-                debug_cmd = 'docker exec -it folder_manager redis-cli keys "*" | head -20'
+                debug_cmd = 'docker exec -it session_manager redis-cli keys "*" | head -20'
                 subprocess.run(debug_cmd, shell=True)
                 return 1
 
