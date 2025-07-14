@@ -158,9 +158,8 @@ def main():
     is_no_obs = "--no-obs" in args  # ✅ FIXED this line
 
     if is_super_dry_run:
-        print("💧 SUPER DRY RUN: Skipping all Redis and OBS integration.")
-        print("💧 No state changes, screenshotting, or Docker commands will run.")
-        return 0
+        print("💧 SUPER DRY RUN: Will skip Redis operations and Docker commands.")
+        print("💧 Still creating/updating bookmarks and metadata.")
 
     add_bookmark = "--add" in args or "-a" in args
 
