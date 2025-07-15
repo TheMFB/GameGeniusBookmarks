@@ -14,4 +14,8 @@ def find_tags(args):
                 tags.append(args[i])
                 i += 1
             break
+
+    if IS_DEBUG:
+        print(f"🔍 tags: {tags}")
+
     return tags

@@ -13,4 +13,8 @@ def find_preceding_bookmark(args):
                 if IS_DEBUG:
                     print(f"🔍 Found source bookmark argument: '{source_bookmark_arg}'")
             break
+
+    if IS_DEBUG:
+        print(f"🔍 Debug - is_use_preceding_bookmark: {source_bookmark_arg}")
+
     return source_bookmark_arg

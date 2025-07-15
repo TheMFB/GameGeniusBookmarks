@@ -193,15 +193,15 @@ def find_folder_by_name(folder_name):
         # Match either exact basename or full relative path from BOOKMARKS_DIR
         rel_path = os.path.relpath(folder_path, BOOKMARKS_DIR)
         folder_basename = os.path.basename(folder_path)
-        
+
         # Check for exact matches first
         if folder_name == folder_basename or folder_name == rel_path:
             return folder_path
-        
+
         # Check for partial matches (e.g., "respawn" should match "respawn-allies")
         if folder_name.lower() in folder_basename.lower():
             return folder_path
-            
+
     return None
 
 
@@ -234,14 +234,15 @@ def create_folder_with_name(folder_name):
         return None
 
 
+# TODO(MFB): This needs to be updated to pull the bookmark name from the end and the rest as the folder_path.
 def parse_folder_bookmark_arg(bookmark_arg):
     """
     Parses a bookmark path in the format 'folder:bookmark' or 'folder:subfolder:bookmark'
     and returns (folder_name, bookmark_name).
 
     - Example: 'kerch:comp:m01:01-np' becomes:
-        folder_name: 'kerch'
-        bookmark_name: 'comp:m01:01-np'
+        folder_name: 'kerch:comp:m01'
+        bookmark_name: '01-np'
     - Example: 'respawn-allies:ra-00-main-screen' becomes:
         folder_name: 'respawn-allies'
         bookmark_name: 'ra-00-main-screen'
@@ -250,15 +251,12 @@ def parse_folder_bookmark_arg(bookmark_arg):
         return None, bookmark_arg  # no folder path
 
     parts = bookmark_arg.split(':')
-    if len(parts) == 2:
-        # Simple case: folder:bookmark
-        folder_name = parts[0]
-        bookmark_name = parts[1]
-    else:
-        # Complex case: folder:subfolder:bookmark
-        # Take the first part as folder, rest as bookmark path
-        folder_name = parts[0]
-        bookmark_name = ':'.join(parts[1:])  # Join the rest with colons
+    # Take the last entry as the bookmark name and the rest as the folder name
+    folder_name = ':'.join(parts[:-1])
+    bookmark_name = parts[-1]
+
+    print(
+        f"🎯 Specified folder: '{folder_name}', bookmark path: '{bookmark_name}'")
 
     return folder_name, bookmark_name
 
