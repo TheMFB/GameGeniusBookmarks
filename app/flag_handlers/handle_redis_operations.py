@@ -1,0 +1,57 @@
+import os
+import shutil
+from app.bookmarks_consts import IS_DEBUG, REDIS_DUMP_DIR
+from redis_friendly_converter import convert_file as convert_redis_to_friendly
+from app.bookmarks_redis import run_redis_command
+
+def handle_redis_operations(folder_dir, bookmark_name, is_save_updates):
+    """
+    Handles saving the final Redis state to redis_after.json
+    Returns: True if redis_after was saved, False otherwise
+    """
+    redis_after_exists = False
+    if folder_dir:
+        bookmark_dir = os.path.join(folder_dir, bookmark_name)
+        final_after_path = os.path.join(bookmark_dir, "redis_after.json")
+        redis_after_exists = os.path.exists(final_after_path)
+
+        if IS_DEBUG:
+            print(f"🔍 Debug - redis_after_exists: {redis_after_exists}")
+            print(f"🔍 Debug - is_save_updates: {is_save_updates}")
+            print(f"🔍 Debug - final_after_path: {final_after_path}")
+
+        should_save_redis_after = is_save_updates or not redis_after_exists
+
+        if should_save_redis_after:
+            if is_save_updates and redis_after_exists:
+                print(f"💾 Overwriting existing Redis after state...")
+            else:
+                print(f"💾 Saving final Redis state...")
+
+            if not run_redis_command(['export', 'bookmark_temp_after']):
+                print("❌ Failed to export final Redis state")
+                return False
+
+            # Move the final Redis export to the bookmark directory
+            temp_redis_after_path = os.path.join(REDIS_DUMP_DIR, "bookmark_temp_after.json")
+            if os.path.exists(temp_redis_after_path) and os.path.exists(bookmark_dir):
+                final_after_path = os.path.join(bookmark_dir, "redis_after.json")
+                shutil.move(temp_redis_after_path, final_after_path)
+                print(f"💾 Saved final Redis state to: {final_after_path}")
+
+                # Generate friendly version
+                try:
+                    convert_redis_to_friendly(final_after_path)
+                    if IS_DEBUG:
+                        print(f"📋 Generated friendly Redis after")
+                except Exception as e:
+                    print(f"⚠️  Could not generate friendly Redis after: {e}")
+            else:
+                print(f"❌ Could not move final Redis file - temp_after exists: {os.path.exists(temp_redis_after_path)}, bookmark_dir exists: {os.path.exists(bookmark_dir) if bookmark_dir else 'bookmark_dir is None'}")
+                if os.path.exists(REDIS_DUMP_DIR):
+                    files = os.listdir(REDIS_DUMP_DIR)
+                    print(f"🔍 Files in Redis dump directory: {files}")
+
+        return should_save_redis_after
+
+    return False

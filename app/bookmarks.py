@@ -59,71 +59,6 @@ def load_bookmarks_from_folder(folder_dir):
     return bookmarks
 
 
-# def find_matching_bookmark(bookmark_name, folder_dir):
-#     """Find matching bookmark using fuzzy matching logic with support for nested folders"""
-#     bookmarks = load_bookmarks_from_folder(folder_dir)
-
-#     if not bookmarks:
-#         return None, None
-
-#     # First try exact match
-#     if bookmark_name in bookmarks:
-#         if IS_DEBUG:
-#             print(f"🎯 Found exact bookmark match: '{bookmark_name}'")
-#         return bookmark_name, bookmarks[bookmark_name]
-
-#     # Try fuzzy matching - find bookmarks that start with the given name
-#     # Also check if the bookmark name appears anywhere in the path
-#     matches = []
-#     for path in bookmarks.keys():
-#         # Check if the path starts with the bookmark name
-#         if path.lower().startswith(bookmark_name.lower()):
-#             matches.append(path)
-#         # Check if the bookmark name appears in any part of the path
-#         elif bookmark_name.lower() in path.lower():
-#             matches.append(path)
-
-#     if len(matches) == 0:
-#         return None, None
-#     elif len(matches) == 1:
-#         target_bookmark_name = matches[0]
-#         if IS_DEBUG:
-#             print(f"🎯 Found fuzzy bookmark match: '{target_bookmark_name}'")
-#         return target_bookmark_name, bookmarks[target_bookmark_name]
-#     else:
-#         print(f"🤔 Multiple bookmarks found matching '{bookmark_name}':")
-#         print(f"   Please be more specific. Found {len(matches)} matches:")
-#         for i, match in enumerate(sorted(matches), 1):
-#             bookmark = bookmarks[match]
-#             # Convert slashes to colons with spaces for display
-#             display_match = match.replace('/', ' : ')
-#             print(
-#                 f"   {i}. {bookmark.get('timestamp_formatted', 'unknown time')} - {display_match}")
-#         print(f"   {len(matches) + 1}. Create new bookmark '{bookmark_name}'")
-
-#         while True:
-#             try:
-#                 choice = input(
-#                     f"Enter choice (1-{len(matches) + 1}): ").strip()
-#                 choice_num = int(choice)
-
-#                 if 1 <= choice_num <= len(matches):
-#                     selected_match = sorted(matches)[choice_num - 1]
-#                     print(f"✅ Selected bookmark: '{selected_match}'")
-#                     return selected_match, bookmarks[selected_match]
-#                 elif choice_num == len(matches) + 1:
-#                     print(f"✅ Creating new bookmark: '{bookmark_name}'")
-#                     return None, None  # Signal to create new bookmark
-#                 else:
-#                     print(
-#                         f"❌ Invalid choice. Please enter 1-{len(matches) + 1}")
-#             except ValueError:
-#                 print("❌ Please enter a valid number")
-#             except KeyboardInterrupt:
-#                 print("\n❌ Cancelled")
-#                 return None, None
-
-
 def is_strict_equal(path1, path2):
     """Check if two bookmark paths are strictly equal after normalization."""
     normalized1 = '/'.join(normalize_path(path1))
@@ -677,3 +612,130 @@ def resolve_navigation_bookmark(navigation_command, folder_dir):
     bookmark_info = bookmarks[target_bookmark]
     print(f"🎯 Navigating to: {folder_name}:{target_bookmark.replace('/', ':')}")
     return target_bookmark, bookmark_info
+
+
+def get_all_bookmark_paths(active_folders):
+    """
+    Return a flat list of all bookmark paths from all active folders.
+    """
+    bookmark_paths = []
+
+    for folder in active_folders:
+        bookmarks = load_bookmarks_from_folder(folder)
+        bookmark_paths.extend(bookmarks.keys())
+
+    return bookmark_paths
+
+
+def build_bookmark_token_map(include_tags_and_descriptions=True):
+    """
+    Return a dict mapping each bookmark path to a token set for matching.
+    """
+    from app.bookmarks_folders import get_all_active_folders
+    from app.bookmarks_meta import load_bookmark_meta, load_folder_meta
+
+    bookmark_token_map = {}
+    active_folders = get_all_active_folders()
+
+    for folder_path in active_folders:
+        folder_name = os.path.basename(folder_path)
+
+        # Load folder-level metadata
+        folder_meta = load_folder_meta(folder_path)
+        folder_tags = folder_meta.get("tags", []) if include_tags_and_descriptions else []
+        folder_description = folder_meta.get("description", "") if include_tags_and_descriptions else ""
+
+        # Load bookmarks
+        bookmarks = load_bookmarks_from_folder(folder_path)
+
+        for bookmark_path, bookmark_data in bookmarks.items():
+            full_key = f"{folder_name}:{bookmark_path}".replace("/", ":")  # normalized key
+
+            tokens = set()
+
+            # Split bookmark path into parts
+            parts = bookmark_path.split('/')
+            for part in parts:
+                tokens.update(part.lower().split('-'))  # split kebab-case parts
+
+            tokens.add(folder_name.lower())
+
+            if include_tags_and_descriptions:
+                # Add bookmark-level meta
+                full_path = os.path.join(folder_path, bookmark_path)
+                meta = load_bookmark_meta(full_path)
+
+                tokens.update([tag.lower() for tag in meta.get("tags", [])])
+
+                if desc := meta.get("description"):
+                    if folder_description:
+                        tokens.update(folder_description.lower().split())
+
+
+                # Also add folder-level tags/descriptions
+                tokens.update([tag.lower() for tag in folder_tags])
+                if folder_description:
+                    tokens.update(folder_description.lower().split())
+
+
+            bookmark_token_map[full_key] = {
+                "tokens": tokens,
+                "bookmark_name": os.path.basename(bookmark_path),
+                "folder_name": folder_name,
+            }
+
+    return bookmark_token_map
+
+
+def fuzzy_match_bookmark_tokens(query: str, include_tags_and_descriptions: bool = True, top_n: int = 5):
+    token_map = build_bookmark_token_map(include_tags_and_descriptions)
+    query_tokens = set(query.lower().split())
+
+    scored_matches = []
+
+    for key, data in token_map.items():
+        overlap = data["tokens"].intersection(query_tokens)
+        score = len(overlap)
+        if score > 0:
+            print(f"{key} -> match score: {score}, overlap: {overlap}")
+            scored_matches.append((score, key))
+
+    # Sort by score descending, then alphabetically by key
+    scored_matches.sort(key=lambda x: (-x[0], x[1]))
+
+    top_matches = [match[1] for match in scored_matches[:top_n]]
+    return top_matches
+
+def interactive_fuzzy_lookup(query: str, top_n: int = 5):
+    """
+    Perform fuzzy matching and ask user to choose a bookmark from the top N matches.
+    Returns the selected bookmark path, or None if cancelled.
+    """
+    matches = fuzzy_match_bookmark_tokens(query, top_n=top_n)
+
+    if not matches:
+        print("❌ No matches found.")
+        return None
+
+    print(f"🤔 Fuzzy matches for '{query}':")
+    for idx, match in enumerate(matches, 1):
+        print(f"  {idx}. {match}")
+    print("  0. Cancel")
+
+    while True:
+        try:
+            choice = input(f"Enter your choice (1-{len(matches)} or 0 to cancel): ").strip()
+            if choice == "0":
+                print("❌ Cancelled.")
+                return None
+            choice_num = int(choice)
+            if 1 <= choice_num <= len(matches):
+                selected = matches[choice_num - 1]
+                print(f"✅ Selected: {selected}")
+                return selected
+            else:
+                print(f"❌ Invalid input. Choose between 0 and {len(matches)}.")
+        except ValueError:
+            print("❌ Please enter a number.")
+
+

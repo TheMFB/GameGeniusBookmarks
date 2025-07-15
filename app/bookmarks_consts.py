@@ -68,3 +68,6 @@ Examples:
   runonce_redis_integration.py my-bookmark -sd
   runonce_redis_integration.py my-bookmark --no-obs -t important highlight
 """
+
+SCREENSHOT_SAVE_SCALE = 0.5
+
