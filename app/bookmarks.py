@@ -3,6 +3,7 @@
 Integration script that coordinates OBS bookmarks with Redis state management
 """
 import os
+from pprint import pprint
 import json
 import obsws_python as obs
 from datetime import datetime
@@ -212,7 +213,16 @@ def get_bookmark_info(bookmark_name):
 
 def load_obs_bookmark_directly(bookmark_name, bookmark_info):
     """Load OBS bookmark directly without using the bookmark manager script"""
+
     try:
+        if IS_DEBUG:
+            print(f"🔍 Debug - Loading bookmark: {bookmark_name}")
+            print(f"🔍 Debug - Bookmark info keys: {list(bookmark_info.keys())}")
+            print(f"🔍 Debug - full_file_path: {bookmark_info.get('full_file_path', 'NOT_FOUND')}")
+            print(f"🔍 Debug - video_file_name: {bookmark_info.get('video_file_name', 'NOT_FOUND')}")
+            print(f"🔍 Debug - timestamp: {bookmark_info.get('timestamp', 'NOT_FOUND')}")
+            print(f"🔍 Debug - timestamp_formatted: {bookmark_info.get('timestamp_formatted', 'NOT_FOUND')}")
+
         cl = obs.ReqClient(host="localhost", port=4455, password="", timeout=3)
 
         # Load the media file if different
@@ -220,11 +230,16 @@ def load_obs_bookmark_directly(bookmark_name, bookmark_info):
             "GetInputSettings", {"inputName": "Media Source"})
         current_file = current_settings.input_settings.get("local_file", "")
 
+        if IS_DEBUG:
+            print(f"🔍 Debug - Current OBS file: {current_file}")
+
         # Use the full_file_path from bookmark_info (constructed by load_bookmark_meta)
         bookmarked_file = bookmark_info.get('full_file_path', '')
 
         if not bookmarked_file:
             print(f"❌ No file path found in bookmark metadata")
+            if IS_DEBUG:
+                print(f"🔍 Debug - Available keys in bookmark_info: {list(bookmark_info.keys())}")
             return False
 
         if current_file != bookmarked_file:
@@ -261,7 +276,7 @@ def load_obs_bookmark_directly(bookmark_name, bookmark_info):
             "mediaAction": "OBS_WEBSOCKET_MEDIA_INPUT_ACTION_PAUSE"
         })
 
-        print(f"✅ Loaded bookmark to {bookmark_info['timestamp_formatted']}")
+        print(f"✅ Loaded OBS to timestamp from bookmark: {bookmark_info['timestamp_formatted']}")
         return True
 
     except Exception as e:

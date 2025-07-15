@@ -27,6 +27,7 @@ def print_color(text: str, color: ColorTypes):
 
 def open_video_in_obs(video_path: str, source_name: str = "Media Source"):
     """Open a video file in OBS with it paused"""
+
     try:
         # Check if video file exists
         if not os.path.exists(video_path):

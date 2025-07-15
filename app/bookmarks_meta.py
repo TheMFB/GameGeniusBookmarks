@@ -28,11 +28,11 @@ def construct_full_file_path(video_filename):
     video_path = get_video_path_from_env()
     if not video_path:
         return None
-    
+
     # Ensure the video path ends with a separator
     if not video_path.endswith('/') and not video_path.endswith('\\'):
         video_path += '/'
-    
+
     return os.path.join(video_path, video_filename)
 
 
@@ -58,22 +58,37 @@ def load_bookmark_meta(bookmark_dir):
         try:
             with open(meta_file, 'r') as f:
                 meta_data = json.load(f)
+
+            if IS_DEBUG:
+                print(f"🔍 Debug - Loading bookmark metadata from: {meta_file}")
+                print(f"🔍 Debug - Raw metadata keys: {list(meta_data.keys())}")
                 
             # Handle both old and new formats
             if 'file_path' in meta_data:
                 # Old format - file_path already contains full path
                 meta_data['full_file_path'] = meta_data['file_path']
+                if IS_DEBUG:
+                    print(f"🔍 Debug - Using old format file_path: {meta_data['file_path']}")
             elif 'video_file_name' in meta_data:
                 # New format - construct full path from VIDEO_PATH and filename
                 video_filename = meta_data['video_file_name']
+                if IS_DEBUG:
+                    print(f"🔍 Debug - Constructing full path for video_filename: {video_filename}")
                 full_path = construct_full_file_path(video_filename)
+                if IS_DEBUG:
+                    print(f"🔍 Debug - Constructed full_path: {full_path}")
                 if full_path:
                     meta_data['full_file_path'] = full_path
                 else:
                     print(f"⚠️  Could not construct full path for {video_filename}")
                     meta_data['full_file_path'] = ''
             else:
+                if IS_DEBUG:
+                    print(f"🔍 Debug - No file_path or video_file_name found in metadata")
                 meta_data['full_file_path'] = ''
+                
+            if IS_DEBUG:
+                print(f"🔍 Debug - Final full_file_path: {meta_data.get('full_file_path', 'NOT_FOUND')}")
                 
             return meta_data
         except json.JSONDecodeError:
