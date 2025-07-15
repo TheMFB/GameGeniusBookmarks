@@ -1,7 +1,5 @@
-
 from app.bookmarks_folders import find_folder_by_name
 from app.bookmarks_print import print_all_folders_and_bookmarks
-
 
 def ls(args):
     # Remove -ls so we can check what came before it
@@ -16,7 +14,7 @@ def ls(args):
     # If a folder path is provided, list only that folder
     folder_arg = args_copy[0]
 
-    folder_path = find_folder_by_name(folder_arg), folder_arg
+    folder_path = find_folder_by_name(folder_arg)
 
     if folder_path:
         from app.bookmarks_print import print_bookmarks_in_folder

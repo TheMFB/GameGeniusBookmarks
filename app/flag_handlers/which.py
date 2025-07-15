@@ -3,7 +3,8 @@ from app.bookmarks import find_matching_bookmark
 def which(args):
     which_flag = '--which' if '--which' in args else '-w'
     args_copy = args.copy()
-    args_copy.remove(which_flag)
+    if which_flag in args_copy:
+        args_copy.remove(which_flag)
 
     # If no bookmark search term is given, show error
     if not args_copy:
