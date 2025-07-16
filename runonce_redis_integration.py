@@ -245,9 +245,25 @@ def main():
             return result  # an error code like 1 was returned
         folder_dir, bookmark_name = result
 
+        # ✅ Final confirmation for matched bookmarks
+        relative_path = os.path.relpath(os.path.join(folder_dir, bookmark_name), folder_dir)
+        normalized_path = relative_path.replace('/', ':')
+        folder_name = os.path.basename(folder_dir)
+        print(f"✅ Match found: {folder_name}:{normalized_path}")
+
     else:
+        # If we matched a folder path (e.g. from fuzzy match), split it
+        if ':' in specified_folder_path:
+            parts = specified_folder_path.split(':')
+            specified_folder_path = '/'.join(parts)
+            final_bookmark_name = bookmark_name
+        else:
+            # fallback (user gave folder manually or it's blank)
+            specified_folder_path = specified_folder_path
+            final_bookmark_name = bookmark_name
+
         # Bookmark does not exist, and user intends to create it
-        return handle_bookmark_not_found(
+        handle_bookmark_not_found(
             bookmark_name=bookmark_name,
             specified_folder_path=specified_folder_path,
             is_super_dry_run=is_super_dry_run,
@@ -258,6 +274,7 @@ def main():
             tags=tags,
             source_bookmark_arg=source_bookmark_arg
         )
+        return 0
 
 
     # Run the main process (unless dry run modes)
