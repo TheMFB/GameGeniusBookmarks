@@ -8,7 +8,7 @@ import json
 from app.bookmarks_consts import IS_DEBUG, HIDDEN_COLOR, RESET_COLOR, USAGE_HELP
 from app.bookmarks_folders import get_all_active_folders, find_folder_by_name
 from app.bookmarks_meta import load_folder_meta
-from app.bookmarks import load_bookmarks_from_folder, get_last_used_bookmark
+from app.bookmarks import load_bookmarks_from_folder, get_last_used_bookmark, get_bookmark_info
 from app.utils import print_color
 
 IS_PRINT_VIDEO_FILE_NAMES = True
@@ -331,6 +331,10 @@ def print_all_folders_and_bookmarks(
     folder_display_name = os.path.basename(top_level_folder_name) if top_level_folder_name else ''
 
     print(f"runonce-redis \033[34m{folder_display_name}:{display_bookmark_name}\033[0m")
+    if not current_bookmark_info:
+        _matched_bookmark_name, current_bookmark_info = get_bookmark_info(
+            f"{folder_display_name}:{display_bookmark_name}")
+
     if current_bookmark_info:
         print_color(
             f"   {current_bookmark_info.get('video_file_name', '')} - ({current_bookmark_info.get('timestamp_formatted', '')})", 'magenta')
@@ -342,6 +346,7 @@ def print_all_folders_and_bookmarks(
 
 
     print("=" * 50)
+    return
 
 
 def print_bookmarks_in_folder(folder_path):
