@@ -1,27 +1,15 @@
 """
 Integration script that coordinates OBS bookmarks with Redis state management
 """
-from pprint import pprint
 import os
 import sys
 import subprocess
-import time
-import json
 # from networkx import to_dict_of_dicts
-import obsws_python as obs
-from datetime import datetime
-from PIL import Image
-import io
 
-from app.bookmarks import interactive_fuzzy_lookup
-from app.bookmarks_consts import IS_DEBUG, REDIS_DUMP_DIR, ASYNC_WAIT_TIME, OPTIONS_HELP, USAGE_HELP, IS_PRINT_JUST_CURRENT_FOLDER_BOOKMARKS
-from app.bookmarks_folders import get_all_active_folders, parse_folder_bookmark_arg, create_new_folder, find_folder_by_name, create_folder_with_name, select_folder_for_new_bookmark, update_folder_last_bookmark
-from app.bookmarks_redis import copy_preceding_redis_state, copy_specific_bookmark_redis_state, copy_initial_redis_state, run_redis_command
-from app.bookmarks import get_bookmark_info, load_obs_bookmark_directly, load_bookmarks_from_folder, normalize_path, is_strict_equal, save_last_used_bookmark, get_last_used_bookmark_display, resolve_navigation_bookmark, get_last_used_bookmark
+from app.bookmarks_consts import IS_DEBUG, REDIS_DUMP_DIR, OPTIONS_HELP, IS_PRINT_JUST_CURRENT_FOLDER_BOOKMARKS
+from app.bookmarks_folders import get_all_active_folders, parse_folder_bookmark_arg
+from app.bookmarks import get_bookmark_info, is_strict_equal, save_last_used_bookmark, resolve_navigation_bookmark, get_last_used_bookmark
 from app.bookmarks_print import print_all_folders_and_bookmarks
-from app.bookmarks_meta import create_bookmark_meta, create_folder_meta, create_folder_meta
-from app.utils import print_color, get_media_source_info
-from redis_friendly_converter import convert_file as convert_redis_to_friendly
 from app.flag_handlers import help, ls, which, find_preceding_bookmark, open_video, find_tags, handle_matched_bookmark_name, handle_bookmark_not_found, handle_main_process, handle_redis_operations
 
 
@@ -295,10 +283,11 @@ def main():
         else:
             print(f"📖 Load-only mode: Skipping final Redis state save")
 
+
     # Save the last used bookmark at the end of successful operations
     if folder_dir:
         folder_name = os.path.basename(folder_dir)
-        save_last_used_bookmark(folder_name, bookmark_name)
+        save_last_used_bookmark(folder_name, bookmark_name, bookmark_info)
         if IS_DEBUG:
             print(f"📋 Saved last used bookmark: '{folder_name}:{bookmark_name}'")
 
@@ -363,7 +352,7 @@ def main():
     # Print all folders and bookmarks with current one highlighted
     if folder_dir:
         current_folder_name = os.path.basename(folder_dir)
-        print_all_folders_and_bookmarks(current_folder_name, bookmark_name, IS_PRINT_JUST_CURRENT_FOLDER_BOOKMARKS)
+        print_all_folders_and_bookmarks(current_folder_name, bookmark_name, bookmark_info, IS_PRINT_JUST_CURRENT_FOLDER_BOOKMARKS)
 
 
 

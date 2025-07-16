@@ -11,10 +11,12 @@ from app.bookmarks_meta import load_folder_meta
 from app.bookmarks import load_bookmarks_from_folder, get_last_used_bookmark
 from app.utils import print_color
 
+IS_PRINT_VIDEO_FILE_NAMES = True
 
 def print_all_folders_and_bookmarks(
         top_level_folder_name=None,
         current_bookmark_name=None,
+        current_bookmark_info=None,
         is_print_just_current_folder_bookmarks=False
 ):
     """Print all folders and their bookmarks, highlighting the current one"""
@@ -237,6 +239,22 @@ def print_all_folders_and_bookmarks(
                     # Show all bookmarks (normal mode)
                     filtered_bookmarks = bookmarks_in_folder
 
+                if IS_PRINT_VIDEO_FILE_NAMES:
+                    # Collect unique video file names from bookmarks in this folder
+                    video_file_names = set()
+                    for bookmark_name, bookmark_info in filtered_bookmarks:
+                        bookmark_video_name = bookmark_info.get('video_file_name', '')
+                        if bookmark_video_name:
+                            # Handle both single string and list of strings
+                            if isinstance(bookmark_video_name, str):
+                                video_file_names.add(bookmark_video_name)
+                            elif isinstance(bookmark_video_name, list):
+                                video_file_names.update(bookmark_video_name)
+
+                # Display video file names if any exist
+                if video_file_names and (not is_print_just_current_folder_bookmarks or is_current_folder):
+                    print_color(f"{indent}    {', '.join(sorted(video_file_names))}", 'magenta')
+
                 for bookmark_name, bookmark_info in sorted(filtered_bookmarks):
                     timestamp = bookmark_info.get(
                         'timestamp_formatted', 'unknown time')
@@ -313,6 +331,13 @@ def print_all_folders_and_bookmarks(
     folder_display_name = os.path.basename(top_level_folder_name) if top_level_folder_name else ''
 
     print(f"runonce-redis \033[34m{folder_display_name}:{display_bookmark_name}\033[0m")
+    if current_bookmark_info:
+        print_color(
+            f"   {current_bookmark_info.get('video_file_name', '')} - ({current_bookmark_info.get('timestamp_formatted', '')})", 'magenta')
+        if current_bookmark_info.get('description', ''):
+            print(f"   {current_bookmark_info.get('description', '')}")
+        if current_bookmark_info.get('tags', []):
+            print(f"   {current_bookmark_info.get('tags', [])}")
     print(f"   {USAGE_HELP}")
 
 

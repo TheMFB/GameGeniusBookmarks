@@ -363,7 +363,7 @@ def stepwise_match(user_parts, all_bookmarks):
         depth += 1
 
 
-def save_last_used_bookmark(folder_name, bookmark_name):
+def save_last_used_bookmark(folder_name, bookmark_name, bookmark_info):
     """Save the last used bookmark to a global state file."""
     state_file = os.path.join(os.path.dirname(__file__), "..", "last_bookmark_state.json")
 
@@ -374,9 +374,13 @@ def save_last_used_bookmark(folder_name, bookmark_name):
     bookmark_name_colons = bookmark_name.replace('/', ':')
 
     state_data = {
-        "folder_name": folder_basename,  # Save just the basename
         "bookmark_name": bookmark_name_colons,  # Use colons instead of slashes
-        "timestamp": datetime.now().isoformat()
+        "description": bookmark_info.get('description', ''),
+        "folder_name": folder_basename,  # Save just the basename
+        "tags": bookmark_info.get('tags', []),
+        "timestamp": datetime.now().isoformat(),
+        "timestamp_formatted": bookmark_info.get('timestamp_formatted', ''),
+        "video_file_name": bookmark_info.get('video_file_name', ''),
     }
 
     with open(state_file, 'w') as f:
