@@ -121,7 +121,7 @@ def find_matching_bookmark(bookmark_name, folder_dir):
                         return selected_match, bookmarks[selected_match]
                     elif choice_num == len(stepwise_matches) + 1:
                         print(f"✅ Creating new bookmark: '{bookmark_name}'")
-                        return None, None
+                        return stepwise_matches[0], None
                     else:
                         print(
                             f"❌ Invalid choice. Please enter 1-{len(stepwise_matches) + 1}")
@@ -131,21 +131,39 @@ def find_matching_bookmark(bookmark_name, folder_dir):
                     print("\n❌ Cancelled")
                     return None, None
 
+
     # Fallback fuzzy match
-    matches = []
-    for path in bookmarks.keys():
-        # Check for exact prefix match first
-        if path.lower().startswith(bookmark_name.lower()):
-            matches.append(path)
-        # Check if the bookmark name appears anywhere in the path
-        elif bookmark_name.lower() in path.lower():
-            matches.append(path)
-        # Check for partial matches (e.g., 'ra-00' should match 'ra-00-main-screen')
-        elif any(part.lower().startswith(bookmark_name.lower()) for part in path.split('/')):
-            matches.append(path)
-        # Check for wildcard-like matching (e.g., 'ra-00*' should match 'ra-00-main-screen')
-        elif bookmark_name.lower().replace('*', '') in path.lower():
-            matches.append(path)
+    # Fallback fuzzy match (with scoring)
+    scored_matches = []
+    normalized_input = bookmark_name.lower()
+
+    for path, info in bookmarks.items():
+        path_lower = path.lower()
+        tokens = set(path_lower.replace('/', ' ').replace('-', ' ').split())
+        score = 0
+
+        # Token overlap boost
+        input_tokens = set(normalized_input.split())
+        score += len(tokens & input_tokens)
+
+        # Prefix boost
+        if path_lower.startswith(normalized_input):
+            score += 3
+
+        # Substring boost
+        if normalized_input in path_lower:
+            score += 1
+
+        if score > 0:
+            scored_matches.append((score, path))
+
+    if not scored_matches:
+        return None, None
+
+    # Sort by score (descending), then alphabetically
+    scored_matches.sort(key=lambda x: (-x[0], x[1]))
+    matches = [m[1] for m in scored_matches]
+
 
     if len(matches) == 0:
         return None, None
@@ -696,9 +714,19 @@ def fuzzy_match_bookmark_tokens(query: str, include_tags_and_descriptions: bool 
     for key, data in token_map.items():
         overlap = data["tokens"].intersection(query_tokens)
         score = len(overlap)
-        if score > 0:
-            print(f"{key} -> match score: {score}, overlap: {overlap}")
-            scored_matches.append((score, key))
+        query_lower = query.lower()
+
+    # Boost if bookmark name starts with query
+    if data["bookmark_name"].lower().startswith(query_lower):
+        score += 10  # strong boost
+
+    # Boost if folder name starts with query
+    if data["folder_name"].lower().startswith(query_lower):
+        score += 5  # moderate boost
+
+    if score > 0:
+        print(f"{key} -> match score: {score}, overlap: {overlap}")
+        scored_matches.append((score, key))
 
     # Sort by score descending, then alphabetically by key
     scored_matches.sort(key=lambda x: (-x[0], x[1]))
