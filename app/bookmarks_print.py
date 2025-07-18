@@ -243,7 +243,7 @@ def print_all_folders_and_bookmarks(
                     # Collect unique video file names from bookmarks in this folder
                     video_file_names = set()
                     for bookmark_name, bookmark_info in filtered_bookmarks:
-                        bookmark_video_name = bookmark_info.get('video_file_name', '')
+                        bookmark_video_name = bookmark_info.get('video_filename', '')
                         if bookmark_video_name:
                             # Handle both single string and list of strings
                             if isinstance(bookmark_video_name, str):
@@ -337,7 +337,7 @@ def print_all_folders_and_bookmarks(
 
     if current_bookmark_info:
         print_color(
-            f"   {current_bookmark_info.get('video_file_name', '')} - ({current_bookmark_info.get('timestamp_formatted', '')})", 'magenta')
+            f"   {current_bookmark_info.get('video_filename', '')} - ({current_bookmark_info.get('timestamp_formatted', '')})", 'magenta')
         if current_bookmark_info.get('description', ''):
             print(f"   {current_bookmark_info.get('description', '')}")
         if current_bookmark_info.get('tags', []):

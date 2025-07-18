@@ -23,7 +23,7 @@ def get_video_path_from_env():
         return None
     return video_path
 
-def construct_full_file_path(video_filename):
+def construct_full_video_file_path(video_filename):
     """Construct the full file path from VIDEO_PATH and filename."""
     video_path = get_video_path_from_env()
     if not video_path:
@@ -62,19 +62,19 @@ def load_bookmark_meta(bookmark_dir):
             if IS_DEBUG:
                 print(f"🔍 Debug - Loading bookmark metadata from: {meta_file}")
                 print(f"🔍 Debug - Raw metadata keys: {list(meta_data.keys())}")
-                
+
             # Handle both old and new formats
             if 'file_path' in meta_data:
                 # Old format - file_path already contains full path
                 meta_data['full_file_path'] = meta_data['file_path']
                 if IS_DEBUG:
                     print(f"🔍 Debug - Using old format file_path: {meta_data['file_path']}")
-            elif 'video_file_name' in meta_data:
+            elif 'video_filename' in meta_data:
                 # New format - construct full path from VIDEO_PATH and filename
-                video_filename = meta_data['video_file_name']
+                video_filename = meta_data['video_filename']
                 if IS_DEBUG:
                     print(f"🔍 Debug - Constructing full path for video_filename: {video_filename}")
-                full_path = construct_full_file_path(video_filename)
+                full_path = construct_full_video_file_path(video_filename)
                 if IS_DEBUG:
                     print(f"🔍 Debug - Constructed full_path: {full_path}")
                 if full_path:
@@ -84,7 +84,7 @@ def load_bookmark_meta(bookmark_dir):
                     meta_data['full_file_path'] = ''
             else:
                 if IS_DEBUG:
-                    print(f"🔍 Debug - No file_path or video_file_name found in metadata")
+                    print(f"🔍 Debug - No file_path or video_filename found in metadata")
                 meta_data['full_file_path'] = ''
                 
             if IS_DEBUG:
@@ -142,7 +142,7 @@ def create_bookmark_meta(bookmark_dir, bookmark_name, media_info, tags=None):
     meta_data = {
         "created_at": datetime.now().isoformat(),
         "bookmark_name": bookmark_name,
-        "video_file_name": media_info.get('video_filename', ''),  # Store just the filename
+        "video_filename": media_info.get('video_filename', ''),  # Store just the filename
         "timestamp": media_info.get('timestamp', 0),
         "timestamp_formatted": media_info.get('timestamp_formatted', ''),
         "tags": tags or []  # Add tags to metadata
