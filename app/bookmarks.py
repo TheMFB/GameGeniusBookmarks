@@ -378,13 +378,85 @@ def save_last_used_bookmark(folder_name, bookmark_name, bookmark_info):
         "description": bookmark_info.get('description', ''),
         "folder_name": folder_basename,  # Save just the basename
         "tags": bookmark_info.get('tags', []),
-        "timestamp": datetime.now().isoformat(),
+        "timestamp": bookmark_info.get('timestamp', 0),
         "timestamp_formatted": bookmark_info.get('timestamp_formatted', ''),
         "video_file_name": bookmark_info.get('video_file_name', ''),
     }
 
     with open(state_file, 'w') as f:
         json.dump(state_data, f, indent=2)
+
+    # Create symlinks in shortcuts directory
+    create_bookmark_symlinks(folder_name, bookmark_name)
+
+
+def create_bookmark_symlinks(folder_name, bookmark_name):
+    """Create symlinks for the last used bookmark and its folder."""
+    import os
+    import shutil
+
+    # Get the root directory of the bookmark manager
+    root_dir = os.path.dirname(os.path.dirname(__file__))
+    shortcuts_dir = os.path.join(root_dir, "shortcuts")
+
+    # Create shortcuts directory if it doesn't exist
+    if not os.path.exists(shortcuts_dir):
+        os.makedirs(shortcuts_dir)
+
+    # Create last_used_bookmark directory if it doesn't exist
+    last_used_bookmark_dir = os.path.join(shortcuts_dir, "last_used_bookmark")
+    if not os.path.exists(last_used_bookmark_dir):
+        os.makedirs(last_used_bookmark_dir)
+
+    # Create last_used_bookmark_folder directory if it doesn't exist
+    last_used_bookmark_folder_dir = os.path.join(shortcuts_dir, "last_used_bookmark_folder")
+    if not os.path.exists(last_used_bookmark_folder_dir):
+        os.makedirs(last_used_bookmark_folder_dir)
+
+    # Clear the last_used_bookmark directory
+    for item in os.listdir(last_used_bookmark_dir):
+        item_path = os.path.join(last_used_bookmark_dir, item)
+        if os.path.islink(item_path):
+            os.unlink(item_path)
+        elif os.path.isfile(item_path):
+            os.remove(item_path)
+        elif os.path.isdir(item_path):
+            shutil.rmtree(item_path)
+
+    # Clear the last_used_bookmark_folder directory
+    for item in os.listdir(last_used_bookmark_folder_dir):
+        item_path = os.path.join(last_used_bookmark_folder_dir, item)
+        if os.path.islink(item_path):
+            os.unlink(item_path)
+        elif os.path.isfile(item_path):
+            os.remove(item_path)
+        elif os.path.isdir(item_path):
+            shutil.rmtree(item_path)
+
+    # Construct the target paths
+    obs_bookmarks_dir = os.path.join(root_dir, "obs_bookmark_saves")
+    bookmark_full_path = os.path.join(obs_bookmarks_dir, folder_name, bookmark_name)
+    bookmark_folder_path = os.path.join(obs_bookmarks_dir, folder_name, os.path.dirname(bookmark_name))
+
+    # Get the bookmark name and folder name (last parts of the paths)
+    bookmark_basename = os.path.basename(bookmark_name)
+    folder_basename = os.path.basename(os.path.dirname(bookmark_name))
+
+    # Define symlink paths
+    bookmark_symlink_path = os.path.join(last_used_bookmark_dir, bookmark_basename)
+    folder_symlink_path = os.path.join(last_used_bookmark_folder_dir, folder_basename)
+
+    try:
+        # Create symlink for the specific bookmark (named after the bookmark)
+        os.symlink(bookmark_full_path, bookmark_symlink_path)
+        print(f"🔗 Created symlink: shortcuts/last_used_bookmark/{bookmark_basename} -> {folder_name}/{bookmark_name}")
+
+        # Create symlink for the bookmark's folder (named after the folder)
+        os.symlink(bookmark_folder_path, folder_symlink_path)
+        print(f"🔗 Created symlink: shortcuts/last_used_bookmark_folder/{folder_basename} -> {folder_name}/{os.path.dirname(bookmark_name)}")
+
+    except Exception as e:
+        print(f"⚠️  Could not create symlinks: {e}")
 
 
 def get_last_used_bookmark():

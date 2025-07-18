@@ -234,7 +234,7 @@ def handle_matched_bookmark_name(
                     print(f"📸 Screenshot saved to: {matched_bookmark_name or bookmark_name}/screenshot.jpg")
 
                 except Exception as e:
-                    print(f"⚠️  Could not take screenshot: {e}")
+                    print(f"⚠️  1 Could not take screenshot: {e}")
                     print(f"   Please ensure OBS is running and WebSocket server is enabled")
 
 

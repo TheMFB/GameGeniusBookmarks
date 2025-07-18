@@ -6,6 +6,7 @@ import sys
 import subprocess
 # from networkx import to_dict_of_dicts
 
+from app.utils import print_color
 from app.bookmarks_consts import IS_DEBUG, REDIS_DUMP_DIR, OPTIONS_HELP, IS_PRINT_JUST_CURRENT_FOLDER_BOOKMARKS
 from app.bookmarks_folders import get_all_active_folders, parse_folder_bookmark_arg
 from app.bookmarks import get_bookmark_info, is_strict_equal, save_last_used_bookmark, resolve_navigation_bookmark, get_last_used_bookmark
@@ -142,6 +143,8 @@ def main():
         # Resolve the navigation command
         bookmark_name, bookmark_info = resolve_navigation_bookmark(bookmark_arg, folder_dir)
         if not bookmark_name:
+            print(
+                f"❌ No bookmark name found for'{bookmark_name}' '{bookmark_arg}'")
             return 1
 
         # Set the folder directory for the rest of the workflow
@@ -269,6 +272,7 @@ def main():
     if not is_dry_run and not is_super_dry_run:
         result = handle_main_process()
         if result != 0:
+            print("❌ Main process failed")
             return result
 
     # Check if redis_after.json already exists before saving final state (skip in dry run modes)
@@ -302,8 +306,8 @@ def main():
                 subprocess.run(["open", screenshot_path])
             elif platform.system() == "Linux":
                 subprocess.run(["xdg-open", screenshot_path])
-            elif platform.system() == "Windows":
-                os.startfile(screenshot_path)
+            # elif platform.system() == "Windows":
+            #     os.startfile(screenshot_path)
             else:
                 print(f"⚠️ Preview not supported on this platform.")
             return 0

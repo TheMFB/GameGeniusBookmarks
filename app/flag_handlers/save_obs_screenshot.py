@@ -26,6 +26,14 @@ def save_obs_screenshot(bookmark_dir: str, bookmark_name: str):
         decoded_bytes = base64.b64decode(image_data)
         image = Image.open(io.BytesIO(decoded_bytes))
 
+        # Convert RGBA to RGB if necessary (JPEG doesn't support transparency)
+        if image.mode == 'RGBA':
+            # Create a white background
+            rgb_image = Image.new('RGB', image.size, (255, 255, 255))
+            # Paste the RGBA image onto the white background
+            rgb_image.paste(image, mask=image.split()[-1])  # Use alpha channel as mask
+            image = rgb_image
+
         width = int(image.width * SCREENSHOT_SAVE_SCALE)
         height = int(image.height * SCREENSHOT_SAVE_SCALE)
         resized_image = image.resize((width, height))
@@ -37,5 +45,5 @@ def save_obs_screenshot(bookmark_dir: str, bookmark_name: str):
         print(f"📸 Screenshot saved to: {bookmark_name}/screenshot.jpg")
 
     except Exception as e:
-        print(f"⚠️  Could not take screenshot: {e}")
+        print(f"⚠️  2 Could not take screenshot: {e}")
         print(f"   Please ensure OBS is running and WebSocket server is enabled")
