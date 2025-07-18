@@ -11,6 +11,7 @@ from datetime import datetime
 from app.bookmarks_consts import IS_DEBUG
 from app.bookmarks_folders import get_all_active_folders
 from app.utils import print_color
+from app.bookmarks_meta import construct_full_video_file_path
 
 import re
 
@@ -228,7 +229,6 @@ def get_bookmark_info(bookmark_name):
     # Bookmark not found in any folder
     return None, None
 
-
 def load_obs_bookmark_directly(bookmark_name, bookmark_info):
     """Load OBS bookmark directly without using the bookmark manager script"""
 
@@ -237,9 +237,15 @@ def load_obs_bookmark_directly(bookmark_name, bookmark_info):
             print(f"🔍 Debug - Loading bookmark: {bookmark_name}")
             print(f"🔍 Debug - Bookmark info keys: {list(bookmark_info.keys())}")
             print(f"🔍 Debug - full_file_path: {bookmark_info.get('full_file_path', 'NOT_FOUND')}")
-            print(f"🔍 Debug - video_file_name: {bookmark_info.get('video_file_name', 'NOT_FOUND')}")
+            print(f"🔍 Debug - video_filename: {bookmark_info.get('video_filename', 'NOT_FOUND')}")
             print(f"🔍 Debug - timestamp: {bookmark_info.get('timestamp', 'NOT_FOUND')}")
             print(f"🔍 Debug - timestamp_formatted: {bookmark_info.get('timestamp_formatted', 'NOT_FOUND')}")
+
+        if not bookmark_info:
+            print(f"❌ No file path found in bookmark metadata")
+            if IS_DEBUG:
+                print(f"🔍 Debug - Available keys in bookmark_info: {list(bookmark_info.keys())}")
+            return False
 
         cl = obs.ReqClient(host="localhost", port=4455, password="", timeout=3)
 
@@ -249,23 +255,26 @@ def load_obs_bookmark_directly(bookmark_name, bookmark_info):
         current_file = current_settings.input_settings.get("local_file", "")
 
         if IS_DEBUG:
+            pprint(current_settings)
             print(f"🔍 Debug - Current OBS file: {current_file}")
 
-        # Use the full_file_path from bookmark_info (constructed by load_bookmark_meta)
-        bookmarked_file = bookmark_info.get('full_file_path', '')
 
-        if not bookmarked_file:
+        # Use the full_file_path from bookmark_info (constructed by load_bookmark_meta)
+        video_filename = bookmark_info.get('video_filename', '')
+        video_file_path = construct_full_video_file_path(video_filename)
+
+        if not video_filename:
             print(f"❌ No file path found in bookmark metadata")
             if IS_DEBUG:
                 print(f"🔍 Debug - Available keys in bookmark_info: {list(bookmark_info.keys())}")
             return False
 
-        if current_file != bookmarked_file:
-            print(f"📁 Loading video file: {os.path.basename(bookmarked_file)}")
+        if current_file != video_file_path:
+            print(f"📁 Loading video file: {video_file_path}")
             cl.send("SetInputSettings", {
                 "inputName": "Media Source",
                 "inputSettings": {
-                    "local_file": bookmarked_file
+                    "local_file": video_file_path
                 }
             })
             # Wait longer for the media to load before trying to set cursor
@@ -285,7 +294,7 @@ def load_obs_bookmark_directly(bookmark_name, bookmark_info):
         # Set the timestamp
         cl.send("SetMediaInputCursor", {
             "inputName": "Media Source",
-            "mediaCursor": bookmark_info['timestamp']
+            "mediaCursor": int(bookmark_info['timestamp'] * 1000)  # Convert seconds to milliseconds
         })
 
         # Pause the media
@@ -380,7 +389,7 @@ def save_last_used_bookmark(folder_name, bookmark_name, bookmark_info):
         "tags": bookmark_info.get('tags', []),
         "timestamp": bookmark_info.get('timestamp', 0),
         "timestamp_formatted": bookmark_info.get('timestamp_formatted', ''),
-        "video_file_name": bookmark_info.get('video_file_name', ''),
+        "video_filename": bookmark_info.get('video_filename', ''),
     }
 
     with open(state_file, 'w') as f:
