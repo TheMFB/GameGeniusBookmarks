@@ -236,7 +236,6 @@ def load_obs_bookmark_directly(bookmark_name, bookmark_info):
         if IS_DEBUG:
             print(f"🔍 Debug - Loading bookmark: {bookmark_name}")
             print(f"🔍 Debug - Bookmark info keys: {list(bookmark_info.keys())}")
-            print(f"🔍 Debug - full_file_path: {bookmark_info.get('full_file_path', 'NOT_FOUND')}")
             print(f"🔍 Debug - video_filename: {bookmark_info.get('video_filename', 'NOT_FOUND')}")
             print(f"🔍 Debug - timestamp: {bookmark_info.get('timestamp', 'NOT_FOUND')}")
             print(f"🔍 Debug - timestamp_formatted: {bookmark_info.get('timestamp_formatted', 'NOT_FOUND')}")
@@ -258,8 +257,7 @@ def load_obs_bookmark_directly(bookmark_name, bookmark_info):
             pprint(current_settings)
             print(f"🔍 Debug - Current OBS file: {current_file}")
 
-
-        # Use the full_file_path from bookmark_info (constructed by load_bookmark_meta)
+        # Construct the full video file path from env variable
         video_filename = bookmark_info.get('video_filename', '')
         video_file_path = construct_full_video_file_path(video_filename)
 
