@@ -456,11 +456,9 @@ def create_bookmark_symlinks(folder_name, bookmark_name):
     try:
         # Create symlink for the specific bookmark (named after the bookmark)
         os.symlink(bookmark_full_path, bookmark_symlink_path)
-        print(f"🔗 Created symlink: shortcuts/last_used_bookmark/{bookmark_basename} -> {folder_name}/{bookmark_name}")
 
         # Create symlink for the bookmark's folder (named after the folder)
         os.symlink(bookmark_folder_path, folder_symlink_path)
-        print(f"🔗 Created symlink: shortcuts/last_used_bookmark_folder/{folder_basename} -> {folder_name}/{os.path.dirname(bookmark_name)}")
 
     except Exception as e:
         print(f"⚠️  Could not create symlinks: {e}")

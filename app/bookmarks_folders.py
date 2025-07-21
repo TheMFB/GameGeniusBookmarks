@@ -10,7 +10,7 @@ import time
 import json
 from datetime import datetime
 
-from app.bookmarks_consts import IS_DEBUG, BOOKMARKS_DIR
+from app.bookmarks_consts import IS_DEBUG, BOOKMARKS_DIR, EXCLUDED_DIRS
 from app.bookmarks_meta import load_folder_meta, create_folder_meta
 
 def get_all_active_folders():
@@ -23,7 +23,7 @@ def get_all_active_folders():
             print(f"❌ Bookmarks directory does not exist: {BOOKMARKS_DIR}")
             return []
 
-        excluded_dirs = {"archive"}
+        excluded_dirs = EXCLUDED_DIRS
         active_folders = []
 
         # Only scan the immediate subdirectories of BOOKMARKS_DIR
@@ -135,7 +135,7 @@ def get_current_folder_dir():
             return None
 
         # Get existing folders (excluding archive and screenshots dirs)
-        excluded_dirs = {"archive"}
+        excluded_dirs = EXCLUDED_DIRS
         folders = []
         for item in os.listdir(BOOKMARKS_DIR):
             item_path = os.path.join(BOOKMARKS_DIR, item)

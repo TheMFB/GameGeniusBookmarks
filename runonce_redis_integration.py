@@ -233,6 +233,7 @@ def main():
             source_bookmark_arg=source_bookmark_arg
         )
         if isinstance(result, int):
+            print("❌ Error in handle_matched_bookmark_name")
             return result  # an error code like 1 was returned
         folder_dir, bookmark_name = result
 
@@ -265,11 +266,12 @@ def main():
             tags=tags,
             source_bookmark_arg=source_bookmark_arg
         )
-        return 0
+        # return 0
 
 
     # Run the main process (unless dry run modes)
     if not is_dry_run and not is_super_dry_run:
+        print("🚀 Running main process...")
         result = handle_main_process()
         if result != 0:
             print("❌ Main process failed")

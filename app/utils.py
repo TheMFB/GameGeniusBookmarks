@@ -81,8 +81,6 @@ def get_media_source_info():
             try:
                 # Get media status which includes cursor position
                 media_status = cl.send("GetMediaInputStatus", {"inputName": "Media Source"})
-                print(f"🔍 Debug - media_status: ")
-                pprint(media_status)
 
                 # Get cursor position from media_status
                 if hasattr(media_status, 'media_cursor'):
