@@ -4,7 +4,7 @@ from pathlib import Path
 from codename import codename
 
 VIDEO_DIR = Path(
-    "/Volumes/Extreme_Pro/PS5/CREATE/Video Clips/Marvel Rivals/friendly")
+    "/Volumes/Extreme_Pro/PS5/CREATE/Video Clips/Marvel Rivals")
 VIDEO_EXTENSIONS = {".webm", ".mp4", ".mov", ".mkv"}
 INDEX_PREFIX_REGEX = re.compile(r"^\d{4}[_-]")
 
@@ -18,10 +18,26 @@ def get_next_index(existing_files):
     return max(indices, default=0) + 1
 
 
-def generate_friendly_name(index):
-    name = codename().replace('-', '_')  # e.g. 'green_dog'
-    name = codename().replace(' ', '_')  # e.g. 'green_dog'
-    return f"{index:04d}_{name}"         # e.g. '0001_green_dog'
+MARVEL_PREFIX = "Marvel Rivals_"
+DATE_ID_REGEX = re.compile(r"^(\d{14})(?:_([^.]+))?$")  # 14 digits, optional _text
+
+def generate_friendly_name(index, file: Path):
+    name = file.stem
+    # Remove Marvel prefix if present
+    if name.startswith(MARVEL_PREFIX):
+        name = name[len(MARVEL_PREFIX):]
+    # Check for date id and optional text
+    match = DATE_ID_REGEX.match(name)
+    if match:
+        date_id, extra = match.groups()
+        if extra:
+            friendly = extra.replace(' ', '_')
+        else:
+            friendly = codename().replace('-', '_').replace(' ', '_')
+    else:
+        # Use the rest of the filename, spaces to underscores
+        friendly = name.replace(' ', '_')
+    return f"{index:04d}_{friendly}"
 
 
 def rename_videos(directory: Path):
@@ -44,10 +60,12 @@ def rename_videos(directory: Path):
     for file in all_videos:
         if not file.is_file() or file.suffix.lower() not in VIDEO_EXTENSIONS:
             continue
+        if file.name.startswith("._"):  # <-- skip AppleDouble files
+            continue
         if INDEX_PREFIX_REGEX.match(file.name):
             continue
 
-        new_name = generate_friendly_name(next_index) + file.suffix.lower()
+        new_name = generate_friendly_name(next_index, file) + file.suffix.lower()
         new_path = file.with_name(new_name)
 
         print(f"Renaming: {file.name} -> {new_name}")
@@ -55,7 +73,21 @@ def rename_videos(directory: Path):
         renamed.append((file.name, new_name))
         next_index += 1
 
+    # Save conversions to file
+    conversions_file = directory / "filename_conversions.txt"
+    # Read existing conversions if file exists
+    existing_lines = []
+    if conversions_file.exists():
+        with open(conversions_file, "r") as f:
+            existing_lines = f.readlines()
+    # Prepare new lines
+    new_lines = [f"{old} -> {new}\n" for old, new in renamed]
+    # Write all lines back (existing + new)
+    with open(conversions_file, "a") as f:
+        f.writelines(new_lines)
+
     print(f"\n✅ Renamed {len(renamed)} files.")
+    print(f"📝 Conversion log updated: {conversions_file}")
     return renamed
 
 if __name__ == "__main__":

@@ -2,6 +2,7 @@
 """
 Integration script that coordinates OBS bookmarks with Redis state management
 """
+from pprint import pprint
 from redis_friendly_converter import convert_file as convert_redis_to_friendly
 import os
 import sys
@@ -10,8 +11,10 @@ import time
 import json
 from datetime import datetime
 
+from app.utils import print_color
 from app.bookmarks_consts import IS_DEBUG, BOOKMARKS_DIR, EXCLUDED_DIRS
 from app.bookmarks_meta import load_folder_meta, create_folder_meta
+
 
 def get_all_active_folders():
     """Collect all folder paths under BOOKMARKS_DIR that contain folder_meta.json (excluding archive)"""
@@ -48,6 +51,9 @@ def get_all_active_folders():
 
 def select_folder_for_new_bookmark(bookmark_name):
     """Let user select which folder to create a new bookmark in"""
+    print_color('---- 0 bookmark_name select_folder_for_new_bookmark:', 'green')
+    print(bookmark_name)
+
     active_folders = get_all_active_folders()
 
     if not active_folders:
@@ -187,9 +193,27 @@ def get_current_folder_dir():
 
 
 def find_folder_by_name(folder_name):
-    """Find folder directory by name or full relative path (e.g. kerch/comp/m02)"""
+    # TODO(MFB): This is not working as expected. We should pull in the all bookmarks json, and attempt to step through the tree, and see if there are any full / partial matches. The all_active_folders is giving a full system path, but only the basename for what we need.
+
+    # ---- 0 specified_folder_path:
+    # 'videos/0001_green_dog/g01/m01'
+    # ---- 0 folder_name find_folder_by_name:
+    # videos/0001_green_dog/g01/m01
+    # ---- 1 folder_path find_folder_by_name:
+    # /Users/mfb/dev/MFBTech/GameGeniusProject/GameGenius/game-genius-bookmarks/obs_bookmark_saves/videos
+    # ---- 1 folder_dir find_folder_by_name:
+    # None
+    print_color('---- 0 folder_name find_folder_by_name:', 'green')
+    print(folder_name)
+
+    """Find folder directory by name or full relative path (e.g. kerch/comp/m02)
+    
+    """
     active_folders = get_all_active_folders()
     for folder_path in active_folders:
+        print_color('---- 1 folder_path find_folder_by_name:', 'magenta')
+        print(folder_path)
+
         # Match either exact basename or full relative path from BOOKMARKS_DIR
         rel_path = os.path.relpath(folder_path, BOOKMARKS_DIR)
         folder_basename = os.path.basename(folder_path)

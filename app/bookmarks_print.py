@@ -25,12 +25,25 @@ def print_all_folders_and_bookmarks(
 ):
     """Print all folders and their bookmarks, highlighting the current one"""
 
+    if IS_DEBUG:
+        print_color('---- current_folder_path:', 'magenta')
+        pprint(current_folder_path)
+        print_color('---- current_bookmark_name:', 'magenta')
+        pprint(current_bookmark_name)
+
+
     # Get last used bookmark for highlighting if not provided
     if not current_bookmark_name:
         last_used_info = get_last_used_bookmark()
         if last_used_info:
             current_bookmark_name = last_used_info.get('bookmark_name', '')
             current_folder_path = last_used_info.get('folder_name', '')
+
+    if IS_DEBUG:
+        print_color('---- current_bookmark_name after:', 'magenta')
+        pprint(current_bookmark_name)
+        print_color('---- current_folder_path after:', 'magenta')
+        pprint(current_folder_path)
 
     all_bookmarks = get_all_bookmarks_in_json_format()
 
@@ -121,7 +134,13 @@ def print_all_folders_and_bookmarks(
 
     print('')
     print("=" * 50)
-    # TODO(MFB): Print the last used/current bookmark quick reference
+
+    # TODO(MFB): The current folder path is os-based and only has the basename, and the bookmark name contains pathing.
+    if '/' in current_folder_path:
+        current_folder_path = current_folder_path.split('/')[-1]
+    current_bookmark = current_folder_path + ":" + current_bookmark_name
+    current_bookmark = current_bookmark.replace('/', ':')
+    print_color(f"🔍 Current bookmark: bm {current_bookmark}", 'magenta')
 
     return
 
@@ -175,6 +194,11 @@ def print_bookmarks_in_folder(folder_path, indent=0, last_used_path=None, inheri
     for subfolder in subfolders:
         print_bookmarks_in_folder(subfolder, indent + 3, last_used_path, inherited_tags | folder_tags)
 
+    # print_color('---- 2 full_folder_path:', 'magenta')
+    # pprint(full_folder_path)
 
-
-
+    # print_all_folders_and_bookmarks(
+    #     current_folder_path=full_folder_path,
+    #     current_bookmark_name=None,
+    #     is_print_just_current_folder_bookmarks=True
+    # )
