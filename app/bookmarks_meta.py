@@ -51,10 +51,18 @@ def load_folder_meta(folder_path):
     return {}
 
 def compute_hoistable_tags(list_of_tag_sets):
-    """Given a list of tag sets (one per bookmark), return the set of tags shared by all"""
     if not list_of_tag_sets:
         return set()
-    return set.intersection(*list_of_tag_sets)
+
+    # Filter out any empty sets — if a child has no tags, then no tags should be hoisted
+    non_empty_tag_sets = [tags for tags in list_of_tag_sets if tags]
+
+    if len(non_empty_tag_sets) != len(list_of_tag_sets):
+        # One or more children had no tags — cannot hoist anything
+        return set()
+
+    return set.intersection(*non_empty_tag_sets)
+
 
 
 def load_bookmark_meta(bookmark_dir):
@@ -160,3 +168,28 @@ def create_bookmark_meta(bookmark_dir, bookmark_name, media_info, tags=None):
 
     if IS_DEBUG:
         print(f"📋 Created bookmark metadata with tags: {tags}")
+
+
+LAST_USED_JSON = os.path.join("obs_bookmark_saves", "last_used.json")
+
+def load_last_used_bookmark_path():
+    """Load the last used bookmark's folder and name from last_used.json"""
+    if not os.path.exists(LAST_USED_JSON):
+        if IS_DEBUG:
+            print(f"⚠️  last_used.json does not exist at: {LAST_USED_JSON}")
+        return None, None
+
+    try:
+        with open(LAST_USED_JSON, "r") as f:
+            data = json.load(f)
+            folder = data.get("folder_name")
+            bookmark = data.get("bookmark_name")
+
+            if IS_DEBUG:
+                print(f"✅ loaded last_used.json: folder={folder}, bookmark={bookmark}")
+
+            return folder, bookmark
+    except Exception as e:
+        print(f"❌ Error loading last_used.json: {e}")
+        return None, None
+

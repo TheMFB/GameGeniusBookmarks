@@ -7,7 +7,7 @@ import os
 import json
 from app.bookmarks_consts import IS_DEBUG, HIDDEN_COLOR, RESET_COLOR, USAGE_HELP
 from app.bookmarks_folders import get_all_active_folders, find_folder_by_name
-from app.bookmarks_meta import load_folder_meta, compute_hoistable_tags
+from app.bookmarks_meta import load_folder_meta, compute_hoistable_tags, load_last_used_bookmark_path
 from app.bookmarks import load_bookmarks_from_folder, get_last_used_bookmark, get_bookmark_info, get_all_bookmarks_in_json_format
 from app.utils import print_color
 
@@ -37,6 +37,8 @@ def print_all_folders_and_bookmarks(
         current_bookmark_info=None,
         is_print_just_current_folder_bookmarks=False
 ):
+    current_folder_path, current_bookmark_name = load_last_used_bookmark_path()
+
     """Print all folders and their bookmarks, highlighting the current one"""
 
     if IS_DEBUG:
@@ -81,15 +83,21 @@ def print_all_folders_and_bookmarks(
                 current_bookmark_name and
                 (current_bookmark_name == this_folder_path or current_bookmark_name.startswith(this_folder_path + ":"))
             )
-            if is_current_folder:
-                print_color(f"{indent}📁 {folder_name}", 'green')
-            else:
-                print(f"{indent}📁 {folder_name}")
+            clean_folder_name = "" if folder_name == "root" else folder_name
+            if clean_folder_name:
+                if is_current_folder:
+                    print_color(f"{indent}📁 {clean_folder_name}", 'green')
+                else:
+                    print(f"{indent}📁 {clean_folder_name}")
+
 
 
         # Recursively gather all tags in this folder
         all_tags = collect_all_bookmark_tags_recursive(node)
-        folder_tags = set.intersection(*all_tags) if all_tags else set()
+
+        # Defensive: filter out any empty or invalid tag sets
+        valid_tag_sets = [s for s in all_tags if isinstance(s, set) and s]
+        folder_tags = compute_hoistable_tags(all_tags)
 
         if folder_tags:
             print_color(f"{indent}🏷️ {' '.join(f'•{tag}' for tag in sorted(folder_tags))}", 'cyan')
@@ -117,16 +125,36 @@ def print_all_folders_and_bookmarks(
             timestamp = bookmark_info.get('timestamp', 'unknown time')
             if len(timestamp) < 5:
                 timestamp = '0' + timestamp
-            full_path = f"{parent_path}:{bookmark_name}" if parent_path else bookmark_name
-            is_current = (
-                current_bookmark_name and
-                (current_bookmark_name == full_path or current_bookmark_name.endswith(":" + bookmark_name))
+
+            path_parts = parent_path.split(':') if parent_path else []
+            if path_parts and path_parts[0] == 'root':
+                path_parts = path_parts[1:]
+            full_path = ":".join(path_parts + [bookmark_name])
+
+            is_last_used = (
+                current_folder_path and current_bookmark_name and
+                full_path == f"{current_folder_path}:{bookmark_name}"
             )
-            hidden_ref_text = f" {HIDDEN_COLOR} {full_path}{RESET_COLOR}"
+            star_prefix = "★ " if is_last_used else "  "
+
+            is_current = (
+                current_bookmark_name and full_path == current_bookmark_name
+            )
+
+            # Determine if this is the last used bookmark
+            last_used_match = (
+                current_folder_path and current_bookmark_name and
+                full_path == f"{current_folder_path}:{current_bookmark_name}"
+)
+
+            prefix = "★ " if last_used_match else "  "
             if is_current:
-                print(f"\033[32m{indent}   • {timestamp} 📖 {bookmark_name} (current)\033[0m" + hidden_ref_text)
+                print(f"\033[32m{indent}{prefix}• {timestamp} 📖 {full_path} (current)\033[0m")
             else:
-                print(f"{indent}   • {timestamp} 📖 {bookmark_name} {hidden_ref_text}")
+                print(f"{indent}{prefix}• {timestamp} 📖 {full_path}")
+
+
+
             bookmark_description = bookmark_info.get('description', '')
             if bookmark_description:
                 print_color(f"{indent}      {bookmark_description}", 'cyan')
