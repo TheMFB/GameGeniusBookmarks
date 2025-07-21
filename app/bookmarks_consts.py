@@ -8,7 +8,7 @@ SHOW_HIDDEN_COPY_LINE = True
 HIDDEN_COLOR = "\033[38;2;13;42;52m"
 RESET_COLOR = "\033[0m"
 
-EXCLUDED_DIRS = {"archive", "archive_temp"}
+EXCLUDED_DIRS = {"archive", "archive_temp", "temp"}
 
 # Base directory is now the current repo root
 import os

@@ -361,8 +361,12 @@ def main():
 
     # Print all folders and bookmarks with current one highlighted
     if folder_dir:
-        current_folder_name = os.path.basename(folder_dir)
-        print_all_folders_and_bookmarks(current_folder_name, bookmark_name, bookmark_info, IS_PRINT_JUST_CURRENT_FOLDER_BOOKMARKS)
+        print_all_folders_and_bookmarks(
+            folder_dir=folder_dir,
+            bookmark_name=bookmark_name,
+            bookmark_info=bookmark_info,
+            IS_PRINT_JUST_CURRENT_FOLDER_BOOKMARKS=IS_PRINT_JUST_CURRENT_FOLDER_BOOKMARKS
+        )
 
 
 

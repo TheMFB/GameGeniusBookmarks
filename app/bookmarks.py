@@ -60,6 +60,61 @@ def load_bookmarks_from_folder(folder_dir):
     return bookmarks
 
 
+def load_folder_meta(folder_path):
+    """Load folder metadata from folder_meta.json"""
+    folder_meta_path = os.path.join(folder_path, "folder_meta.json")
+    if os.path.exists(folder_meta_path):
+        with open(folder_meta_path, 'r') as f:
+            return json.load(f)
+    return None
+
+def load_bookmark_meta(bookmark_path):
+    """Load bookmark metadata from bookmark_meta.json"""
+    bookmark_meta_path = os.path.join(bookmark_path, "bookmark_meta.json")
+    if os.path.exists(bookmark_meta_path):
+        with open(bookmark_meta_path, 'r') as f:
+            return json.load(f)
+    return None
+
+def get_all_bookmarks_in_json_format():
+    """Recursively scan all active folders and build a nested JSON structure with folder and bookmark tags/descriptions."""
+    def scan_folder(folder_path):
+        node = {}
+        # Add folder meta if present
+        folder_meta = load_folder_meta(folder_path)
+        if folder_meta:
+            node['tags'] = folder_meta.get('tags', [])
+            node['description'] = folder_meta.get('description', '')
+            node['video_filename'] = folder_meta.get('video_filename', '')
+
+        # List all items in this folder
+        try:
+            items = os.listdir(folder_path)
+        except Exception:
+            return node
+
+        for item in items:
+            item_path = os.path.join(folder_path, item)
+            if os.path.isdir(item_path):
+                # Recurse into subfolder
+                node[item] = scan_folder(item_path)
+            elif item == "bookmark_meta.json":
+                # This folder is a bookmark (leaf)
+                bookmark_meta = load_bookmark_meta(folder_path)
+                node['tags'] = bookmark_meta.get('tags', [])
+                node['description'] = bookmark_meta.get('description', '')
+                node['timestamp'] = bookmark_meta.get('timestamp_formatted', '')
+                node['video_filename'] = bookmark_meta.get('video_filename', '')
+                node['type'] = 'bookmark'
+        return node
+
+    all_bookmarks = {}
+    for folder_path in get_all_active_folders():
+        folder_name = os.path.basename(folder_path)
+        all_bookmarks[folder_name] = scan_folder(folder_path)
+    return all_bookmarks
+
+
 def is_strict_equal(path1, path2):
     """Check if two bookmark paths are strictly equal after normalization."""
     normalized1 = '/'.join(normalize_path(path1))
@@ -376,16 +431,13 @@ def save_last_used_bookmark(folder_name, bookmark_name, bookmark_info):
     if not bookmark_info:
         bookmark_info = {}
 
-    # Ensure we're saving the folder basename, not the full path
-    folder_basename = os.path.basename(folder_name) if '/' in folder_name else folder_name
-
     # Convert slashes to colons in bookmark name for consistency
-    bookmark_name_colons = bookmark_name.replace('/', ':')
+    folder_name_colons = folder_name.replace('/', ':')
 
     state_data = {
-        "bookmark_name": bookmark_name_colons,  # Use colons instead of slashes
+        "bookmark_name": bookmark_name,
         "description": bookmark_info.get('description', ''),
-        "folder_name": folder_basename,  # Save just the basename
+        "folder_name": folder_name_colons,
         "tags": bookmark_info.get('tags', []),
         "timestamp": bookmark_info.get('timestamp', 0),
         "timestamp_formatted": bookmark_info.get('timestamp_formatted', ''),
@@ -403,6 +455,8 @@ def create_bookmark_symlinks(folder_name, bookmark_name):
     """Create symlinks for the last used bookmark and its folder."""
     import os
     import shutil
+
+    folder_name = folder_name.replace(':', '/')
 
     # Get the root directory of the bookmark manager
     root_dir = os.path.dirname(os.path.dirname(__file__))
