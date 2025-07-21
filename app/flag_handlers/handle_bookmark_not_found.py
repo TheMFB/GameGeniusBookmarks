@@ -13,6 +13,7 @@ from app.bookmarks_folders import (
     create_folder_with_name,
     select_folder_for_new_bookmark,
     create_folder_meta,
+    split_bookmark_path,
 )
 from app.bookmarks import load_bookmarks_from_folder
 from app.bookmarks_meta import create_bookmark_meta
@@ -23,7 +24,7 @@ from app.bookmarks_redis import (
     copy_specific_bookmark_redis_state,
 )
 from redis_friendly_converter import convert_file as convert_redis_to_friendly
-from app.bookmarks_consts import REDIS_DUMP_DIR, IS_DEBUG, SCREENSHOT_SAVE_SCALE
+from app.bookmarks_consts import REDIS_DUMP_DIR, IS_DEBUG, SCREENSHOT_SAVE_SCALE, BOOKMARKS_DIR
 from app.utils import get_media_source_info
 from app.flag_handlers.save_obs_screenshot import save_obs_screenshot
 from app.flag_handlers.save_redis_and_friendly_json import save_redis_and_friendly_json
@@ -42,6 +43,7 @@ def handle_bookmark_not_found(
     tags,
     source_bookmark_arg
 ):
+    media_info = None
 
     ## NEW BOOKMARK ##
     print("🧪 DEBUG: Entering new bookmark workflow")
@@ -50,30 +52,45 @@ def handle_bookmark_not_found(
 
 
     # Handle folder:bookmark format
+        # Handle folder:bookmark format
     if specified_folder_path:
-        # Check if specified folder exists
-        folder_dir = find_folder_by_name(specified_folder_path)
+        # Combine the specified folder and bookmark path
+        combined_path = os.path.join(specified_folder_path, bookmark_name)
+        folder_path, bookmark_name = split_bookmark_path(combined_path)
+
+        folder_dir = find_folder_by_name(folder_path)
         if not folder_dir:
-            print(f"📁 Creating folder: '{specified_folder_path}'")
-            folder_dir = create_folder_with_name(specified_folder_path)
+            print(f"📁 Creating folder: '{folder_path}'")
+            folder_dir = create_folder_with_name(folder_path)
             if not folder_dir:
-                print(f"❌ Failed to create folder '{specified_folder_path}'")
+                print(f"❌ Failed to create folder '{folder_path}'")
                 return 1
         else:
-            print(f"✅ Using existing folder: '{specified_folder_path}'")
-
-        bookmark_dir = os.path.join(folder_dir, bookmark_name)
-        print(f"🆕 Creating new bookmark at: '{bookmark_dir}'")
+            print(f"✅ Using existing folder: '{folder_path}'")
 
     else:
         # Let user select which folder to create the bookmark in
-        folder_dir = select_folder_for_new_bookmark(bookmark_name)
-        if not folder_dir:
-            print("❌ No folder selected, cancelling")
-            return 1
+        folder_path, bookmark_name = split_bookmark_path(bookmark_name)
+        if folder_path:
+            folder_dir = find_folder_by_name(folder_path)
+            if not folder_dir:
+                print(f"📁 Creating folder: '{folder_path}'")
+                folder_dir = create_folder_with_name(folder_path)
+            else:
+                print(f"✅ Using existing folder: '{folder_path}'")
+        else:
+            folder_dir = select_folder_for_new_bookmark(bookmark_name)
+            if not folder_dir:
+                print("❌ No folder selected, cancelling")
+                return 1
+
+    # ✅ Correct bookmark_dir
+    bookmark_dir = os.path.join(folder_dir, bookmark_name)
+    print(f"🆕 Creating new bookmark at: '{bookmark_dir}'")
+
 
     # Create bookmark directory
-    bookmark_dir = os.path.join(folder_dir, bookmark_name)
+    bookmark_dir = os.path.join(folder_dir, *bookmark_name.split('/'))
     os.makedirs(bookmark_dir, exist_ok=True)
 
 
@@ -103,7 +120,7 @@ def handle_bookmark_not_found(
         if is_save_updates:
             print(f"💾 Saving pulled-in Redis state as redis_before.json...")
             # The copy functions already create redis_before.json, so we just need to ensure it exists
-            bookmark_dir = os.path.join(folder_dir, bookmark_name)
+            bookmark_dir = os.path.join(folder_dir, *bookmark_name.split('/'))
             redis_before_path = os.path.join(bookmark_dir, "redis_before.json")
             if os.path.exists(redis_before_path):
                 if IS_DEBUG:
@@ -142,11 +159,10 @@ def handle_bookmark_not_found(
 
                 # ✅ Final confirmation message
                 # Convert full bookmark path to colons (for CLI-style display)
-                relative_path = os.path.relpath(bookmark_dir, folder_dir)
-                normalized_path = relative_path.replace('/', ':')
-                folder_name = os.path.basename(folder_dir)
+                from app.bookmarks_meta import resolve_full_bookmark_path_from_dir
+                colon_path = resolve_full_bookmark_path_from_dir(bookmark_dir)
 
-                print(f"✅ Created new bookmark: {folder_name}:{normalized_path}")
+
 
     # Check if this is the first bookmark in the folder
     folder_bookmarks = load_bookmarks_from_folder(folder_dir)
@@ -201,5 +217,10 @@ def handle_bookmark_not_found(
                 print(f"📋 Updated folder metadata for '{os.path.basename(last_dir_path)}' with video filename: {video_filename}")
         except Exception as e:
             print(f"❌ Error updating folder metadata: {e}")
+
+    from app.bookmarks_meta import resolve_full_bookmark_path_from_dir
+    colon_path = resolve_full_bookmark_path_from_dir(bookmark_dir)
+    print(f"✅ Created new bookmark: {colon_path}")
+
 
     return folder_dir

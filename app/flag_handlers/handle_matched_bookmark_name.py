@@ -20,6 +20,8 @@ from app.bookmarks_redis import (
     copy_specific_bookmark_redis_state
 )
 from app.bookmarks_consts import IS_DEBUG, REDIS_DUMP_DIR, SCREENSHOT_SAVE_SCALE
+from app.bookmarks_meta import resolve_full_bookmark_path_from_dir
+
 
 
 
@@ -292,5 +294,9 @@ def handle_matched_bookmark_name(
         # Don't update folder metadata for existing bookmarks - only for new ones
         if IS_DEBUG:
             print(f"📋 Skipping folder metadata update for existing bookmark")
+
+    colon_path = resolve_full_bookmark_path_from_dir(bookmark_dir)
+    print(f"✅ Matched and loaded bookmark: {colon_path}")
+
 
     return folder_dir, bookmark_name

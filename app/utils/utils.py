@@ -130,3 +130,15 @@ def get_media_source_info():
     except Exception as e:
         print(f"❌ Failed to get media source info: {e}")
         raise e
+
+def cache_results(func):
+    """Decorator to cache results of a function."""
+    cache = {}
+
+    def wrapper(*args, **kwargs):
+        key = (args, frozenset(kwargs.items()))
+        if key not in cache:
+            cache[key] = func(*args, **kwargs)
+        return cache[key]
+
+    return wrapper

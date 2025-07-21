@@ -19,7 +19,7 @@ from app.bookmarks_folders import get_all_active_folders, parse_folder_bookmark_
 from app.bookmarks_redis import copy_preceding_redis_state, copy_specific_bookmark_redis_state, copy_initial_redis_state, run_redis_command
 from app.bookmarks import get_bookmark_info, load_obs_bookmark_directly, load_bookmarks_from_folder, normalize_path, is_strict_equal, save_last_used_bookmark, get_last_used_bookmark_display, resolve_navigation_bookmark, get_last_used_bookmark
 from app.bookmarks_print import print_all_folders_and_bookmarks
-from app.bookmarks_meta import create_bookmark_meta, create_folder_meta, create_folder_meta
+from app.bookmarks_meta import create_bookmark_meta, create_folder_meta
 from app.utils import print_color, get_media_source_info
 from redis_friendly_converter import convert_file as convert_redis_to_friendly
 from app.flag_handlers import help, ls, which, find_preceding_bookmark, open_video, find_tags, handle_matched_bookmark_name, handle_bookmark_not_found, handle_main_process, handle_redis_operations
@@ -71,18 +71,27 @@ def main():
 
 
     # Route simple flags using the flag_routes table
-    for flag, handler in flag_routes.items():
-        if flag in args:
-            return handler(args)
+    for flag in args:
+        if flag in flag_routes:
+            return flag_routes[flag](args)
 
 
     # Otherwise, we have a bookmark/reserved bookmark name
+    bookmark_arg = None
+    specified_folder_path = None
+    bookmark_name = None
 
-    bookmark_arg = args[0]
+    # Only parse folder path early if we're not using a routed flag
+    if "--which" not in args and "-w" not in args:
+        bookmark_arg = args[0]
+        specified_folder_path, bookmark_name = parse_folder_bookmark_arg(bookmark_arg)
 
-    # Check if this is a navigation command
-    navigation_commands = ["next", "previous", "first", "last"]
-    is_navigation = bookmark_arg in navigation_commands
+        # Check if this is a navigation command
+        navigation_commands = ["next", "previous", "first", "last"]
+        is_navigation = bookmark_arg in navigation_commands
+    else:
+        is_navigation = False  # ensure defined
+
 
     # Check for unsupported flags
     ignore_flags = ["--scale"]
@@ -126,9 +135,6 @@ def main():
         print(f"🔍 Debug - is_no_obs: {is_no_obs}")
 
 
-    # Parse folder:bookmark format if present (only if not navigation)
-    specified_folder_path, bookmark_name = parse_folder_bookmark_arg(bookmark_arg)
-
     # Handle navigation commands
     if is_navigation:
         # Get the last used bookmark to determine the folder
@@ -160,8 +166,13 @@ def main():
         matched_bookmark_name = bookmark_name
     else:
         # Normal bookmark lookup
-        matched_bookmark_name, bookmark_info = get_bookmark_info(bookmark_arg)
 
+        matched_bookmark_name, bookmark_info = get_bookmark_info(bookmark_arg)
+        if IS_DEBUG:
+            print(f"🧪 DEBUG: matched_bookmark_name = {matched_bookmark_name}")
+            print(f"🧪 DEBUG: bookmark_info = {bookmark_info}")
+
+    return
 
     if IS_DEBUG:
         print(f"🎯 Starting integrated runonce-redis workflow for bookmark: '{matched_bookmark_name}'")
@@ -193,6 +204,7 @@ def main():
     #     return 1
     # If the bookmark exists, continue as normal (do not return early)
 
+    # MFB DEBUG: BEFORE
 
     # If adding and bookmark exists, prompt for update
     if is_add_bookmark and matched_bookmark_name:
@@ -224,6 +236,8 @@ def main():
         else:
             matched_bookmark_name = None
 
+
+
     # Main workflow: Load existing bookmark OR create new one
     folder_dir = None  # Track the folder directory throughout the workflow
 
@@ -246,14 +260,13 @@ def main():
         folder_dir, bookmark_name = result
 
         # ✅ Final confirmation for matched bookmarks
-        relative_path = os.path.relpath(os.path.join(folder_dir, bookmark_name), folder_dir)
-        normalized_path = relative_path.replace('/', ':')
+        normalized_path = matched_bookmark_name.replace('/', ':')
         folder_name = os.path.basename(folder_dir)
         print(f"✅ Match found: {folder_name}:{normalized_path}")
 
     else:
         # If we matched a folder path (e.g. from fuzzy match), split it
-        if ':' in specified_folder_path:
+        if specified_folder_path and ':' in specified_folder_path:
             parts = specified_folder_path.split(':')
             specified_folder_path = '/'.join(parts)
             final_bookmark_name = bookmark_name

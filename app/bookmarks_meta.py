@@ -10,7 +10,7 @@ import json
 from datetime import datetime
 from dotenv import load_dotenv
 
-from app.bookmarks_consts import IS_DEBUG
+from app.bookmarks_consts import IS_DEBUG, BOOKMARKS_DIR
 
 # Load environment variables
 load_dotenv()
@@ -62,7 +62,7 @@ def load_bookmark_meta(bookmark_dir):
             if IS_DEBUG:
                 print(f"🔍 Debug - Loading bookmark metadata from: {meta_file}")
                 print(f"🔍 Debug - Raw metadata keys: {list(meta_data.keys())}")
-                
+
             # Handle both old and new formats
             if 'file_path' in meta_data:
                 # Old format - file_path already contains full path
@@ -86,10 +86,10 @@ def load_bookmark_meta(bookmark_dir):
                 if IS_DEBUG:
                     print(f"🔍 Debug - No file_path or video_file_name found in metadata")
                 meta_data['full_file_path'] = ''
-                
+
             if IS_DEBUG:
                 print(f"🔍 Debug - Final full_file_path: {meta_data.get('full_file_path', 'NOT_FOUND')}")
-                
+
             return meta_data
         except json.JSONDecodeError:
             if IS_DEBUG:
@@ -154,3 +154,13 @@ def create_bookmark_meta(bookmark_dir, bookmark_name, media_info, tags=None):
 
     if IS_DEBUG:
         print(f"📋 Created bookmark metadata with tags: {tags}")
+
+def resolve_full_bookmark_path_from_dir(bookmark_dir):
+    rel_path = os.path.relpath(bookmark_dir, BOOKMARKS_DIR)
+    colon_path = rel_path.replace(os.sep, ":")
+
+    # 🔧 Strip 'root' if it's the first part
+    if colon_path.startswith("root:"):
+        colon_path = colon_path[len("root:"):]
+
+    return colon_path

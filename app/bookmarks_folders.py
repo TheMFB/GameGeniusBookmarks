@@ -12,9 +12,12 @@ from datetime import datetime
 
 from app.bookmarks_consts import IS_DEBUG, BOOKMARKS_DIR
 from app.bookmarks_meta import load_folder_meta, create_folder_meta
+from app.utils import cache_results
 
+@cache_results
 def get_all_active_folders():
     """Collect all folder paths under BOOKMARKS_DIR that contain folder_meta.json (excluding archive)"""
+    # TODO(KERCH): We should only run this once per run. A quick fix would be to cache the result in a global variable, and if that exists, return it.
     try:
         if IS_DEBUG:
             print(f"🔍 Scanning for folders inside: {BOOKMARKS_DIR}")
@@ -26,16 +29,18 @@ def get_all_active_folders():
         excluded_dirs = {"archive"}
         active_folders = []
 
-        # Only scan the immediate subdirectories of BOOKMARKS_DIR
-        for item in os.listdir(BOOKMARKS_DIR):
-            item_path = os.path.join(BOOKMARKS_DIR, item)
-            if os.path.isdir(item_path) and item not in excluded_dirs:
-                # Check if this directory contains a folder_meta.json (indicating it's a folder, not a bookmark)
-                folder_meta_file = os.path.join(item_path, "folder_meta.json")
-                if os.path.exists(folder_meta_file):
-                    active_folders.append(item_path)
-                    if IS_DEBUG:
-                        print(f"✅ Found active folder: {item_path}")
+        # Recursively walk through BOOKMARKS_DIR and collect folders with folder_meta.json
+        for root, dirs, files in os.walk(BOOKMARKS_DIR):
+            # Skip excluded directories
+            if any(excluded in root for excluded in excluded_dirs):
+                continue
+
+            if "folder_meta.json" in files:
+                active_folders.append(root)
+                if IS_DEBUG:
+                    print(f"✅ Found active folder (recursive): {root}")
+
+
 
         return active_folders
 
@@ -287,3 +292,19 @@ def update_folder_last_bookmark(folder_dir, bookmark_name):
     # Save updated metadata
     with open(folder_meta_path, 'w') as f:
         json.dump(meta_data, f, indent=2)
+
+def split_bookmark_path(full_path: str):
+    """
+    Splits a combined folder/bookmark string into (folder_path, bookmark_name).
+    If there's no slash, returns ('', full_path).
+    Example:
+        "foo/bar/baz-bookmark" -> ("foo/bar", "baz-bookmark")
+        "bookmark-alone" -> ("", "bookmark-alone")
+    """
+    parts = full_path.strip("/").split("/")
+    if len(parts) == 1:
+        return "", parts[0]
+    folder_path = "/".join(parts[:-1])
+    bookmark_name = parts[-1]
+    return folder_path, bookmark_name
+

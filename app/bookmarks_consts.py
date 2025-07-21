@@ -48,6 +48,8 @@ Options:
   --save-last-redis                          Save current Redis state as redis_after.json
   -v <video_path>, --open-video <video_path> Open video file in OBS (paused) without saving or running anything
   -t, --tags <tag1> <tag2> ...              Add tags to bookmark metadata
+  --show-image           Show the bookmark's screenshot in terminal (if available)
+
 
 Navigation:
   next, previous, first, last                Navigate to adjacent bookmarks in the same directory
