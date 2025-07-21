@@ -463,7 +463,7 @@ def stepwise_match(user_parts, all_bookmarks):
 
 def save_last_used_bookmark(folder_name, bookmark_name, bookmark_info):
     """Save the last used bookmark to a global state file."""
-    state_file = os.path.join(os.path.dirname(__file__), "../obs_bookmark_saves", "last_bookmark_state.json")
+    state_file = os.path.join(os.path.dirname(__file__), "../obs_bookmark_saves", "last_bookmark.json")
     if not bookmark_info:
         bookmark_info = {}
 
@@ -581,7 +581,7 @@ def create_bookmark_symlinks(folder_name, bookmark_name):
 
 def get_last_used_bookmark():
     """Get the last used bookmark from the global state file."""
-    state_file = os.path.join(os.path.dirname(__file__), "../obs_bookmark_saves", "last_bookmark_state.json")
+    state_file = os.path.join(os.path.dirname(__file__), "../obs_bookmark_saves", "last_bookmark.json")
 
     if os.path.exists(state_file):
         try:
