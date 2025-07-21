@@ -13,7 +13,6 @@ from app.bookmarks_folders import get_all_active_folders
 from app.utils import print_color
 from app.bookmarks_meta import construct_full_video_file_path
 
-import re
 
 IS_AGGREGATE_TAGS = False
 
@@ -149,7 +148,6 @@ def get_all_bookmarks_in_json_format():
     for folder_path in get_all_active_folders():
         folder_name = os.path.basename(folder_path)
         all_bookmarks[folder_name] = scan_folder(folder_path)
-    pprint(all_bookmarks)
     return all_bookmarks
 
 

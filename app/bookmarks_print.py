@@ -9,7 +9,7 @@ from app.bookmarks_consts import IS_DEBUG, HIDDEN_COLOR, RESET_COLOR, USAGE_HELP
 from app.bookmarks_folders import get_all_active_folders, find_folder_by_name
 from app.bookmarks_meta import load_folder_meta, compute_hoistable_tags
 from app.bookmarks import load_bookmarks_from_folder, get_last_used_bookmark, get_bookmark_info, get_all_bookmarks_in_json_format
-from app.utils import print_color
+from app.utils import print_color, get_embedded_file_link
 
 IS_PRINT_VIDEO_FILE_NAMES = True
 IS_PULL_TAGS_WHEN_SINGLE_CHILD = True
@@ -82,9 +82,11 @@ def print_all_folders_and_bookmarks(
                 (current_bookmark_name == this_folder_path or current_bookmark_name.startswith(this_folder_path + ":"))
             )
             if is_current_folder:
-                print_color(f"{indent}📁 {folder_name}", 'green')
+                print_color(
+                    f"{indent}{get_embedded_file_link(this_folder_path, "📁")} {folder_name}", 'green')
             else:
-                print(f"{indent}📁 {folder_name}")
+                print(
+                    f"{indent}{get_embedded_file_link(this_folder_path, "📁")} {folder_name}")
 
 
         # Recursively gather all tags in this folder
@@ -124,9 +126,11 @@ def print_all_folders_and_bookmarks(
             )
             hidden_ref_text = f" {HIDDEN_COLOR} {full_path}{RESET_COLOR}"
             if is_current:
-                print(f"\033[32m{indent}   • {timestamp} 📖 {bookmark_name} (current)\033[0m" + hidden_ref_text)
+                print(
+                    f"\033[32m{indent}   • {timestamp} {get_embedded_file_link(full_path, "📖")} {bookmark_name} (current)\033[0m" + hidden_ref_text)
             else:
-                print(f"{indent}   • {timestamp} 📖 {bookmark_name} {hidden_ref_text}")
+                print(
+                    f"{indent}   • {timestamp} {get_embedded_file_link(full_path, "📖")} {bookmark_name} {hidden_ref_text}")
             bookmark_description = bookmark_info.get('description', '')
             if bookmark_description:
                 print_color(f"{indent}      {bookmark_description}", 'cyan')

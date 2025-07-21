@@ -4,7 +4,7 @@ from typing import Literal
 import obsws_python as obs
 import os
 
-from app.bookmarks_consts import IS_DEBUG
+from app.bookmarks_consts import IS_DEBUG, BOOKMARKS_DIR
 
 ColorTypes = Literal['black', 'red', 'green',
                      'yellow', 'blue', 'magenta', 'cyan', 'white']
@@ -128,3 +128,16 @@ def get_media_source_info():
     except Exception as e:
         print(f"❌ Failed to get media source info: {e}")
         raise e
+
+
+def get_embedded_file_link(colon_separated_path, text):
+    slash_separated_path = colon_separated_path.replace(':', '/')
+    if text == "📁":
+        file_path = BOOKMARKS_DIR + '/' + slash_separated_path + "/folder_meta.json"
+    else:
+        file_path = BOOKMARKS_DIR + '/' + slash_separated_path + "/bookmark_meta.json"
+
+    # Ensure three slashes after file:
+    uri = f"file://{file_path}" if file_path.startswith(
+        '/') else f"file:///{file_path}"
+    return f"\033]8;;{uri}\033\\{text}\033]8;;\033\\"
