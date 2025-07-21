@@ -1,27 +1,16 @@
 """
 Integration script that coordinates OBS bookmarks with Redis state management
 """
-from pprint import pprint
 import os
 import sys
 import subprocess
-import time
-import json
 # from networkx import to_dict_of_dicts
-import obsws_python as obs
-from datetime import datetime
-from PIL import Image
-import io
 
-from app.bookmarks import interactive_fuzzy_lookup
-from app.bookmarks_consts import IS_DEBUG, REDIS_DUMP_DIR, ASYNC_WAIT_TIME, OPTIONS_HELP, USAGE_HELP, IS_PRINT_JUST_CURRENT_FOLDER_BOOKMARKS
-from app.bookmarks_folders import get_all_active_folders, parse_folder_bookmark_arg, create_new_folder, find_folder_by_name, create_folder_with_name, select_folder_for_new_bookmark, update_folder_last_bookmark
-from app.bookmarks_redis import copy_preceding_redis_state, copy_specific_bookmark_redis_state, copy_initial_redis_state, run_redis_command
-from app.bookmarks import get_bookmark_info, load_obs_bookmark_directly, load_bookmarks_from_folder, normalize_path, is_strict_equal, save_last_used_bookmark, get_last_used_bookmark_display, resolve_navigation_bookmark, get_last_used_bookmark
+from app.utils import print_color
+from app.bookmarks_consts import IS_DEBUG, REDIS_DUMP_DIR, OPTIONS_HELP, IS_PRINT_JUST_CURRENT_FOLDER_BOOKMARKS
+from app.bookmarks_folders import get_all_active_folders, parse_folder_bookmark_arg
+from app.bookmarks import get_bookmark_info, is_strict_equal, save_last_used_bookmark, resolve_navigation_bookmark, get_last_used_bookmark
 from app.bookmarks_print import print_all_folders_and_bookmarks
-from app.bookmarks_meta import create_bookmark_meta, create_folder_meta, create_folder_meta
-from app.utils import print_color, get_media_source_info
-from redis_friendly_converter import convert_file as convert_redis_to_friendly
 from app.flag_handlers import help, ls, which, find_preceding_bookmark, open_video, find_tags, handle_matched_bookmark_name, handle_bookmark_not_found, handle_main_process, handle_redis_operations
 
 
@@ -154,6 +143,8 @@ def main():
         # Resolve the navigation command
         bookmark_name, bookmark_info = resolve_navigation_bookmark(bookmark_arg, folder_dir)
         if not bookmark_name:
+            print(
+                f"❌ No bookmark name found for'{bookmark_name}' '{bookmark_arg}'")
             return 1
 
         # Set the folder directory for the rest of the workflow
@@ -242,12 +233,29 @@ def main():
             source_bookmark_arg=source_bookmark_arg
         )
         if isinstance(result, int):
+            print("❌ Error in handle_matched_bookmark_name")
             return result  # an error code like 1 was returned
         folder_dir, bookmark_name = result
 
+        # ✅ Final confirmation for matched bookmarks
+        relative_path = os.path.relpath(os.path.join(folder_dir, bookmark_name), folder_dir)
+        normalized_path = relative_path.replace('/', ':')
+        folder_name = os.path.basename(folder_dir)
+        print(f"✅ Match found: {folder_name}:{normalized_path}")
+
     else:
+        # If we matched a folder path (e.g. from fuzzy match), split it
+        if ':' in specified_folder_path:
+            parts = specified_folder_path.split(':')
+            specified_folder_path = '/'.join(parts)
+            final_bookmark_name = bookmark_name
+        else:
+            # fallback (user gave folder manually or it's blank)
+            specified_folder_path = specified_folder_path
+            final_bookmark_name = bookmark_name
+
         # Bookmark does not exist, and user intends to create it
-        return handle_bookmark_not_found(
+        folder_dir = handle_bookmark_not_found(
             bookmark_name=bookmark_name,
             specified_folder_path=specified_folder_path,
             is_super_dry_run=is_super_dry_run,
@@ -259,11 +267,18 @@ def main():
             source_bookmark_arg=source_bookmark_arg
         )
 
+        if folder_dir == 1 or folder_dir == 0:
+            print(f"❌ Error in handle_bookmark_not_found")
+            return folder_dir
+
+
 
     # Run the main process (unless dry run modes)
     if not is_dry_run and not is_super_dry_run:
+        print("🚀 Running main process...")
         result = handle_main_process()
         if result != 0:
+            print("❌ Main process failed")
             return result
 
     # Check if redis_after.json already exists before saving final state (skip in dry run modes)
@@ -278,10 +293,11 @@ def main():
         else:
             print(f"📖 Load-only mode: Skipping final Redis state save")
 
+
     # Save the last used bookmark at the end of successful operations
     if folder_dir:
         folder_name = os.path.basename(folder_dir)
-        save_last_used_bookmark(folder_name, bookmark_name)
+        save_last_used_bookmark(folder_name, bookmark_name, bookmark_info)
         if IS_DEBUG:
             print(f"📋 Saved last used bookmark: '{folder_name}:{bookmark_name}'")
 
@@ -296,8 +312,8 @@ def main():
                 subprocess.run(["open", screenshot_path])
             elif platform.system() == "Linux":
                 subprocess.run(["xdg-open", screenshot_path])
-            elif platform.system() == "Windows":
-                os.startfile(screenshot_path)
+            # elif platform.system() == "Windows":
+            #     os.startfile(screenshot_path)
             else:
                 print(f"⚠️ Preview not supported on this platform.")
             return 0
@@ -329,8 +345,8 @@ def main():
             print(f"   No OBS operations performed")
             print(f"   No Redis operations performed")
     else:
-        print(f"✅ Integrated workflow completed successfully!")
         if IS_DEBUG:
+            print(f"✅ Integrated workflow completed successfully!")
             print(f"   Bookmark: '{bookmark_name}'")
             print(f"   OBS screenshot: {bookmark_name}/screenshot.jpg")
             print(f"   Redis before: {bookmark_name}/redis_before.json")
@@ -345,8 +361,12 @@ def main():
 
     # Print all folders and bookmarks with current one highlighted
     if folder_dir:
-        current_folder_name = os.path.basename(folder_dir)
-        print_all_folders_and_bookmarks(current_folder_name, bookmark_name, IS_PRINT_JUST_CURRENT_FOLDER_BOOKMARKS)
+        print_all_folders_and_bookmarks(
+            current_folder_path=folder_dir,
+            current_bookmark_name=bookmark_name,
+            current_bookmark_info=bookmark_info,
+            is_print_just_current_folder_bookmarks=IS_PRINT_JUST_CURRENT_FOLDER_BOOKMARKS
+        )
 
 
 

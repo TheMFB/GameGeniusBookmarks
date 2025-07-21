@@ -1,10 +1,14 @@
 # IS_DEBUG = True
 IS_DEBUG = False
+# IS_DEBUG_FULL = True
+IS_DEBUG_FULL = False
 ASYNC_WAIT_TIME = 1
 
 SHOW_HIDDEN_COPY_LINE = True
 HIDDEN_COLOR = "\033[38;2;13;42;52m"
 RESET_COLOR = "\033[0m"
+
+EXCLUDED_DIRS = {"archive", "archive_temp", "temp"}
 
 # Base directory is now the current repo root
 import os

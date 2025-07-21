@@ -47,18 +47,24 @@ def handle_bookmark_not_found(
     print("🧪 DEBUG: Entering new bookmark workflow")
     print(f"🆕 Bookmark '{bookmark_name}' doesn't exist - creating new bookmark...")
 
+
+
     # Handle folder:bookmark format
     if specified_folder_path:
         # Check if specified folder exists
         folder_dir = find_folder_by_name(specified_folder_path)
         if not folder_dir:
-            print(f"📁 Folder '{specified_folder_path}' doesn't exist - creating it...")
+            print(f"📁 Creating folder: '{specified_folder_path}'")
             folder_dir = create_folder_with_name(specified_folder_path)
             if not folder_dir:
                 print(f"❌ Failed to create folder '{specified_folder_path}'")
                 return 1
         else:
             print(f"✅ Using existing folder: '{specified_folder_path}'")
+
+        bookmark_dir = os.path.join(folder_dir, bookmark_name)
+        print(f"🆕 Creating new bookmark at: '{bookmark_dir}'")
+
     else:
         # Let user select which folder to create the bookmark in
         folder_dir = select_folder_for_new_bookmark(bookmark_name)
@@ -68,8 +74,8 @@ def handle_bookmark_not_found(
 
     # Create bookmark directory
     bookmark_dir = os.path.join(folder_dir, bookmark_name)
-    if not os.path.exists(bookmark_dir):
-        os.makedirs(bookmark_dir)
+    os.makedirs(bookmark_dir, exist_ok=True)
+
 
     # Handle Redis state based on flags (skip if super dry run)
     if is_super_dry_run:
@@ -133,6 +139,14 @@ def handle_bookmark_not_found(
             if os.path.exists(bookmark_dir):
                 create_bookmark_meta(bookmark_dir, bookmark_name, media_info, tags)
                 print(f"📋 Created bookmark metadata with tags: {tags}")
+
+                # ✅ Final confirmation message
+                # Convert full bookmark path to colons (for CLI-style display)
+                relative_path = os.path.relpath(bookmark_dir, folder_dir)
+                normalized_path = relative_path.replace('/', ':')
+                folder_name = os.path.basename(folder_dir)
+
+                print(f"✅ Created new bookmark: {folder_name}:{normalized_path}")
 
     # Check if this is the first bookmark in the folder
     folder_bookmarks = load_bookmarks_from_folder(folder_dir)

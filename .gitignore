@@ -26,3 +26,7 @@ standalone_utils/obs_bookmarks_app/obs_bookmark_saves/temp*
 
 # Last used bookmark state
 last_bookmark_state.json
+
+shortcuts/
+
+obs_bookmark_saves/

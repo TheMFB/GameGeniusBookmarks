@@ -11,9 +11,11 @@ from datetime import datetime
 from app.bookmarks_consts import IS_DEBUG
 from app.bookmarks_folders import get_all_active_folders
 from app.utils import print_color
+from app.bookmarks_meta import construct_full_video_file_path
 
 import re
 
+IS_AGGREGATE_TAGS = False
 
 def load_bookmarks_from_folder(folder_dir):
     """Load bookmarks from folder directory by scanning for bookmark directories recursively"""
@@ -57,6 +59,98 @@ def load_bookmarks_from_folder(folder_dir):
 
     scan_for_bookmarks(folder_dir)
     return bookmarks
+
+
+def load_folder_meta(folder_path):
+    """Load folder metadata from folder_meta.json"""
+    folder_meta_path = os.path.join(folder_path, "folder_meta.json")
+    if os.path.exists(folder_meta_path):
+        with open(folder_meta_path, 'r') as f:
+            return json.load(f)
+    return None
+
+def load_bookmark_meta(bookmark_path):
+    """Load bookmark metadata from bookmark_meta.json"""
+    bookmark_meta_path = os.path.join(bookmark_path, "bookmark_meta.json")
+    if os.path.exists(bookmark_meta_path):
+        with open(bookmark_meta_path, 'r') as f:
+            return json.load(f)
+    return None
+
+def get_all_bookmarks_in_json_format():
+    """Recursively scan all active folders and build a nested JSON structure with folder and bookmark tags/descriptions, including aggregated tags as 'tags'."""
+    def scan_folder(folder_path):
+        node = {}
+        # Add folder meta if present
+        folder_meta = load_folder_meta(folder_path)
+        folder_tags = set()
+        if folder_meta:
+            folder_tags = set(folder_meta.get('tags', []))
+            node['description'] = folder_meta.get('description', '')
+            node['video_filename'] = folder_meta.get('video_filename', '')
+
+        # List all items in this folder
+        try:
+            items = os.listdir(folder_path)
+        except Exception:
+            return node
+
+        subfolders = {}
+
+        for item in items:
+            item_path = os.path.join(folder_path, item)
+            if os.path.isdir(item_path):
+                # Recurse into subfolder
+                subfolders[item] = scan_folder(item_path)
+            elif item == "bookmark_meta.json":
+                # This folder is a bookmark (leaf)
+                bookmark_meta = load_bookmark_meta(folder_path)
+                node.update({
+                    'tags': bookmark_meta.get('tags', []),
+                    'description': bookmark_meta.get('description', ''),
+                    'timestamp': bookmark_meta.get('timestamp_formatted', ''),
+                    'video_filename': bookmark_meta.get('video_filename', ''),
+                    'type': 'bookmark'
+                })
+                return node  # Do not process further, this is a bookmark
+
+        # Attach subfolders to node
+        for subfolder_name, subfolder_node in subfolders.items():
+            node[subfolder_name] = subfolder_node
+
+        # print('subfolders:')
+        # pprint(subfolders)
+        # print("")
+
+        if IS_AGGREGATE_TAGS:
+            # --- Tag aggregation logic ---
+            # Collect all descendant bookmark tags
+            all_descendant_tags = []
+            for subfolder_node in subfolders.values():
+                child_tags = set(subfolder_node.get('tags', []))
+                if child_tags:
+                    all_descendant_tags.append(child_tags)
+
+            # Compute intersection for grouped tags
+            grouped_tags = set.intersection(*all_descendant_tags) if all_descendant_tags else set()
+
+            # Remove grouped_tags from children (so they are not repeated)
+            for subfolder_node in subfolders.values():
+                if 'tags' in subfolder_node:
+                    subfolder_node['tags'] = list(set(subfolder_node['tags']) - grouped_tags)
+
+            # Combine folder's own tags and grouped tags, and uniquify
+            all_tags = folder_tags.union(grouped_tags)
+            node['tags'] = list(sorted(all_tags))
+
+        return node
+
+    all_bookmarks = {}
+    for folder_path in get_all_active_folders():
+        folder_name = os.path.basename(folder_path)
+        all_bookmarks[folder_name] = scan_folder(folder_path)
+    pprint(all_bookmarks)
+    return all_bookmarks
 
 
 def is_strict_equal(path1, path2):
@@ -121,7 +215,7 @@ def find_matching_bookmark(bookmark_name, folder_dir):
                         return selected_match, bookmarks[selected_match]
                     elif choice_num == len(stepwise_matches) + 1:
                         print(f"✅ Creating new bookmark: '{bookmark_name}'")
-                        return None, None
+                        return stepwise_matches[0], None
                     else:
                         print(
                             f"❌ Invalid choice. Please enter 1-{len(stepwise_matches) + 1}")
@@ -131,21 +225,39 @@ def find_matching_bookmark(bookmark_name, folder_dir):
                     print("\n❌ Cancelled")
                     return None, None
 
+
     # Fallback fuzzy match
-    matches = []
-    for path in bookmarks.keys():
-        # Check for exact prefix match first
-        if path.lower().startswith(bookmark_name.lower()):
-            matches.append(path)
-        # Check if the bookmark name appears anywhere in the path
-        elif bookmark_name.lower() in path.lower():
-            matches.append(path)
-        # Check for partial matches (e.g., 'ra-00' should match 'ra-00-main-screen')
-        elif any(part.lower().startswith(bookmark_name.lower()) for part in path.split('/')):
-            matches.append(path)
-        # Check for wildcard-like matching (e.g., 'ra-00*' should match 'ra-00-main-screen')
-        elif bookmark_name.lower().replace('*', '') in path.lower():
-            matches.append(path)
+    # Fallback fuzzy match (with scoring)
+    scored_matches = []
+    normalized_input = bookmark_name.lower()
+
+    for path, info in bookmarks.items():
+        path_lower = path.lower()
+        tokens = set(path_lower.replace('/', ' ').replace('-', ' ').split())
+        score = 0
+
+        # Token overlap boost
+        input_tokens = set(normalized_input.split())
+        score += len(tokens & input_tokens)
+
+        # Prefix boost
+        if path_lower.startswith(normalized_input):
+            score += 3
+
+        # Substring boost
+        if normalized_input in path_lower:
+            score += 1
+
+        if score > 0:
+            scored_matches.append((score, path))
+
+    if not scored_matches:
+        return None, None
+
+    # Sort by score (descending), then alphabetically
+    scored_matches.sort(key=lambda x: (-x[0], x[1]))
+    matches = [m[1] for m in scored_matches]
+
 
     if len(matches) == 0:
         return None, None
@@ -210,7 +322,6 @@ def get_bookmark_info(bookmark_name):
     # Bookmark not found in any folder
     return None, None
 
-
 def load_obs_bookmark_directly(bookmark_name, bookmark_info):
     """Load OBS bookmark directly without using the bookmark manager script"""
 
@@ -218,10 +329,15 @@ def load_obs_bookmark_directly(bookmark_name, bookmark_info):
         if IS_DEBUG:
             print(f"🔍 Debug - Loading bookmark: {bookmark_name}")
             print(f"🔍 Debug - Bookmark info keys: {list(bookmark_info.keys())}")
-            print(f"🔍 Debug - full_file_path: {bookmark_info.get('full_file_path', 'NOT_FOUND')}")
-            print(f"🔍 Debug - video_file_name: {bookmark_info.get('video_file_name', 'NOT_FOUND')}")
+            print(f"🔍 Debug - video_filename: {bookmark_info.get('video_filename', 'NOT_FOUND')}")
             print(f"🔍 Debug - timestamp: {bookmark_info.get('timestamp', 'NOT_FOUND')}")
             print(f"🔍 Debug - timestamp_formatted: {bookmark_info.get('timestamp_formatted', 'NOT_FOUND')}")
+
+        if not bookmark_info:
+            print(f"❌ No file path found in bookmark metadata")
+            if IS_DEBUG:
+                print(f"🔍 Debug - Available keys in bookmark_info: {list(bookmark_info.keys())}")
+            return False
 
         cl = obs.ReqClient(host="localhost", port=4455, password="", timeout=3)
 
@@ -231,23 +347,25 @@ def load_obs_bookmark_directly(bookmark_name, bookmark_info):
         current_file = current_settings.input_settings.get("local_file", "")
 
         if IS_DEBUG:
+            pprint(current_settings)
             print(f"🔍 Debug - Current OBS file: {current_file}")
 
-        # Use the full_file_path from bookmark_info (constructed by load_bookmark_meta)
-        bookmarked_file = bookmark_info.get('full_file_path', '')
+        # Construct the full video file path from env variable
+        video_filename = bookmark_info.get('video_filename', '')
+        video_file_path = construct_full_video_file_path(video_filename)
 
-        if not bookmarked_file:
+        if not video_filename:
             print(f"❌ No file path found in bookmark metadata")
             if IS_DEBUG:
                 print(f"🔍 Debug - Available keys in bookmark_info: {list(bookmark_info.keys())}")
             return False
 
-        if current_file != bookmarked_file:
-            print(f"📁 Loading video file: {os.path.basename(bookmarked_file)}")
+        if current_file != video_file_path:
+            print(f"📁 Loading video file: {video_file_path}")
             cl.send("SetInputSettings", {
                 "inputName": "Media Source",
                 "inputSettings": {
-                    "local_file": bookmarked_file
+                    "local_file": video_file_path
                 }
             })
             # Wait longer for the media to load before trying to set cursor
@@ -267,7 +385,7 @@ def load_obs_bookmark_directly(bookmark_name, bookmark_info):
         # Set the timestamp
         cl.send("SetMediaInputCursor", {
             "inputName": "Media Source",
-            "mediaCursor": bookmark_info['timestamp']
+            "mediaCursor": int(bookmark_info['timestamp'] * 1000)  # Convert seconds to milliseconds
         })
 
         # Pause the media
@@ -345,29 +463,127 @@ def stepwise_match(user_parts, all_bookmarks):
         depth += 1
 
 
-def save_last_used_bookmark(folder_name, bookmark_name):
+def save_last_used_bookmark(folder_name, bookmark_name, bookmark_info):
     """Save the last used bookmark to a global state file."""
-    state_file = os.path.join(os.path.dirname(__file__), "..", "last_bookmark_state.json")
-
-    # Ensure we're saving the folder basename, not the full path
-    folder_basename = os.path.basename(folder_name) if '/' in folder_name else folder_name
+    state_file = os.path.join(os.path.dirname(__file__), "../obs_bookmark_saves", "last_bookmark_state.json")
+    if not bookmark_info:
+        bookmark_info = {}
 
     # Convert slashes to colons in bookmark name for consistency
+    folder_name_colons = folder_name.replace('/', ':')
     bookmark_name_colons = bookmark_name.replace('/', ':')
+    combined_name = f"{folder_name_colons}:{bookmark_name_colons}"
+    combined_name_array = combined_name.split(':')
+    folder_name_colons = combined_name_array[0]
+    bookmark_name_colons = '/'.join(combined_name_array[1:])
 
     state_data = {
-        "folder_name": folder_basename,  # Save just the basename
-        "bookmark_name": bookmark_name_colons,  # Use colons instead of slashes
-        "timestamp": datetime.now().isoformat()
+        "bookmark_name": bookmark_name,
+        "description": bookmark_info.get('description', ''),
+        "folder_name": folder_name_colons,
+        "tags": bookmark_info.get('tags', []),
+        "timestamp": bookmark_info.get('timestamp', 0),
+        "timestamp_formatted": bookmark_info.get('timestamp_formatted', ''),
+        "video_filename": bookmark_info.get('video_filename', ''),
     }
 
     with open(state_file, 'w') as f:
         json.dump(state_data, f, indent=2)
 
+    # Create symlinks in shortcuts directory
+    create_bookmark_symlinks(folder_name_colons, bookmark_name_colons)
+
+
+def create_bookmark_symlinks(folder_name, bookmark_name):
+    """Create symlinks for the last used bookmark and its folder."""
+    import os
+    import shutil
+
+    folder_name = folder_name.replace(':', '/')
+
+    # Get the root directory of the bookmark manager
+    root_dir = os.path.dirname(os.path.dirname(__file__))
+    shortcuts_dir = os.path.join(root_dir, "shortcuts")
+
+    # Create shortcuts directory if it doesn't exist
+    if not os.path.exists(shortcuts_dir):
+        os.makedirs(shortcuts_dir)
+
+    # Create last_used_bookmark directory if it doesn't exist
+    last_used_bookmark_dir = os.path.join(shortcuts_dir, "last_used_bookmark")
+    if not os.path.exists(last_used_bookmark_dir):
+        os.makedirs(last_used_bookmark_dir)
+
+    # Create last_used_bookmark_folder directory if it doesn't exist
+    last_used_bookmark_folder_dir = os.path.join(shortcuts_dir, "last_used_bookmark_folder")
+    if not os.path.exists(last_used_bookmark_folder_dir):
+        os.makedirs(last_used_bookmark_folder_dir)
+
+    # Clear the last_used_bookmark directory - remove everything first
+    if os.path.exists(last_used_bookmark_dir):
+        for item in os.listdir(last_used_bookmark_dir):
+            item_path = os.path.join(last_used_bookmark_dir, item)
+            try:
+                if os.path.islink(item_path):
+                    os.unlink(item_path)
+                elif os.path.isfile(item_path):
+                    os.remove(item_path)
+                elif os.path.isdir(item_path):
+                    shutil.rmtree(item_path)
+            except Exception as e:
+                print(f"⚠️  Warning: Could not remove {item_path}: {e}")
+
+    # Clear the last_used_bookmark_folder directory - remove everything first
+    if os.path.exists(last_used_bookmark_folder_dir):
+        for item in os.listdir(last_used_bookmark_folder_dir):
+            item_path = os.path.join(last_used_bookmark_folder_dir, item)
+            try:
+                if os.path.islink(item_path):
+                    os.unlink(item_path)
+                elif os.path.isfile(item_path):
+                    os.remove(item_path)
+                elif os.path.isdir(item_path):
+                    shutil.rmtree(item_path)
+            except Exception as e:
+                print(f"⚠️  Warning: Could not remove {item_path}: {e}")
+
+    # Construct the target paths
+    obs_bookmarks_dir = os.path.join(root_dir, "obs_bookmark_saves")
+    bookmark_full_path = os.path.join(obs_bookmarks_dir, folder_name, bookmark_name)
+    bookmark_folder_path = os.path.join(obs_bookmarks_dir, folder_name, os.path.dirname(bookmark_name))
+
+    # Get the bookmark name and folder name (last parts of the paths)
+    bookmark_basename = os.path.basename(bookmark_name)
+    folder_basename = os.path.basename(os.path.dirname(bookmark_name))
+
+    # Define symlink paths
+    bookmark_symlink_path = os.path.join(last_used_bookmark_dir, bookmark_basename)
+    folder_symlink_path = os.path.join(last_used_bookmark_folder_dir, folder_basename)
+
+    try:
+        # Create symlink for the specific bookmark (named after the bookmark)
+        if os.path.exists(bookmark_symlink_path):
+            if os.path.islink(bookmark_symlink_path):
+                os.unlink(bookmark_symlink_path)
+            else:
+                os.remove(bookmark_symlink_path)
+        os.symlink(bookmark_full_path, bookmark_symlink_path)
+
+        # Create symlink for the bookmark's folder (named after the folder)
+        if os.path.exists(folder_symlink_path):
+            if os.path.islink(folder_symlink_path):
+                os.unlink(folder_symlink_path)
+            else:
+                os.remove(folder_symlink_path)
+        os.symlink(bookmark_folder_path, folder_symlink_path)
+
+    except Exception as e:
+        print(f"⚠️  Could not create symlinks: {e}")
+
 
 def get_last_used_bookmark():
     """Get the last used bookmark from the global state file."""
-    state_file = os.path.join(os.path.dirname(__file__), "..", "last_bookmark_state.json")
+    state_file = os.path.join(os.path.dirname(__file__), "../obs_bookmark_saves", "last_bookmark_state.json")
 
     if os.path.exists(state_file):
         try:
@@ -696,9 +912,19 @@ def fuzzy_match_bookmark_tokens(query: str, include_tags_and_descriptions: bool 
     for key, data in token_map.items():
         overlap = data["tokens"].intersection(query_tokens)
         score = len(overlap)
-        if score > 0:
-            print(f"{key} -> match score: {score}, overlap: {overlap}")
-            scored_matches.append((score, key))
+        query_lower = query.lower()
+
+    # Boost if bookmark name starts with query
+    if data["bookmark_name"].lower().startswith(query_lower):
+        score += 10  # strong boost
+
+    # Boost if folder name starts with query
+    if data["folder_name"].lower().startswith(query_lower):
+        score += 5  # moderate boost
+
+    if score > 0:
+        print(f"{key} -> match score: {score}, overlap: {overlap}")
+        scored_matches.append((score, key))
 
     # Sort by score descending, then alphabetically by key
     scored_matches.sort(key=lambda x: (-x[0], x[1]))

@@ -9,6 +9,11 @@ def handle_redis_operations(folder_dir, bookmark_name, is_save_updates):
     Handles saving the final Redis state to redis_after.json
     Returns: True if redis_after was saved, False otherwise
     """
+    if IS_DEBUG:
+        print(f"🔍 Debug - folder_dir: {folder_dir}")
+        print(f"🔍 Debug - bookmark_name: {bookmark_name}")
+        print(f"🔍 Debug - is_save_updates: {is_save_updates}")
+
     redis_after_exists = False
     if folder_dir:
         bookmark_dir = os.path.join(folder_dir, bookmark_name)
@@ -23,10 +28,11 @@ def handle_redis_operations(folder_dir, bookmark_name, is_save_updates):
         should_save_redis_after = is_save_updates or not redis_after_exists
 
         if should_save_redis_after:
-            if is_save_updates and redis_after_exists:
-                print(f"💾 Overwriting existing Redis after state...")
-            else:
-                print(f"💾 Saving final Redis state...")
+            if IS_DEBUG:
+                if is_save_updates and redis_after_exists:
+                    print(f"💾 Overwriting existing Redis after state...")
+                else:
+                    print(f"💾 Saving final Redis state...")
 
             if not run_redis_command(['export', 'bookmark_temp_after']):
                 print("❌ Failed to export final Redis state")
@@ -37,7 +43,8 @@ def handle_redis_operations(folder_dir, bookmark_name, is_save_updates):
             if os.path.exists(temp_redis_after_path) and os.path.exists(bookmark_dir):
                 final_after_path = os.path.join(bookmark_dir, "redis_after.json")
                 shutil.move(temp_redis_after_path, final_after_path)
-                print(f"💾 Saved final Redis state to: {final_after_path}")
+                if IS_DEBUG:
+                    print(f"💾 Saved final Redis state to: {final_after_path}")
 
                 # Generate friendly version
                 try:
