@@ -7,7 +7,7 @@ import os
 import json
 from app.bookmarks_consts import IS_DEBUG, HIDDEN_COLOR, RESET_COLOR, USAGE_HELP
 from app.bookmarks_folders import get_all_active_folders, find_folder_by_name
-from app.bookmarks_meta import load_folder_meta
+from app.bookmarks_meta import load_folder_meta, compute_hoistable_tags
 from app.bookmarks import load_bookmarks_from_folder, get_last_used_bookmark, get_bookmark_info, get_all_bookmarks_in_json_format
 from app.utils import print_color
 
@@ -16,6 +16,20 @@ IS_PULL_TAGS_WHEN_SINGLE_CHILD = True
 # IS_PULL_TAGS_WHEN_SINGLE_CHILD = False
 
 IS_DEBUG = True
+
+def collect_all_bookmark_tags_recursive(node):
+    """Recursively gather all tags from bookmarks inside a folder"""
+    all_tags = []
+
+    for key, value in node.items():
+        if isinstance(value, dict):
+            if value.get('type') == 'bookmark':
+                all_tags.append(set(value.get('tags', [])))
+            else:
+                # Recurse into subfolder
+                all_tags.extend(collect_all_bookmark_tags_recursive(value))
+
+    return all_tags
 
 def print_all_folders_and_bookmarks(
         current_folder_path=None,
@@ -52,8 +66,11 @@ def print_all_folders_and_bookmarks(
         folder_name=None,
         indent_level=0,
         parent_path="",
-        current_bookmark_name=None
+        current_bookmark_name=None,
+        inherited_tags=None
     ):
+        if inherited_tags is None:
+            inherited_tags = set()
         indent = "   " * indent_level
 
         # Only print folder name if it's not the root
@@ -70,9 +87,14 @@ def print_all_folders_and_bookmarks(
                 print(f"{indent}📁 {folder_name}")
 
 
-        # Print folder meta tags (if any)
-        if 'tags' in node and node['tags']:
-            print_color(f"{indent}🏷️ {' '.join(f'•{tag}' for tag in node['tags'])}", 'cyan')
+        # Recursively gather all tags in this folder
+        all_tags = collect_all_bookmark_tags_recursive(node)
+        folder_tags = set.intersection(*all_tags) if all_tags else set()
+
+        if folder_tags:
+            print_color(f"{indent}🏷️ {' '.join(f'•{tag}' for tag in sorted(folder_tags))}", 'cyan')
+
+        effective_inherited_tags = inherited_tags | folder_tags
 
         # Print folder description
         if 'description' in node and node['description']:
@@ -91,7 +113,7 @@ def print_all_folders_and_bookmarks(
 
         # Print bookmarks at this level (do NOT treat as folders)
         for bookmark_name, bookmark_info in sorted(bookmarks):
-            bookmark_tags = set(bookmark_info.get('tags', []))
+            bookmark_tags = set(bookmark_info.get('tags', [])) - effective_inherited_tags
             timestamp = bookmark_info.get('timestamp', 'unknown time')
             if len(timestamp) < 5:
                 timestamp = '0' + timestamp
@@ -119,7 +141,8 @@ def print_all_folders_and_bookmarks(
                 subfolder_name,
                 indent_level + 1,
                 next_path,
-                current_bookmark_name=current_bookmark_name
+                current_bookmark_name=current_bookmark_name,
+                inherited_tags=effective_inherited_tags
             )
 
     # Start printing from the root level
@@ -136,11 +159,11 @@ def print_all_folders_and_bookmarks(
     print("=" * 50)
 
     # TODO(MFB): The current folder path is os-based and only has the basename, and the bookmark name contains pathing.
-    if '/' in current_folder_path:
-        current_folder_path = current_folder_path.split('/')[-1]
-    current_bookmark = current_folder_path + ":" + current_bookmark_name
-    current_bookmark = current_bookmark.replace('/', ':')
-    print_color(f"🔍 Current bookmark: bm {current_bookmark}", 'magenta')
+    # if '/' in current_folder_path:
+    #     current_folder_path = current_folder_path.split('/')[-1]
+    # current_bookmark = current_folder_path + ":" + current_bookmark_name
+    # current_bookmark = current_bookmark.replace('/', ':')
+    # print_color(f"🔍 Current bookmark: bm {current_bookmark}", 'magenta')
 
     return
 
@@ -167,7 +190,7 @@ def print_bookmarks_in_folder(folder_path, indent=0, last_used_path=None, inheri
                 bookmark_tags_list.append(tags)
                 child_bookmarks.append((entry_path, meta))
 
-    folder_tags = set.intersection(*bookmark_tags_list) if bookmark_tags_list else set()
+    folder_tags = compute_hoistable_tags(bookmark_tags_list)
 
     # Print folder-level tags (only if not already inherited)
     printable_tags = folder_tags - inherited_tags

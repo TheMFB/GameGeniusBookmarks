@@ -50,6 +50,12 @@ def load_folder_meta(folder_path):
             return {}
     return {}
 
+def compute_hoistable_tags(list_of_tag_sets):
+    """Given a list of tag sets (one per bookmark), return the set of tags shared by all"""
+    if not list_of_tag_sets:
+        return set()
+    return set.intersection(*list_of_tag_sets)
+
 
 def load_bookmark_meta(bookmark_dir):
     """Load bookmark metadata and construct full file path."""
