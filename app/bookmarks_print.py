@@ -13,6 +13,8 @@ from app.utils import print_color
 
 IS_PRINT_VIDEO_FILE_NAMES = True
 
+IS_DEBUG = True
+
 def print_all_folders_and_bookmarks(
         top_level_folder_name=None,
         current_bookmark_name=None,

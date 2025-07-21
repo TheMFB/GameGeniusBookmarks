@@ -58,3 +58,5 @@ obsopen() { bookmark "$@" -v; }
 openobs() { bookmark "$@" -v; }
 
 ```
+
+

@@ -373,6 +373,8 @@ def stepwise_match(user_parts, all_bookmarks):
 def save_last_used_bookmark(folder_name, bookmark_name, bookmark_info):
     """Save the last used bookmark to a global state file."""
     state_file = os.path.join(os.path.dirname(__file__), "../obs_bookmark_saves", "last_bookmark_state.json")
+    if not bookmark_info:
+        bookmark_info = {}
 
     # Ensure we're saving the folder basename, not the full path
     folder_basename = os.path.basename(folder_name) if '/' in folder_name else folder_name
@@ -420,25 +422,33 @@ def create_bookmark_symlinks(folder_name, bookmark_name):
     if not os.path.exists(last_used_bookmark_folder_dir):
         os.makedirs(last_used_bookmark_folder_dir)
 
-    # Clear the last_used_bookmark directory
-    for item in os.listdir(last_used_bookmark_dir):
-        item_path = os.path.join(last_used_bookmark_dir, item)
-        if os.path.islink(item_path):
-            os.unlink(item_path)
-        elif os.path.isfile(item_path):
-            os.remove(item_path)
-        elif os.path.isdir(item_path):
-            shutil.rmtree(item_path)
+    # Clear the last_used_bookmark directory - remove everything first
+    if os.path.exists(last_used_bookmark_dir):
+        for item in os.listdir(last_used_bookmark_dir):
+            item_path = os.path.join(last_used_bookmark_dir, item)
+            try:
+                if os.path.islink(item_path):
+                    os.unlink(item_path)
+                elif os.path.isfile(item_path):
+                    os.remove(item_path)
+                elif os.path.isdir(item_path):
+                    shutil.rmtree(item_path)
+            except Exception as e:
+                print(f"⚠️  Warning: Could not remove {item_path}: {e}")
 
-    # Clear the last_used_bookmark_folder directory
-    for item in os.listdir(last_used_bookmark_folder_dir):
-        item_path = os.path.join(last_used_bookmark_folder_dir, item)
-        if os.path.islink(item_path):
-            os.unlink(item_path)
-        elif os.path.isfile(item_path):
-            os.remove(item_path)
-        elif os.path.isdir(item_path):
-            shutil.rmtree(item_path)
+    # Clear the last_used_bookmark_folder directory - remove everything first
+    if os.path.exists(last_used_bookmark_folder_dir):
+        for item in os.listdir(last_used_bookmark_folder_dir):
+            item_path = os.path.join(last_used_bookmark_folder_dir, item)
+            try:
+                if os.path.islink(item_path):
+                    os.unlink(item_path)
+                elif os.path.isfile(item_path):
+                    os.remove(item_path)
+                elif os.path.isdir(item_path):
+                    shutil.rmtree(item_path)
+            except Exception as e:
+                print(f"⚠️  Warning: Could not remove {item_path}: {e}")
 
     # Construct the target paths
     obs_bookmarks_dir = os.path.join(root_dir, "obs_bookmark_saves")
@@ -455,9 +465,19 @@ def create_bookmark_symlinks(folder_name, bookmark_name):
 
     try:
         # Create symlink for the specific bookmark (named after the bookmark)
+        if os.path.exists(bookmark_symlink_path):
+            if os.path.islink(bookmark_symlink_path):
+                os.unlink(bookmark_symlink_path)
+            else:
+                os.remove(bookmark_symlink_path)
         os.symlink(bookmark_full_path, bookmark_symlink_path)
 
         # Create symlink for the bookmark's folder (named after the folder)
+        if os.path.exists(folder_symlink_path):
+            if os.path.islink(folder_symlink_path):
+                os.unlink(folder_symlink_path)
+            else:
+                os.remove(folder_symlink_path)
         os.symlink(bookmark_folder_path, folder_symlink_path)
 
     except Exception as e:

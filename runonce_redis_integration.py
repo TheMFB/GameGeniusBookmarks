@@ -255,7 +255,7 @@ def main():
             final_bookmark_name = bookmark_name
 
         # Bookmark does not exist, and user intends to create it
-        handle_bookmark_not_found(
+        folder_dir = handle_bookmark_not_found(
             bookmark_name=bookmark_name,
             specified_folder_path=specified_folder_path,
             is_super_dry_run=is_super_dry_run,
@@ -266,7 +266,11 @@ def main():
             tags=tags,
             source_bookmark_arg=source_bookmark_arg
         )
-        # return 0
+
+        if folder_dir == 1 or folder_dir == 0:
+            print(f"❌ Error in handle_bookmark_not_found")
+            return folder_dir
+
 
 
     # Run the main process (unless dry run modes)
@@ -341,8 +345,8 @@ def main():
             print(f"   No OBS operations performed")
             print(f"   No Redis operations performed")
     else:
-        print(f"✅ Integrated workflow completed successfully!")
         if IS_DEBUG:
+            print(f"✅ Integrated workflow completed successfully!")
             print(f"   Bookmark: '{bookmark_name}'")
             print(f"   OBS screenshot: {bookmark_name}/screenshot.jpg")
             print(f"   Redis before: {bookmark_name}/redis_before.json")
