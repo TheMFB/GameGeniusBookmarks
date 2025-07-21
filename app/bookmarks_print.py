@@ -118,6 +118,8 @@ def print_all_folders_and_bookmarks(
 
     print('')
     print("=" * 50)
+    # TODO(MFB): Print the last used/current bookmark quick reference
+
     return
 
 

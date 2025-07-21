@@ -464,6 +464,11 @@ def save_last_used_bookmark(folder_name, bookmark_name, bookmark_info):
 
     # Convert slashes to colons in bookmark name for consistency
     folder_name_colons = folder_name.replace('/', ':')
+    bookmark_name_colons = bookmark_name.replace('/', ':')
+    combined_name = f"{folder_name_colons}:{bookmark_name_colons}"
+    combined_name_array = combined_name.split(':')
+    folder_name_colons = combined_name_array[0]
+    bookmark_name_colons = '/'.join(combined_name_array[1:])
 
     state_data = {
         "bookmark_name": bookmark_name,
@@ -479,7 +484,7 @@ def save_last_used_bookmark(folder_name, bookmark_name, bookmark_info):
         json.dump(state_data, f, indent=2)
 
     # Create symlinks in shortcuts directory
-    create_bookmark_symlinks(folder_name, bookmark_name)
+    create_bookmark_symlinks(folder_name_colons, bookmark_name_colons)
 
 
 def create_bookmark_symlinks(folder_name, bookmark_name):
