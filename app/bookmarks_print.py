@@ -18,7 +18,7 @@ IS_PULL_TAGS_WHEN_SINGLE_CHILD = True
 IS_DEBUG = True
 
 def print_all_folders_and_bookmarks(
-        folder_path=None,
+        current_folder_path=None,
         current_bookmark_name=None,
         current_bookmark_info=None,
         is_print_just_current_folder_bookmarks=False
@@ -26,8 +26,8 @@ def print_all_folders_and_bookmarks(
     """Print all folders and their bookmarks, highlighting the current one"""
 
     if IS_DEBUG:
-        print_color('---- folder_path:', 'red')
-        pprint(folder_path)
+        print_color('---- current_folder_path:', 'red')
+        pprint(current_folder_path)
         print_color('---- current_bookmark_name:', 'red')
         pprint(current_bookmark_name)
 
@@ -36,17 +36,17 @@ def print_all_folders_and_bookmarks(
         last_used_info = get_last_used_bookmark()
         if last_used_info:
             current_bookmark_name = last_used_info.get('bookmark_name', '')
-            folder_path = last_used_info.get('folder_name', '')
+            current_folder_path = last_used_info.get('folder_name', '')
 
 
     # # Filter folders if we only want to show current folder
-    # if is_print_just_current_folder_bookmarks and folder_path:
+    # if is_print_just_current_folder_bookmarks and current_folder_path:
     #     # Find the folder directory for the current folder
     #     current_folder_dir = None
-    #     for folder_path in active_folders:
-    #         folder_name = os.path.basename(folder_path)
-    #         if folder_name == folder_path:
-    #             current_folder_dir = folder_path
+    #     for current_folder_path in active_folders:
+    #         folder_name = os.path.basename(current_folder_path)
+    #         if folder_name == current_folder_path:
+    #             current_folder_dir = current_folder_path
     #             break
 
     #     if current_folder_dir:
@@ -54,7 +54,7 @@ def print_all_folders_and_bookmarks(
     #     else:
     #         # If we can't find the current folder, show all folders
     #         if IS_DEBUG:
-    #             print(f"⚠️  Could not find folder '{folder_path}', showing all folders")
+    #             print(f"⚠️  Could not find folder '{current_folder_path}', showing all folders")
 
     all_bookmarks = get_all_bookmarks_in_json_format()
 
