@@ -77,13 +77,14 @@ def load_bookmark_meta(bookmark_path):
     return None
 
 def get_all_bookmarks_in_json_format():
-    """Recursively scan all active folders and build a nested JSON structure with folder and bookmark tags/descriptions."""
+    """Recursively scan all active folders and build a nested JSON structure with folder and bookmark tags/descriptions, including aggregated tags as 'tags'."""
     def scan_folder(folder_path):
         node = {}
         # Add folder meta if present
         folder_meta = load_folder_meta(folder_path)
+        folder_tags = set()
         if folder_meta:
-            node['tags'] = folder_meta.get('tags', [])
+            folder_tags = set(folder_meta.get('tags', []))
             node['description'] = folder_meta.get('description', '')
             node['video_filename'] = folder_meta.get('video_filename', '')
 
@@ -93,19 +94,49 @@ def get_all_bookmarks_in_json_format():
         except Exception:
             return node
 
+        subfolders = {}
+
         for item in items:
             item_path = os.path.join(folder_path, item)
             if os.path.isdir(item_path):
                 # Recurse into subfolder
-                node[item] = scan_folder(item_path)
+                subfolders[item] = scan_folder(item_path)
             elif item == "bookmark_meta.json":
                 # This folder is a bookmark (leaf)
                 bookmark_meta = load_bookmark_meta(folder_path)
-                node['tags'] = bookmark_meta.get('tags', [])
-                node['description'] = bookmark_meta.get('description', '')
-                node['timestamp'] = bookmark_meta.get('timestamp_formatted', '')
-                node['video_filename'] = bookmark_meta.get('video_filename', '')
-                node['type'] = 'bookmark'
+                node.update({
+                    'tags': bookmark_meta.get('tags', []),
+                    'description': bookmark_meta.get('description', ''),
+                    'timestamp': bookmark_meta.get('timestamp_formatted', ''),
+                    'video_filename': bookmark_meta.get('video_filename', ''),
+                    'type': 'bookmark'
+                })
+                return node  # Do not process further, this is a bookmark
+
+        # Attach subfolders to node
+        for subfolder_name, subfolder_node in subfolders.items():
+            node[subfolder_name] = subfolder_node
+
+        # --- Tag aggregation logic ---
+        # Collect all descendant bookmark tags
+        all_descendant_tags = []
+        for subfolder_node in subfolders.values():
+            child_tags = set(subfolder_node.get('tags', []))
+            if child_tags:
+                all_descendant_tags.append(child_tags)
+
+        # Compute intersection for grouped tags
+        grouped_tags = set.intersection(*all_descendant_tags) if all_descendant_tags else set()
+
+        # Remove grouped_tags from children (so they are not repeated)
+        for subfolder_node in subfolders.values():
+            if 'tags' in subfolder_node:
+                subfolder_node['tags'] = list(set(subfolder_node['tags']) - grouped_tags)
+
+        # Combine folder's own tags and grouped tags, and uniquify
+        all_tags = folder_tags.union(grouped_tags)
+        node['tags'] = list(sorted(all_tags))
+
         return node
 
     all_bookmarks = {}

@@ -60,8 +60,26 @@ def print_all_folders_and_bookmarks(
 
     pprint(all_bookmarks)
 
-    def print_tree_recursive(node, folder_name=None, indent_level=0, parent_common_tags=None, parent_path=""):
+    def print_tree_recursive(node, folder_name=None, indent_level=0, parent_path=""):
         indent = "   " * indent_level
+        indent_plus_one = "   " * (indent_level + 1)
+
+        # If this node is a bookmark, print it and return (do not treat as a folder)
+        if node.get('type') == 'bookmark':
+            bookmark_tags = set(node.get('tags', []))
+            timestamp = node.get('timestamp', 'unknown time')
+            if len(timestamp) < 5:
+                timestamp = '0' + timestamp
+            # Use parent_path as the full path, or folder_name if parent_path is empty
+            full_path = parent_path if parent_path else (folder_name or "")
+            hidden_ref_text = f" {HIDDEN_COLOR} {full_path}{RESET_COLOR}"
+            print(f"{indent}• {timestamp} 📖 {folder_name} {hidden_ref_text}")
+            bookmark_description = node.get('description', '')
+            if bookmark_description:
+                print_color(f"{indent}   {bookmark_description}", 'cyan')
+            if bookmark_tags:
+                print_color(f"{indent}   🏷️ {' '.join(f'•{tag}' for tag in sorted(bookmark_tags))}", 'cyan')
+            return
 
         # Only print folder name if it's not the root
         if folder_name is not None:
@@ -69,11 +87,12 @@ def print_all_folders_and_bookmarks(
 
         # Print folder meta tags (if any)
         if 'tags' in node and node['tags']:
-            print_color(f"{indent}🏷️ {' '.join(f'•{tag}' for tag in node['tags'])}", 'cyan')
+            print_color(
+                f"{indent_plus_one}🏷️ {' '.join(f'•{tag}' for tag in node['tags'])}", 'cyan')
 
         # Print folder description
         if 'description' in node and node['description']:
-            print_color(f"{indent}   {node['description']}", 'cyan')
+            print_color(f"{indent_plus_one}   {node['description']}", 'cyan')
 
         # Gather bookmarks and subfolders
         bookmarks = []
@@ -83,57 +102,23 @@ def print_all_folders_and_bookmarks(
             if isinstance(value, dict):
                 if value.get('type') == 'bookmark':
                     bookmarks.append((key, value))
-                elif key not in ['tags', 'description', 'video_filename', 'timestamp', 'type']:
+                elif key not in ['tags', 'description', 'video_filename', 'timestamp', 'type', 'grouped_tags']:
                     subfolders.append((key, value))
 
-        # Calculate common tags among all bookmarks in this folder
-        if bookmarks:
-            all_bookmark_tags = [set(b[1].get('tags', [])) for b in bookmarks]
-            common_tags = set.intersection(*all_bookmark_tags) if all_bookmark_tags else set()
-        else:
-            common_tags = set()
-
-        # Only print tags that are not already printed by parent
-        tags_to_print = common_tags - (parent_common_tags or set())
-
-        # Check if we should pull tags up (more than one child or IS_PULL_TAGS_WHEN_SINGLE_CHILD is True)
-        child_count = len(bookmarks) + len(subfolders)
-        if child_count == 1 and not IS_PULL_TAGS_WHEN_SINGLE_CHILD:
-            tags_to_print = set()
-
-        # Print aggregated tags
-        if tags_to_print:
-            print_color(f"{indent}🏷️ {' '.join(f'•{tag}' for tag in sorted(tags_to_print))}", 'cyan')
-
-        # Print bookmarks
+        # Print bookmarks at this level (do NOT treat as folders)
         for bookmark_name, bookmark_info in sorted(bookmarks):
-            bookmark_tags = set(bookmark_info.get('tags', []))
-            unique_tags = bookmark_tags - tags_to_print
-
-            timestamp = bookmark_info.get('timestamp', 'unknown time')
-            if len(timestamp) < 5:
-                timestamp = '0' + timestamp
-
-            # Build full path for ref
+            # The full path for the bookmark
             full_path = f"{parent_path}:{bookmark_name}" if parent_path else bookmark_name
-            hidden_ref_text = f" {HIDDEN_COLOR} {full_path}{RESET_COLOR}"
-
-            print(f"{indent}   • {timestamp} 📖 {bookmark_name} {hidden_ref_text}")
-
-            bookmark_description = bookmark_info.get('description', '')
-            if bookmark_description:
-                print_color(f"{indent}      {bookmark_description}", 'cyan')
-            if unique_tags:
-                print_color(f"{indent}      🏷️ {' '.join(f'•{tag}' for tag in sorted(unique_tags))}", 'cyan')
+            print_tree_recursive(bookmark_info, bookmark_name, indent_level + 1, full_path)
 
         # Recurse into subfolders
         for subfolder_name, subfolder_node in sorted(subfolders):
             next_path = f"{parent_path}:{subfolder_name}" if parent_path else subfolder_name
-            print_tree_recursive(subfolder_node, subfolder_name, indent_level + 1, tags_to_print, next_path)
+            print_tree_recursive(subfolder_node, subfolder_name, indent_level + 1, next_path)
 
     # Start printing from the root level
     for folder_name, folder_node in all_bookmarks.items():
-        print_tree_recursive(folder_node, folder_name, indent_level=0, parent_common_tags=None, parent_path=folder_name)
+        print_tree_recursive(folder_node, folder_name, indent_level=0, parent_path=folder_name)
 
     print('')
     print("=" * 50)
