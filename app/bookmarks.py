@@ -15,6 +15,7 @@ from app.bookmarks_meta import construct_full_video_file_path
 
 import re
 
+IS_AGGREGATE_TAGS = False
 
 def load_bookmarks_from_folder(folder_dir):
     """Load bookmarks from folder directory by scanning for bookmark directories recursively"""
@@ -117,25 +118,30 @@ def get_all_bookmarks_in_json_format():
         for subfolder_name, subfolder_node in subfolders.items():
             node[subfolder_name] = subfolder_node
 
-        # --- Tag aggregation logic ---
-        # Collect all descendant bookmark tags
-        all_descendant_tags = []
-        for subfolder_node in subfolders.values():
-            child_tags = set(subfolder_node.get('tags', []))
-            if child_tags:
-                all_descendant_tags.append(child_tags)
+        # print('subfolders:')
+        # pprint(subfolders)
+        # print("")
 
-        # Compute intersection for grouped tags
-        grouped_tags = set.intersection(*all_descendant_tags) if all_descendant_tags else set()
+        if IS_AGGREGATE_TAGS:
+            # --- Tag aggregation logic ---
+            # Collect all descendant bookmark tags
+            all_descendant_tags = []
+            for subfolder_node in subfolders.values():
+                child_tags = set(subfolder_node.get('tags', []))
+                if child_tags:
+                    all_descendant_tags.append(child_tags)
 
-        # Remove grouped_tags from children (so they are not repeated)
-        for subfolder_node in subfolders.values():
-            if 'tags' in subfolder_node:
-                subfolder_node['tags'] = list(set(subfolder_node['tags']) - grouped_tags)
+            # Compute intersection for grouped tags
+            grouped_tags = set.intersection(*all_descendant_tags) if all_descendant_tags else set()
 
-        # Combine folder's own tags and grouped tags, and uniquify
-        all_tags = folder_tags.union(grouped_tags)
-        node['tags'] = list(sorted(all_tags))
+            # Remove grouped_tags from children (so they are not repeated)
+            for subfolder_node in subfolders.values():
+                if 'tags' in subfolder_node:
+                    subfolder_node['tags'] = list(set(subfolder_node['tags']) - grouped_tags)
+
+            # Combine folder's own tags and grouped tags, and uniquify
+            all_tags = folder_tags.union(grouped_tags)
+            node['tags'] = list(sorted(all_tags))
 
         return node
 
@@ -143,6 +149,7 @@ def get_all_bookmarks_in_json_format():
     for folder_path in get_all_active_folders():
         folder_name = os.path.basename(folder_path)
         all_bookmarks[folder_name] = scan_folder(folder_path)
+    pprint(all_bookmarks)
     return all_bookmarks
 
 

@@ -53,6 +53,9 @@ def print_all_folders_and_bookmarks(
             )
             if is_current_folder:
                 print_color(f"{indent}📁 {folder_name}", 'green')
+            else:
+                print(f"{indent}📁 {folder_name}")
+
 
         # Print folder meta tags (if any)
         if 'tags' in node and node['tags']:
@@ -123,34 +126,55 @@ def print_all_folders_and_bookmarks(
     return
 
 
-def print_bookmarks_in_folder(folder_path):
-    """Helper for -ls <folder>: Print bookmarks in the given folder only."""
-    from app.bookmarks_consts import BOOKMARKS_DIR
+def print_bookmarks_in_folder(folder_path, indent=0, last_used_path=None, inherited_tags=None):
+    if inherited_tags is None:
+        inherited_tags = set()
 
-    # Normalize input: convert relative folder to absolute
-    full_folder_path = os.path.join(BOOKMARKS_DIR, folder_path)
-    full_folder_path = os.path.normpath(full_folder_path)
+    folder_name = os.path.basename(folder_path)
+    print(" " * indent + f"📁 {folder_name}")
 
-    # DEBUG: Show the folder we're trying to match
-    print("🔍 Checking for exact match:")
-    print(f"   full_folder_path: {full_folder_path}")
+    bookmark_tags_list = []
+    child_bookmarks = []
+    subfolders = []
 
-    active_folders = get_all_active_folders()
+    for entry in sorted(os.listdir(folder_path)):
+        entry_path = os.path.join(folder_path, entry)
+        if os.path.isdir(entry_path):
+            subfolders.append(entry_path)
+        elif entry == "bookmark_meta.json":
+            with open(entry_path) as f:
+                meta = json.load(f)
+                tags = set(meta.get("tags", []))
+                bookmark_tags_list.append(tags)
+                child_bookmarks.append((entry_path, meta))
 
-    print("📂 Active folders:")
-    for f in active_folders:
-        print(f"   {f}")
+    folder_tags = set.intersection(*bookmark_tags_list) if bookmark_tags_list else set()
 
-    # Now test for match
-    if full_folder_path not in active_folders:
-        print(f"❌ Folder '{folder_path}' not found (no fuzzy matching allowed with -ls)")
-        return
+    # Print folder-level tags (only if not already inherited)
+    printable_tags = folder_tags - inherited_tags
+    if printable_tags:
+        tag_str = " ".join([f"•{tag}" for tag in sorted(printable_tags)])
+        print(" " * (indent + 3) + f"🏷️ {tag_str}")
 
-    print_all_folders_and_bookmarks(
-        current_folder_path=full_folder_path,
-        current_bookmark_name=None,
-        is_print_just_current_folder_bookmarks=True
-    )
+    # Print each bookmark, omitting inherited or folder-level tags
+    for entry_path, meta in child_bookmarks:
+        bookmark_dir = os.path.dirname(entry_path)
+        bookmark_name = os.path.basename(bookmark_dir)
+        tags = set(meta.get("tags", []))
+        visible_tags = tags - folder_tags - inherited_tags
+        time_str = meta.get("timestamp_formatted", "--:--")
+        tag_str = " ".join([f"•{tag}" for tag in sorted(visible_tags)])
+        display_line = f"{time_str} 📖 {bookmark_name}"
+        if bookmark_dir == last_used_path:
+            display_line += " ← last used"
+        print(" " * (indent + 3) + f"• {display_line}")
+        if tag_str:
+            print(" " * (indent + 6) + f"🏷️ {tag_str}")
+
+    # Recurse into subfolders
+    for subfolder in subfolders:
+        print_bookmarks_in_folder(subfolder, indent + 3, last_used_path, inherited_tags | folder_tags)
+
 
 
 
