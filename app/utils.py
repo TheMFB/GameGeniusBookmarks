@@ -3,6 +3,8 @@ from pprint import pprint
 from typing import Literal
 import obsws_python as obs
 import os
+import base64
+
 
 from app.bookmarks_consts import IS_DEBUG, BOOKMARKS_DIR
 
@@ -141,3 +143,21 @@ def get_embedded_file_link(colon_separated_path, text):
     uri = f"file://{file_path}" if file_path.startswith(
         '/') else f"file:///{file_path}"
     return f"\033]8;;{uri}\033\\{text}\033]8;;\033\\"
+
+
+def get_iterm_image_code(image_path, width="auto", height="auto"):
+    try:
+        with open(image_path, "rb") as f:
+            img_data = f.read()
+        b64_img = base64.b64encode(img_data).decode("utf-8")
+        return f"\033]1337;File=inline=1;width={width};height={height};preserveAspectRatio=1:{b64_img}\a"
+    except Exception:
+        return None
+
+def print_image(image_path, width="auto", height="auto"):
+    """
+    Print an image to the iTerm2 terminal using ANSI escape codes.
+    """
+    image_code = get_iterm_image_code(image_path, width, height)
+    if image_code:
+        print(image_code)

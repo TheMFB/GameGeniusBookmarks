@@ -16,6 +16,14 @@ def ls(args):
         is_json = True
         args_copy.remove('--json')
 
+    # Detect --show-image flag
+    show_image = False
+    for flag in ['--show-image', '-i']:
+        if flag in args_copy:
+            show_image = True
+            args_copy.remove(flag)
+
+
     # If no folder path is provided: list everything
     if not args_copy:
         print_all_folders_and_bookmarks()
@@ -59,10 +67,32 @@ def ls(args):
             if len(all_matches) == 1:
                 print("✅ Match found:")
                 print(f"  • {all_matches[0]}")
+
+                if show_image:
+                    from app.utils import print_image
+                    folder_name, path = all_matches[0].split(":", 1)
+                    bookmark_dir = os.path.join("obs_bookmark_saves", folder_name, *path.split(":"))
+                    for ext in ['jpg', 'png']:
+                        image_path = os.path.join(bookmark_dir, f"screenshot.{ext}")
+                        if os.path.exists(image_path):
+                            print_image(image_path)
+                            break
+
                 return 0
 
             print(f"⚠️  Multiple bookmarks matched '{folder_arg}':")
+            from app.utils import print_image
+
             for m in all_matches:
                 print(f"  • {m}")
+                if show_image:
+                    folder_name, path = m.split(":", 1)
+                    bookmark_dir = os.path.join("obs_bookmark_saves", folder_name, *path.split(":"))
+                    for ext in ['jpg', 'png']:
+                        image_path = os.path.join(bookmark_dir, f"screenshot.{ext}")
+                        if os.path.exists(image_path):
+                            print_image(image_path)
+                            break
+
             print("Please be more specific.")
             return 1

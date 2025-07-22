@@ -308,6 +308,20 @@ def find_matching_bookmark(bookmark_name, folder_dir):
                 return None, None
 
 
+def find_matching_bookmark_strict(bookmark_query, folder_dir):
+    """
+    Return exact match path if the normalized bookmark path matches query.
+    Used during creation to avoid fuzzy fallbacks.
+    """
+    bookmarks = load_bookmarks_from_folder(folder_dir)
+    if not bookmarks:
+        return None
+
+    query_norm = bookmark_query.strip().replace(':', '/')
+    return query_norm if query_norm in bookmarks else None
+
+
+
 def get_bookmark_info(bookmark_name):
     """Get information about a bookmark if it exists, with fuzzy matching across all folders"""
     # Get all active folders

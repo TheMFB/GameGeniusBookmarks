@@ -9,7 +9,7 @@ import subprocess
 from app.utils import print_color
 from app.bookmarks_consts import IS_DEBUG, REDIS_DUMP_DIR, OPTIONS_HELP, IS_PRINT_JUST_CURRENT_FOLDER_BOOKMARKS
 from app.bookmarks_folders import get_all_active_folders, parse_folder_bookmark_arg
-from app.bookmarks import get_bookmark_info, is_strict_equal, save_last_used_bookmark, resolve_navigation_bookmark, get_last_used_bookmark
+from app.bookmarks import get_bookmark_info, is_strict_equal, save_last_used_bookmark, resolve_navigation_bookmark, get_last_used_bookmark, find_matching_bookmark_strict
 from app.bookmarks_print import print_all_folders_and_bookmarks
 from app.flag_handlers import help, ls, which, find_preceding_bookmark, open_video, find_tags, handle_matched_bookmark_name, handle_bookmark_not_found, handle_main_process, handle_redis_operations
 
@@ -184,36 +184,41 @@ def main():
     #     return 1
     # If the bookmark exists, continue as normal (do not return early)
 
-
-    # If adding and bookmark exists, prompt for update
-    if is_add_bookmark and matched_bookmark_name:
-        if is_strict_equal(matched_bookmark_name, bookmark_arg):
-            print(
-                f"⚠️  Bookmark '{matched_bookmark_name}' already exists (partial match).")
+    # Check for exact bookmark path match
+    if is_add_bookmark and specified_folder_path:
+        folder_path = os.path.join("obs_bookmark_saves", specified_folder_path)
+        existing_path = find_matching_bookmark_strict(bookmark_name, folder_path)
+        if existing_path:
+            print(f"⚠️ Bookmark already exists: {existing_path}")
             print("What would you like to do?")
-            print("  1. Update before redis json")
-            print("  2. Update after redis json")
-            print("  3. Update both")
-            print("  4. Cancel")
+            print("  1. Load existing")
+            print("  2. Overwrite before redis")
+            print("  3. Overwrite after redis")
+            print("  4. Overwrite both")
+            print("  5. Cancel")
             while True:
-                choice = input("Enter choice (1-4): ").strip()
+                choice = input("Enter choice (1–5): ").strip()
                 if choice == "1":
-                    overwrite_redis_after = False
+                    matched_bookmark_name = existing_path
+                    bookmark_info = get_bookmark_info(f"{specified_folder_path}:{bookmark_name}")[1]
                     break
                 elif choice == "2":
-                    overwrite_redis_after = True
+                    matched_bookmark_name = existing_path
+                    overwrite_redis_after = False
                     break
                 elif choice == "3":
+                    matched_bookmark_name = existing_path
                     overwrite_redis_after = True
-                    # We'll handle both updates in the workflow below
                     break
                 elif choice == "4":
+                    matched_bookmark_name = existing_path
+                    overwrite_redis_after = True  # will handle both below
+                    break
+                elif choice == "5":
                     print("❌ Cancelled.")
                     return 1
                 else:
-                    print("❌ Invalid choice. Please enter 1-4.")
-        else:
-            matched_bookmark_name = None
+                    print("❌ Invalid choice. Please enter 1–5.")
 
     # Main workflow: Load existing bookmark OR create new one
     folder_dir = None  # Track the folder directory throughout the workflow
