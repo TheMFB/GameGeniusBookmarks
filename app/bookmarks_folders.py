@@ -206,9 +206,7 @@ def find_folder_by_name(folder_name):
     print_color('---- 0 folder_name find_folder_by_name:', 'green')
     print(folder_name)
 
-    """Find folder directory by name or full relative path (e.g. kerch/comp/m02)
-    
-    """
+    """Find folder directory by name or full relative path (e.g. kerch/comp/m02)"""
     active_folders = get_all_active_folders()
     for folder_path in active_folders:
         print_color('---- 1 folder_path find_folder_by_name:', 'magenta')
@@ -218,45 +216,45 @@ def find_folder_by_name(folder_name):
         rel_path = os.path.relpath(folder_path, BOOKMARKS_DIR)
         folder_basename = os.path.basename(folder_path)
 
-        # Check for exact matches first
+        # ✅ Check for exact matches first
         if folder_name == folder_basename or folder_name == rel_path:
-            return folder_path
+            return rel_path
 
-        # Check for partial matches (e.g., "respawn" should match "respawn-allies")
+        # ✅ Check for partial matches (e.g., "respawn" should match "respawn-allies")
         if folder_name.lower() in folder_basename.lower():
-            return folder_path
+            return rel_path
 
     return None
 
-
-
-def create_folder_with_name(folder_name):
+@print_def_name
+def create_folder_with_name(rel_folder_dir):
     """Create a new folder with the specified name"""
+
     try:
         # Ensure bookmarks directory exists
         if not os.path.exists(BOOKMARKS_DIR):
             os.makedirs(BOOKMARKS_DIR)
 
         # Create folder directory
-        folder_dir = os.path.join(BOOKMARKS_DIR, folder_name)
-        if os.path.exists(folder_dir):
-            print(f"⚠️  Folder '{folder_name}' already exists")
-            return folder_dir
+        abs_folder_dir = os.path.join(BOOKMARKS_DIR, rel_folder_dir)
+        if os.path.exists(abs_folder_dir):
+            print(f"⚠️  Folder '{abs_folder_dir}' already exists")
+            return abs_folder_dir
 
-        os.makedirs(folder_dir)
+        os.makedirs(abs_folder_dir)
+
+        # TODO(KERCH): HERE go ahead and create the folder_meta.json file in each of these folders if it doesn't exist. (recursive check down path)
 
         # Create folder metadata
-        if create_folder_meta(folder_dir, folder_name):
-            print(f"✅ Created new folder: '{folder_name}'")
-            return folder_dir
+        if create_folder_meta(abs_folder_dir):
+            return abs_folder_dir
         else:
             print(f"❌ Failed to create folder metadata")
             return None
 
     except Exception as e:
-        print(f"❌ Error creating folder '{folder_name}': {e}")
+        print(f"❌ Error creating folder '{rel_folder_dir}': {e}")
         return None
-
 
 # TODO(MFB): This needs to be updated to pull the bookmark name from the end and the rest as the folder_path.
 def parse_folder_bookmark_arg(bookmark_arg):

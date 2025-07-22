@@ -4,6 +4,7 @@ Integration script that coordinates OBS bookmarks with Redis state management
 import os
 import sys
 import subprocess
+from pprint import pprint
 # from networkx import to_dict_of_dicts
 
 from app.utils import print_color
@@ -126,7 +127,7 @@ def main():
             print(f"❌ No last used bookmark found. Cannot navigate with '{bookmark_arg}'")
             return 1
 
-        folder_name = last_used_info.get("folder_name")
+        folder_name = last_used_info.get("rel_bookmark_dir")
 
         # Find the folder directory
         folder_dir = None
@@ -301,6 +302,8 @@ def main():
 
     # Save the last used bookmark at the end of successful operations
     if folder_dir:
+        print_color('---- folder_dir:', 'red')
+        pprint(folder_dir)
         folder_name = os.path.basename(folder_dir)
         save_last_used_bookmark(folder_name, bookmark_name, bookmark_info)
         if IS_DEBUG:

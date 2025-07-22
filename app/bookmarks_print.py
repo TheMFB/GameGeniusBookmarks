@@ -56,12 +56,12 @@ def print_all_folders_and_bookmarks(
         last_used_info = get_last_used_bookmark()
         if last_used_info:
             current_bookmark_name = last_used_info.get('bookmark_name', '')
-            current_folder_path = last_used_info.get('folder_name', '')
+            current_folder_path = last_used_info.get('rel_bookmark_dir', '')
 
     if IS_DEBUG:
         print_color('---- current_bookmark_name after:', 'magenta')
         pprint(current_bookmark_name)
-        print_color('---- current_folder_path after:', 'magenta')
+        print_color('---- rel_bookmark_dir after:', 'magenta')
         pprint(current_folder_path)
 
     all_bookmarks = get_all_bookmarks_in_json_format()

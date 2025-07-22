@@ -1,7 +1,7 @@
-# type: ignore
 """
 Integration script that coordinates OBS bookmarks with Redis state management
 """
+from math import log
 import os
 import re
 from pprint import pprint
@@ -484,25 +484,25 @@ def stepwise_match(user_parts, all_bookmarks):
         tokenized_bookmarks = matching
         depth += 1
 
-
-def save_last_used_bookmark(folder_name, bookmark_name, bookmark_info):
+# TODO(KERCH): save_last_used_bookmark
+def save_last_used_bookmark(rel_bookmark_dir, bookmark_name, bookmark_info):
     """Save the last used bookmark to a global state file."""
-    state_file = os.path.join(os.path.dirname(__file__), "../obs_bookmark_saves", "last_bookmark.json")
+    print('Saving last used bookmark:')
+    print('rel_bookmark_dir', rel_bookmark_dir)
+    print('bookmark_name', bookmark_name)
+
+
+    state_file = os.path.join(os.path.dirname(__file__), "../obs_bookmark_saves", "last_bookmark_state.json")
     if not bookmark_info:
         bookmark_info = {}
 
     # Convert slashes to colons in bookmark name for consistency
-    folder_name_colons = folder_name.replace('/', ':')
-    bookmark_name_colons = bookmark_name.replace('/', ':')
-    combined_name = f"{folder_name_colons}:{bookmark_name_colons}"
-    combined_name_array = combined_name.split(':')
-    folder_name_colons = combined_name_array[0]
-    bookmark_name_colons = '/'.join(combined_name_array[1:])
+    bookmark_dir_colons = rel_bookmark_dir.replace('/', ':')
 
     state_data = {
         "bookmark_name": bookmark_name,
         "description": bookmark_info.get('description', ''),
-        "folder_name": folder_name_colons,
+        "rel_bookmark_dir": bookmark_dir_colons,
         "tags": bookmark_info.get('tags', []),
         "timestamp": bookmark_info.get('timestamp', 0),
         "timestamp_formatted": bookmark_info.get('timestamp_formatted', ''),
@@ -513,7 +513,7 @@ def save_last_used_bookmark(folder_name, bookmark_name, bookmark_info):
         json.dump(state_data, f, indent=2)
 
     # Create symlinks in shortcuts directory
-    create_bookmark_symlinks(folder_name_colons, bookmark_name_colons)
+    create_bookmark_symlinks(bookmark_dir_colons, bookmark_name)
 
 
 def create_bookmark_symlinks(folder_name, bookmark_name):
@@ -602,10 +602,10 @@ def create_bookmark_symlinks(folder_name, bookmark_name):
     except Exception as e:
         print(f"⚠️  Could not create symlinks: {e}")
 
-
+# TODO(KERCH): get_last_used_bookmark
 def get_last_used_bookmark():
     """Get the last used bookmark from the global state file."""
-    state_file = os.path.join(os.path.dirname(__file__), "../obs_bookmark_saves", "last_bookmark.json")
+    state_file = os.path.join(os.path.dirname(__file__), "../obs_bookmark_saves", "last_bookmark_state.json")
 
     if os.path.exists(state_file):
         try:

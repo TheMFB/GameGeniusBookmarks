@@ -1,10 +1,7 @@
-#!/usr/bin/env python3
-# type: ignore
-# pylint: disable-all
-# flake8: noqa
 """
 Integration script that coordinates OBS bookmarks with Redis state management
 """
+from pprint import pprint
 import os
 import json
 from datetime import datetime
@@ -17,7 +14,9 @@ load_dotenv()
 
 def get_video_path_from_env():
     """Get the VIDEO_PATH from environment variables."""
-    video_path = os.getenv('VIDEO_PATH')
+    video_path = os.getenv('VIDEO_PATH_2')
+    print('---- video_path:')
+    pprint(video_path)
     if not video_path:
         print("⚠️  VIDEO_PATH not found in environment variables")
         return None
@@ -104,9 +103,9 @@ def load_bookmark_meta(bookmark_dir):
     return {}
 
 
-def create_folder_meta(folder_path, folder_name, description="", tags=None):
+def create_folder_meta(abs_folder_dir, description="", tags=None):
     """Create or update folder_meta.json file"""
-    folder_meta_file = os.path.join(folder_path, "folder_meta.json")
+    folder_meta_file = os.path.join(abs_folder_dir, "folder_meta.json")
 
     if tags is None:
         tags = []
