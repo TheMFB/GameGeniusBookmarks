@@ -3,6 +3,7 @@
 Integration script that coordinates OBS bookmarks with Redis state management
 """
 import os
+import re
 from pprint import pprint
 import json
 import obsws_python as obs
@@ -265,15 +266,24 @@ def find_matching_bookmark(bookmark_name, folder_dir):
             print(f"🎯 Fuzzy fallback match: '{target}'")
         return target, bookmarks[target]
     else:
-        print(
-            f"🤔 Fuzzy fallback: Multiple bookmarks found matching '{bookmark_name}':")
-        print(f"   Please be more specific. Found {len(matches)} matches:")
-        for i, match in enumerate(sorted(matches), 1):
+        print(f"\n🤔 Multiple bookmarks matched '{bookmark_name}':\n")
+        sorted_matches = sorted(matches)
+
+        for i, match in enumerate(sorted_matches, 1):
             bookmark = bookmarks[match]
-            display_match = match.replace('/', ' : ')
-            print(
-                f"   {i}. {bookmark.get('timestamp_formatted', 'unknown time')} - {display_match}")
-        print(f"   {len(matches) + 1}. Create new bookmark '{bookmark_name}'")
+            time_str = bookmark.get("timestamp_formatted", "unknown time")
+            tags_str = ", ".join(bookmark.get("tags", [])) if bookmark.get("tags") else "none"
+            path_parts = match.split("/")
+            bookmark_label = path_parts[-1]
+            folder_path = " / ".join(path_parts[:-1]) if len(path_parts) > 1 else "(root)"
+
+            print(f"  [{i}] {bookmark_label}")
+            print(f"      • Time: {time_str}")
+            print(f"      • Path: {folder_path}")
+            print(f"      • Tags: {tags_str}")
+
+        print(f"  [{len(matches) + 1}] ➕ Create new bookmark '{bookmark_name}'\n")
+
 
         while True:
             try:
@@ -962,4 +972,21 @@ def interactive_fuzzy_lookup(query: str, top_n: int = 5):
         except ValueError:
             print("❌ Please enter a number.")
 
+def token_match_bookmarks(query_string, folder_dir):
+    """
+    Returns a list of bookmark paths where all query tokens appear in the path.
+    """
+    bookmarks = load_bookmarks_from_folder(folder_dir)
+    if not bookmarks:
+        return []
+
+    query_tokens = set(query_string.lower().replace(":", " ").replace("/", " ").split())
+    matches = []
+
+    for path in bookmarks.keys():
+        path_tokens = set(re.split(r"[-_/]", path.lower()))
+        if query_tokens.issubset(path_tokens):
+            matches.append(path)
+
+    return matches
 

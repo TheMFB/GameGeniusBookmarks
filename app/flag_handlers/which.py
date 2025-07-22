@@ -1,10 +1,18 @@
 import os
+import json
 from app.bookmarks import find_matching_bookmark
 from app.bookmarks_folders import parse_folder_bookmark_arg
 
 def which(args):
     which_flag = '--which' if '--which' in args else '-w'
     args_copy = args.copy()
+
+    # Detect --json flag
+    is_json = False
+    if '--json' in args_copy:
+        is_json = True
+        args_copy.remove('--json')
+
     if which_flag in args_copy:
         args_copy.remove(which_flag)
 
@@ -39,10 +47,20 @@ def which(args):
             relative_match = match_path[len("obs_bookmark_saves/"):]
         else:
             relative_match = match_path
-        colon_path = relative_match.replace(os.sep, ":")
-        print("✅ Match found:")
-        print(f"  • {colon_path}")
+
+        if is_json:
+            folder, *subpath = relative_match.split(os.sep)
+            import json
+            print(json.dumps({
+                "folder": folder,
+                "path": '/'.join(subpath)
+            }))
+        else:
+            colon_path = relative_match.replace(os.sep, ":")
+            print("✅ Match found:")
+            print(f"  • {colon_path}")
         return 0
+
 
 
     print(f"⚠️  Multiple bookmarks matched '{fuzzy_input}':")
