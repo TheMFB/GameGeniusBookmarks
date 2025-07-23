@@ -7,14 +7,14 @@ import os
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, project_root)
 
-from app.bookmarks_folders import get_all_active_folders
+from app.bookmarks_folders import get_all_valid_root_dir_names
 from app.bookmarks import load_bookmarks_from_folder
 
 print("Testing folder detection fix...")
 print("=" * 50)
 
 # Test folder detection
-active_folders = get_all_active_folders()
+active_folders = get_all_valid_root_dir_names()
 print(f"Found {len(active_folders)} active folders:")
 for folder in active_folders:
     print(f"  📁 {folder}")

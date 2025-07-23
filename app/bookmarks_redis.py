@@ -6,7 +6,7 @@ import subprocess
 import os
 
 from app.bookmarks_consts import IS_DEBUG, INITIAL_REDIS_STATE_DIR
-from app.bookmarks_folders import get_all_active_folders, parse_folder_bookmark_arg, find_folder_by_name
+from app.bookmarks_folders import get_all_valid_root_dir_names, parse_cli_bookmark_args, find_folder_by_name
 from app.bookmarks import find_preceding_bookmark, find_matching_bookmark
 
 
@@ -84,11 +84,11 @@ def copy_preceding_redis_state(bookmark_name, folder_dir):
         return False
 
 
-def copy_specific_bookmark_redis_state(source_bookmark_arg, target_bookmark_name, target_folder_dir):
+def copy_specific_bookmark_redis_state(cli_args_list, target_bookmark_name, target_folder_dir):
     """Copy redis_after.json from a specific bookmark to redis_before.json of target bookmark"""
     # Parse the source bookmark argument (may be "bookmark" or "folder:bookmark")
-    source_folder_name, source_bookmark_name = parse_folder_bookmark_arg(
-        source_bookmark_arg)
+    source_folder_name, source_bookmark_name = parse_cli_bookmark_args(
+        cli_args_list)
 
     if IS_DEBUG:
         print(
@@ -115,7 +115,7 @@ def copy_specific_bookmark_redis_state(source_bookmark_arg, target_bookmark_name
         source_bookmark_name = matched_name
     else:
         # Search across all folders
-        active_folders = get_all_active_folders()
+        active_folders = get_all_valid_root_dir_names()
         for folder_path in active_folders:
             matched_name, bookmark_info = find_matching_bookmark(
                 source_bookmark_name, folder_path)

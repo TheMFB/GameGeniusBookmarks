@@ -9,13 +9,13 @@ import sys
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, project_root)
 
-from app.bookmarks_folders import parse_folder_bookmark_arg, find_folder_by_name
+from app.bookmarks_folders import parse_cli_bookmark_args, find_folder_by_name
 from app.bookmarks import find_matching_bookmark
 from app.bookmarks_consts import BOOKMARKS_DIR
 
-def test_parse_folder_bookmark_arg():
+def test_parse_folder_args_for_run_bookmarks():
     """Test the folder:bookmark parsing function."""
-    print("🧪 Testing parse_folder_bookmark_arg...")
+    print("🧪 Testing parse_cli_bookmark_args...")
 
     test_cases = [
         ("respawn-allies:ra-00-main-screen", ("respawn-allies", "ra-00-main-screen")),
@@ -25,7 +25,7 @@ def test_parse_folder_bookmark_arg():
     ]
 
     for input_arg, expected in test_cases:
-        result = parse_folder_bookmark_arg(input_arg)
+        result = parse_cli_bookmark_args(input_arg)
         print(f"  Input: '{input_arg}'")
         print(f"  Expected: {expected}")
         print(f"  Got: {result}")
@@ -41,8 +41,8 @@ def test_find_folder_by_name():
         return
 
     # Get all folders
-    from app.bookmarks_folders import get_all_active_folders
-    active_folders = get_all_active_folders()
+    from app.bookmarks_folders import get_all_valid_root_dir_names
+    active_folders = get_all_valid_root_dir_names()
 
     print(f"📁 Active folders: {[os.path.basename(f) for f in active_folders]}")
 
@@ -103,7 +103,7 @@ if __name__ == "__main__":
     print("🔧 Testing bookmark system fixes...")
     print("=" * 50)
 
-    test_parse_folder_bookmark_arg()
+    test_parse_folder_args_for_run_bookmarks()
     test_find_folder_by_name()
     test_fuzzy_matching()
     test_redis_dump_path()

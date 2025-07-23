@@ -1,9 +1,9 @@
 import os
 import json
 from app.bookmarks import find_matching_bookmark
-from app.bookmarks_folders import parse_folder_bookmark_arg
+from app.bookmarks_folders import parse_cli_bookmark_args
 
-def which(args):
+def handle_which(args):
     which_flag = '--which' if '--which' in args else '-w'
     args_copy = args.copy()
 
@@ -21,13 +21,13 @@ def which(args):
         print("Usage: bm <bookmark_path> --which")
         return 1
 
-    specified_folder_path, fuzzy_input = parse_folder_bookmark_arg(args_copy[0])
-    print(f"🎯 Specified folder: '{specified_folder_path}', bookmark path: '{fuzzy_input}'")
+    cli_bookmark_dir, fuzzy_input = parse_cli_bookmark_args(args_copy[0])
+    print(f"🎯 Specified folder: '{cli_bookmark_dir}', bookmark path: '{fuzzy_input}'")
 
     matches = []
 
-    if specified_folder_path:
-        folder_path = os.path.join("obs_bookmark_saves", specified_folder_path)
+    if cli_bookmark_dir:
+        folder_path = os.path.join("obs_bookmark_saves", cli_bookmark_dir)
         folder_matches = find_matching_bookmark(fuzzy_input, folder_path)
         if folder_matches:
             matches = [m for m in folder_matches if isinstance(m, str)]

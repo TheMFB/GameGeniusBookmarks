@@ -14,9 +14,12 @@ from datetime import datetime
 from app.utils import print_color
 from app.bookmarks_consts import IS_DEBUG, BOOKMARKS_DIR, EXCLUDED_DIRS
 from app.bookmarks_meta import load_folder_meta, create_folder_meta
+from app.utils.decorators import print_def_name
 
+IS_PRINT_DEF_NAME = True
 
-def get_all_active_folders():
+@print_def_name(IS_PRINT_DEF_NAME)
+def get_all_valid_root_dir_names():
     """Collect all folder paths under BOOKMARKS_DIR that contain folder_meta.json (excluding archive)"""
     try:
         if IS_DEBUG:
@@ -47,14 +50,13 @@ def get_all_active_folders():
         return []
 
 
-
-
+@print_def_name(IS_PRINT_DEF_NAME)
 def select_folder_for_new_bookmark(bookmark_name):
     """Let user select which folder to create a new bookmark in"""
     print_color('---- 0 bookmark_name select_folder_for_new_bookmark:', 'green')
     print(bookmark_name)
 
-    active_folders = get_all_active_folders()
+    active_folders = get_all_valid_root_dir_names()
 
     if not active_folders:
         print("❌ No active folders found")
@@ -94,6 +96,7 @@ def select_folder_for_new_bookmark(bookmark_name):
             return None
 
 
+@print_def_name(IS_PRINT_DEF_NAME)
 def create_new_folder():
     """Create a new folder when no active folders exist"""
     try:
@@ -130,6 +133,7 @@ def create_new_folder():
         return None
 
 
+@print_def_name(IS_PRINT_DEF_NAME)
 def get_current_folder_dir():
     """Get the current OBS folder directory"""
     try:
@@ -192,10 +196,11 @@ def get_current_folder_dir():
         return None
 
 
+@print_def_name(IS_PRINT_DEF_NAME)
 def find_folder_by_name(folder_name):
     # TODO(MFB): This is not working as expected. We should pull in the all bookmarks json, and attempt to step through the tree, and see if there are any full / partial matches. The all_active_folders is giving a full system path, but only the basename for what we need.
 
-    # ---- 0 specified_folder_path:
+    # ---- 0 cli_bookmark_dir:
     # 'videos/0001_green_dog/g01/m01'
     # ---- 0 folder_name find_folder_by_name:
     # videos/0001_green_dog/g01/m01
@@ -207,7 +212,7 @@ def find_folder_by_name(folder_name):
     print(folder_name)
 
     """Find folder directory by name or full relative path (e.g. kerch/comp/m02)"""
-    active_folders = get_all_active_folders()
+    active_folders = get_all_valid_root_dir_names()
     for folder_path in active_folders:
         print_color('---- 1 folder_path find_folder_by_name:', 'magenta')
         print(folder_path)
@@ -226,7 +231,6 @@ def find_folder_by_name(folder_name):
 
     return None
 
-@print_def_name
 def create_folder_with_name(rel_folder_dir):
     """Create a new folder with the specified name"""
 
@@ -257,7 +261,9 @@ def create_folder_with_name(rel_folder_dir):
         return None
 
 # TODO(MFB): This needs to be updated to pull the bookmark name from the end and the rest as the folder_path.
-def parse_folder_bookmark_arg(bookmark_arg):
+
+@print_def_name(IS_PRINT_DEF_NAME)
+def parse_cli_bookmark_args(args_for_run_bookmarks):
     """
     Parses a bookmark path in the format 'folder:bookmark' or 'folder:subfolder:bookmark'
     and returns (folder_name, bookmark_name).
@@ -269,10 +275,10 @@ def parse_folder_bookmark_arg(bookmark_arg):
         folder_name: 'respawn-allies'
         bookmark_name: 'ra-00-main-screen'
     """
-    if not bookmark_arg or ':' not in bookmark_arg:
-        return None, bookmark_arg  # no folder path
+    if not args_for_run_bookmarks or ':' not in args_for_run_bookmarks:
+        return None, args_for_run_bookmarks  # no folder path
 
-    parts = bookmark_arg.split(':')
+    parts = args_for_run_bookmarks.split(':')
     # Take the last entry as the bookmark name and the rest as the folder name
     folder_name = ':'.join(parts[:-1])
     bookmark_name = parts[-1]
@@ -283,7 +289,7 @@ def parse_folder_bookmark_arg(bookmark_arg):
     return folder_name, bookmark_name
 
 
-
+@print_def_name(IS_PRINT_DEF_NAME)
 def update_folder_last_bookmark(folder_dir, bookmark_name):
     """Update the folder metadata with the last used bookmark."""
     folder_meta_path = os.path.join(folder_dir, "folder_meta.json")

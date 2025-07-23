@@ -14,9 +14,8 @@ load_dotenv()
 
 def get_video_path_from_env():
     """Get the VIDEO_PATH from environment variables."""
+    # TODO(MFB): This is being called for each bookmark when we are assembling the bookmarks. This should really only be called once.
     video_path = os.getenv('VIDEO_PATH_2')
-    print('---- video_path:')
-    pprint(video_path)
     if not video_path:
         print("⚠️  VIDEO_PATH not found in environment variables")
         return None
@@ -71,7 +70,7 @@ def load_bookmark_meta(bookmark_dir):
             # Handle both old and new formats
             if 'file_path' in meta_data:
                 # Old format - file_path already contains full path
-                meta_data['full_file_path'] = meta_data['file_path']
+                meta_data['video_path'] = meta_data['file_path']
                 if IS_DEBUG_FULL:
                     print(f"🔍 Debug - Using old format file_path: {meta_data['file_path']}")
             elif 'video_filename' in meta_data:
@@ -83,17 +82,17 @@ def load_bookmark_meta(bookmark_dir):
                 if IS_DEBUG_FULL:
                     print(f"🔍 Debug - Constructed full_path: {full_path}")
                 if full_path:
-                    meta_data['full_file_path'] = full_path
+                    meta_data['video_path'] = full_path
                 else:
                     print(f"⚠️  Could not construct full path for {video_filename}")
-                    meta_data['full_file_path'] = ''
+                    meta_data['video_path'] = ''
             else:
                 if IS_DEBUG:
                     print(f"🔍 Debug - No file_path or video_filename found in metadata")
-                meta_data['full_file_path'] = ''
+                meta_data['video_path'] = ''
 
             if IS_DEBUG_FULL:
-                print(f"🔍 Debug - Final full_file_path: {meta_data.get('full_file_path', 'NOT_FOUND')}")
+                print(f"🔍 Debug - Final video_path: {meta_data.get('video_path', 'NOT_FOUND')}")
 
             return meta_data
         except json.JSONDecodeError:

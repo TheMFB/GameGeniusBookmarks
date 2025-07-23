@@ -10,20 +10,26 @@ import obsws_python as obs
 from datetime import datetime
 
 from app.bookmarks_consts import IS_DEBUG
-from app.bookmarks_folders import get_all_active_folders
-from app.utils import print_color
+from app.bookmarks_folders import get_all_valid_root_dir_names
+from app.utils import print_color, split_path_into_array, print_def_name, memoize
 from app.bookmarks_meta import construct_full_video_file_path
 
-
 IS_AGGREGATE_TAGS = False
+IS_PRINT_DEF_NAME = True
 
+
+# TODO(KERCH): Cache results of this function.
+
+
+@print_def_name(IS_PRINT_DEF_NAME)
+@memoize
 def load_bookmarks_from_folder(folder_dir):
     """Load bookmarks from folder directory by scanning for bookmark directories recursively"""
-    bookmarks = {}
+    matched_bookmarks = {}
     # print_color('Loading bookmarks from folder: ' + folder_dir, 'cyan')
 
     if not os.path.exists(folder_dir):
-        return bookmarks
+        return matched_bookmarks
 
     def scan_for_bookmarks(directory, current_path=""):
         """Recursively scan directory for bookmark_meta.json files"""
@@ -44,7 +50,7 @@ def load_bookmarks_from_folder(folder_dir):
                     from app.bookmarks_meta import load_bookmark_meta
                     bookmark_meta = load_bookmark_meta(item_path)
                     if bookmark_meta:
-                        bookmarks[bookmark_key] = bookmark_meta
+                        matched_bookmarks[bookmark_key] = bookmark_meta
                     else:
                         if IS_DEBUG:
                             print(f"⚠️  Could not load bookmark metadata from {item_path}")
@@ -58,7 +64,7 @@ def load_bookmarks_from_folder(folder_dir):
                     scan_for_bookmarks(item_path, new_path)
 
     scan_for_bookmarks(folder_dir)
-    return bookmarks
+    return matched_bookmarks
 
 
 def load_folder_meta(folder_path):
@@ -77,6 +83,8 @@ def load_bookmark_meta(bookmark_path):
             return json.load(f)
     return None
 
+@print_def_name(IS_PRINT_DEF_NAME)
+@memoize
 def get_all_bookmarks_in_json_format():
     """Recursively scan all active folders and build a nested JSON structure with folder and bookmark tags/descriptions, including aggregated tags as 'tags'."""
     def scan_folder(folder_path):
@@ -146,7 +154,7 @@ def get_all_bookmarks_in_json_format():
         return node
 
     all_bookmarks = {}
-    for folder_path in get_all_active_folders():
+    for folder_path in get_all_valid_root_dir_names():
         folder_name = os.path.basename(folder_path)
         all_bookmarks[folder_name] = scan_folder(folder_path)
     return all_bookmarks
@@ -154,52 +162,79 @@ def get_all_bookmarks_in_json_format():
 
 def is_strict_equal(path1, path2):
     """Check if two bookmark paths are strictly equal after normalization."""
-    normalized1 = '/'.join(normalize_path(path1))
-    normalized2 = '/'.join(normalize_path(path2))
+    normalized1 = '/'.join(split_path_into_array(path1))
+    normalized2 = '/'.join(split_path_into_array(path2))
     return normalized1 == normalized2
 
 
-def find_matching_bookmark(bookmark_name, folder_dir):
+@print_def_name(IS_PRINT_DEF_NAME)
+def find_matching_bookmark(rel_bookmark_path, root_dir_name):
     """Find matching bookmark using step-through logic and fallback fuzzy matching."""
 
-    bookmarks = load_bookmarks_from_folder(folder_dir)
-    if not bookmarks:
+    print('=' * 50)
+    print_color('---- find_matching_bookmark rel_bookmark_path:', 'magenta')
+    pprint(rel_bookmark_path)
+
+    all_bookmark_objects = load_bookmarks_from_folder(root_dir_name)
+    print('')
+    print('')
+    print('')
+    print('')
+    print('')
+    print('')
+
+    print_color('---- all_bookmark_objects ----', 'magenta')
+    pprint(all_bookmark_objects)
+    print('')
+    print('')
+    print('')
+    print('')
+    print('')
+    print('')
+    print('')
+
+
+    if not all_bookmark_objects:
         return None, None
 
-    all_paths = list(bookmarks.keys())
+    all_saved_bookmark_paths = list(all_bookmark_objects.keys())
+    print_color('----len all_saved_bookmark_paths:', 'magenta')
+    print(len(all_saved_bookmark_paths))
+    pprint(all_saved_bookmark_paths)
 
     # First try exact match
-    if bookmark_name in bookmarks:
+    if rel_bookmark_path in all_saved_bookmark_paths:
         if IS_DEBUG:
-            print(f"🎯 Found exact bookmark match: '{bookmark_name}'")
-        return bookmark_name, bookmarks[bookmark_name]
+            print(f"🎯 Found exact rel_bookmark_path match: '{rel_bookmark_path}'")
+        return rel_bookmark_path, all_saved_bookmark_paths[rel_bookmark_path]
 
     # Normalize user input
-    user_input_parts = normalize_path(bookmark_name)
+    user_input_parts = split_path_into_array(rel_bookmark_path)
 
     if IS_DEBUG:
         print(f"🔎 Normalized user input: {user_input_parts}")
 
     # Try stepwise matching
-    stepwise_matches = stepwise_match(user_input_parts, all_paths)
+    stepwise_matches = stepwise_match(user_input_parts, all_saved_bookmark_paths)
 
     if stepwise_matches:
         if len(stepwise_matches) == 1:
             target = stepwise_matches[0]
             if IS_DEBUG:
                 print(f"🎯 Stepwise match resolved to: '{target}'")
-            return target, bookmarks[target]
+            return target, all_bookmark_objects[target]
         else:
-            print(f"🤔 Multiple bookmarks found matching '{bookmark_name}':")
+            print(
+                f"🤔 Multiple all_bookmark_objects found matching '{rel_bookmark_path}':")
             print(
                 f"   Please be more specific. Found {len(stepwise_matches)} matches:")
             for i, match in enumerate(sorted(stepwise_matches), 1):
-                bookmark = bookmarks[match]
+                rel_bookmark_path = all_bookmark_objects[match]
                 display_match = match.replace('/', ' : ')
                 print(
-                    f"   {i}. {bookmark.get('timestamp_formatted', 'unknown time')} - {display_match}")
+                    f"   {i}. {rel_bookmark_path.get('timestamp_formatted', 'unknown time')} - {display_match}")
             print(
-                f"   {len(stepwise_matches) + 1}. Create new bookmark '{bookmark_name}'")
+                f"   {len(stepwise_matches) + 1}. Create new rel_bookmark_path '{rel_bookmark_path}'")
 
             while True:
                 try:
@@ -211,9 +246,9 @@ def find_matching_bookmark(bookmark_name, folder_dir):
                         selected_match = sorted(stepwise_matches)[
                             choice_num - 1]
                         print(f"✅ Selected bookmark: '{selected_match}'")
-                        return selected_match, bookmarks[selected_match]
+                        return selected_match, all_bookmark_objects[selected_match]
                     elif choice_num == len(stepwise_matches) + 1:
-                        print(f"✅ Creating new bookmark: '{bookmark_name}'")
+                        print(f"✅ Creating new bookmark: '{rel_bookmark_path}'")
                         return stepwise_matches[0], None
                     else:
                         print(
@@ -228,9 +263,9 @@ def find_matching_bookmark(bookmark_name, folder_dir):
     # Fallback fuzzy match
     # Fallback fuzzy match (with scoring)
     scored_matches = []
-    normalized_input = bookmark_name.lower()
+    normalized_input = rel_bookmark_path.lower()
 
-    for path, info in bookmarks.items():
+    for path, info in all_bookmark_objects.items():
         path_lower = path.lower()
         tokens = set(path_lower.replace('/', ' ').replace('-', ' ').split())
         score = 0
@@ -264,15 +299,15 @@ def find_matching_bookmark(bookmark_name, folder_dir):
         target = matches[0]
         if IS_DEBUG:
             print(f"🎯 Fuzzy fallback match: '{target}'")
-        return target, bookmarks[target]
+        return target, all_bookmark_objects[target]
     else:
-        print(f"\n🤔 Multiple bookmarks matched '{bookmark_name}':\n")
+        print(f"\n🤔 Multiple bookmarks matched '{bookmark}':\n")
         sorted_matches = sorted(matches)
 
         for i, match in enumerate(sorted_matches, 1):
-            bookmark = bookmarks[match]
-            time_str = bookmark.get("timestamp_formatted", "unknown time")
-            tags_str = ", ".join(bookmark.get("tags", [])) if bookmark.get("tags") else "none"
+            rel_bookmark_path = all_bookmark_objects[match]
+            time_str = rel_bookmark_path.get("timestamp_formatted", "unknown time")
+            tags_str = ", ".join(rel_bookmark_path.get("tags", [])) if rel_bookmark_path.get("tags") else "none"
             path_parts = match.split("/")
             bookmark_label = path_parts[-1]
             folder_path = " / ".join(path_parts[:-1]) if len(path_parts) > 1 else "(root)"
@@ -282,7 +317,7 @@ def find_matching_bookmark(bookmark_name, folder_dir):
             print(f"      • Path: {folder_path}")
             print(f"      • Tags: {tags_str}")
 
-        print(f"  [{len(matches) + 1}] ➕ Create new bookmark '{bookmark_name}'\n")
+        print(f"  [{len(matches) + 1}] ➕ Create new rel_bookmark_path '{rel_bookmark_path}'\n")
 
 
         while True:
@@ -293,10 +328,10 @@ def find_matching_bookmark(bookmark_name, folder_dir):
 
                 if 1 <= choice_num <= len(matches):
                     selected_match = sorted(matches)[choice_num - 1]
-                    print(f"✅ Selected bookmark: '{selected_match}'")
-                    return selected_match, bookmarks[selected_match]
+                    print(f"✅ Selected rel_bookmark_path: '{selected_match}'")
+                    return selected_match, all_bookmark_objects[selected_match]
                 elif choice_num == len(matches) + 1:
-                    print(f"✅ Creating new bookmark: '{bookmark_name}'")
+                    print(f"✅ Creating new rel_bookmark_path: '{rel_bookmark_path}'")
                     return None, None
                 else:
                     print(
@@ -313,50 +348,56 @@ def find_matching_bookmark_strict(bookmark_query, folder_dir):
     Return exact match path if the normalized bookmark path matches query.
     Used during creation to avoid fuzzy fallbacks.
     """
-    bookmarks = load_bookmarks_from_folder(folder_dir)
-    if not bookmarks:
+    all_bookmark_objects = load_bookmarks_from_folder(folder_dir)
+    if not all_bookmark_objects:
         return None
 
     query_norm = bookmark_query.strip().replace(':', '/')
-    return query_norm if query_norm in bookmarks else None
+    return query_norm if query_norm in all_bookmark_objects else None
 
 
 
-def get_bookmark_info(bookmark_name):
+@print_def_name(IS_PRINT_DEF_NAME)
+def get_bookmark_info(bookmark_tail_name):
+    # TODO(MFB): Look into me and see if this is the bookmark name or the whole bookmark (path+name)
     """Get information about a bookmark if it exists, with fuzzy matching across all folders"""
     # Get all active folders
-    active_folders = get_all_active_folders()
-    if not active_folders:
+    valid_root_dir_names = get_all_valid_root_dir_names()
+    print_color('---- valid_root_dir_names ----', 'magenta')
+    pprint(valid_root_dir_names)
+    print('')
+    if not valid_root_dir_names:
         return None, None
 
     # Search for bookmark across all folders
-    for folder_dir in active_folders:
+    for root_dir_name in valid_root_dir_names:
         matched_name, bookmark_info = find_matching_bookmark(
-            bookmark_name, folder_dir)
+            bookmark_tail_name, root_dir_name)
         if matched_name:
-            folder_name = os.path.basename(folder_dir)
+            folder_name = os.path.basename(root_dir_name)
             if IS_DEBUG:
                 print(
                     f"🎯 Found bookmark '{matched_name}' in folder '{folder_name}'")
             return matched_name, bookmark_info
 
-    print(f"❌ No bookmarks found matching '{bookmark_name}'")
+    print(f"❌ No bookmarks found matching '{bookmark_tail_name}'")
     # Bookmark not found in any folder
     return None, None
 
-def load_obs_bookmark_directly(bookmark_name, bookmark_info):
+def load_obs_bookmark_directly(rel_bookmark_path, bookmark_info):
+    # TODO(MFB): Look into me and see if this is the bookmark name or the whole bookmark (path+name)
     """Load OBS bookmark directly without using the bookmark manager script"""
 
     try:
         if IS_DEBUG:
-            print(f"🔍 Debug - Loading bookmark: {bookmark_name}")
+            print(f"🔍 Debug - Loading rel_bookmark_path: {rel_bookmark_path}")
             print(f"🔍 Debug - Bookmark info keys: {list(bookmark_info.keys())}")
             print(f"🔍 Debug - video_filename: {bookmark_info.get('video_filename', 'NOT_FOUND')}")
             print(f"🔍 Debug - timestamp: {bookmark_info.get('timestamp', 'NOT_FOUND')}")
             print(f"🔍 Debug - timestamp_formatted: {bookmark_info.get('timestamp_formatted', 'NOT_FOUND')}")
 
         if not bookmark_info:
-            print(f"❌ No file path found in bookmark metadata")
+            print(f"❌ No file path found in rel_bookmark_path metadata")
             if IS_DEBUG:
                 print(f"🔍 Debug - Available keys in bookmark_info: {list(bookmark_info.keys())}")
             return False
@@ -377,7 +418,7 @@ def load_obs_bookmark_directly(bookmark_name, bookmark_info):
         video_file_path = construct_full_video_file_path(video_filename)
 
         if not video_filename:
-            print(f"❌ No file path found in bookmark metadata")
+            print(f"❌ No file path found in rel_bookmark_path metadata")
             if IS_DEBUG:
                 print(f"🔍 Debug - Available keys in bookmark_info: {list(bookmark_info.keys())}")
             return False
@@ -425,13 +466,17 @@ def load_obs_bookmark_directly(bookmark_name, bookmark_info):
 
 
 def find_preceding_bookmark(bookmark_name, folder_dir):
+    # TODO(MFB): Look into me and see if this is the bookmark name or the whole bookmark (path+name)
     """Find the bookmark that comes alphabetically/numerically before the given bookmark"""
-    bookmarks = load_bookmarks_from_folder(folder_dir)
-    if not bookmarks:
+    print_color('??? ---- find_preceding_bookmark bookmark_name:', 'red')
+    pprint(bookmark_name)
+
+    all_bookmark_objects = load_bookmarks_from_folder(folder_dir)
+    if not all_bookmark_objects:
         return None
 
     # Get all bookmark names and sort them
-    bookmark_names = sorted(bookmarks.keys())
+    bookmark_names = sorted(all_bookmark_objects.keys())
 
     # Find the index of the current bookmark
     try:
@@ -447,20 +492,13 @@ def find_preceding_bookmark(bookmark_name, folder_dir):
     return None
 
 
-def normalize_path(path):
-    """Normalize a bookmark path into components using both ':' and '/' as separators."""
-    # Replace both ':' and '/' with a single consistent delimiter (e.g., '/')
-    path = path.replace(':', '/')
-    return [part.lower() for part in path.strip('/').split('/')]
-
-
-def stepwise_match(user_parts, all_bookmarks):
+def stepwise_match(user_parts, all_saved_bookmark_paths):
     """Perform reverse stepwise matching of user_parts against bookmark paths."""
     candidate_paths = []
 
     # Preprocess all bookmarks into tokenized forms
     tokenized_bookmarks = [
-        (path, normalize_path(path)) for path in all_bookmarks
+        (path, split_path_into_array(path)) for path in all_saved_bookmark_paths
     ]
 
     # Start by finding matches on the last user input part
@@ -488,8 +526,14 @@ def stepwise_match(user_parts, all_bookmarks):
 def save_last_used_bookmark(rel_bookmark_dir, bookmark_name, bookmark_info):
     """Save the last used bookmark to a global state file."""
     print('Saving last used bookmark:')
-    print('rel_bookmark_dir', rel_bookmark_dir)
-    print('bookmark_name', bookmark_name)
+
+    print_color('??? ---- save_last_used_bookmark rel_bookmark_dir:', 'red')
+    pprint(rel_bookmark_dir)
+    print_color('??? ---- save_last_used_bookmark bookmark_name:', 'red')
+    pprint(bookmark_name)
+
+
+
 
 
     state_file = os.path.join(os.path.dirname(__file__), "../obs_bookmark_saves", "last_bookmark_state.json")
@@ -520,6 +564,11 @@ def create_bookmark_symlinks(folder_name, bookmark_name):
     """Create symlinks for the last used bookmark and its folder."""
     import os
     import shutil
+
+    print_color('??? ---- create_bookmark_symlinks folder_name:', 'red')
+    pprint(folder_name)
+    print_color('??? ---- create_bookmark_symlinks bookmark_name:', 'red')
+    pprint(bookmark_name)
 
     folder_name = folder_name.replace(':', '/')
 
@@ -603,6 +652,8 @@ def create_bookmark_symlinks(folder_name, bookmark_name):
         print(f"⚠️  Could not create symlinks: {e}")
 
 # TODO(KERCH): get_last_used_bookmark
+@print_def_name(IS_PRINT_DEF_NAME)
+@memoize
 def get_last_used_bookmark():
     """Get the last used bookmark from the global state file."""
     state_file = os.path.join(os.path.dirname(__file__), "../obs_bookmark_saves", "last_bookmark_state.json")
@@ -615,6 +666,8 @@ def get_last_used_bookmark():
             return None
     return None
 
+
+@print_def_name(IS_PRINT_DEF_NAME)
 def get_last_used_bookmark_display():
     """Get a formatted string for displaying the last used bookmark."""
     last_used = get_last_used_bookmark()
@@ -622,6 +675,12 @@ def get_last_used_bookmark_display():
         folder_name = last_used.get("folder_name", "unknown")
         bookmark_name = last_used.get("bookmark_name", "unknown")
         timestamp = last_used.get("timestamp", "")
+
+        print_color('??? ---- get_last_used_bookmark_display folder_name:', 'red')
+        pprint(folder_name)
+        print_color('??? ---- get_last_used_bookmark_display bookmark_name:', 'red')
+        pprint(bookmark_name)
+
 
         # Format timestamp for display
         try:
@@ -634,10 +693,15 @@ def get_last_used_bookmark_display():
     return None
 
 
-def find_next_bookmark_in_folder(current_bookmark_name, folder_dir):
+def find_next_bookmark_in_folder(current_bookmark_name, bookmark_dir):
     """Find the next bookmark in the same directory as the current bookmark."""
-    bookmarks = load_bookmarks_from_folder(folder_dir)
-    if not bookmarks:
+    print_color('??? ---- find_next_bookmark_in_folder current_bookmark_name:', 'red')
+    pprint(current_bookmark_name)
+    print_color('??? ---- find_next_bookmark_in_folder bookmark_dir:', 'red')
+    pprint(bookmark_dir)
+
+    all_bookmark_objects = load_bookmarks_from_folder(bookmark_dir)
+    if not all_bookmark_objects:
         return None
 
     # Get all bookmarks in the same directory as the current bookmark
@@ -646,28 +710,28 @@ def find_next_bookmark_in_folder(current_bookmark_name, folder_dir):
     current_bookmark_basename = current_path_parts[-1]
 
     # Get all bookmarks in the same folder
-    folder_bookmarks = []
-    for bookmark_path in bookmarks.keys():
-        path_parts = bookmark_path.split('/')
+    sibling_bookmark_paths = []
+    for bookmark_object_path in all_bookmark_objects.keys():
+        path_parts = bookmark_object_path.split('/')
         if len(path_parts) == 1:
-            folder_path = 'root'
+            bookmark_obj_dir = 'root'
         else:
-            folder_path = '/'.join(path_parts[:-1])
+            bookmark_obj_dir = '/'.join(path_parts[:-1])
 
-        if folder_path == current_folder_path:
-            folder_bookmarks.append(path_parts[-1])
+        if bookmark_obj_dir == current_folder_path:
+            sibling_bookmark_paths.append(path_parts[-1])
 
-    if not folder_bookmarks:
+    if not sibling_bookmark_paths:
         return None
 
     # Sort bookmarks to get proper order
-    folder_bookmarks.sort()
+    sibling_bookmark_paths.sort()
 
     # Find current bookmark index
     try:
-        current_index = folder_bookmarks.index(current_bookmark_basename)
-        if current_index < len(folder_bookmarks) - 1:
-            next_bookmark_basename = folder_bookmarks[current_index + 1]
+        current_index = sibling_bookmark_paths.index(current_bookmark_basename)
+        if current_index < len(sibling_bookmark_paths) - 1:
+            next_bookmark_basename = sibling_bookmark_paths[current_index + 1]
             # Construct full path
             if current_folder_path == 'root':
                 return next_bookmark_basename
@@ -681,8 +745,13 @@ def find_next_bookmark_in_folder(current_bookmark_name, folder_dir):
 
 def find_previous_bookmark_in_folder(current_bookmark_name, folder_dir):
     """Find the previous bookmark in the same directory as the current bookmark."""
-    bookmarks = load_bookmarks_from_folder(folder_dir)
-    if not bookmarks:
+    print_color('??? ---- find_previous_bookmark_in_folder current_bookmark_name:', 'red')
+    pprint(current_bookmark_name)
+    print_color('??? ---- find_previous_bookmark_in_folder folder_dir:', 'red')
+    pprint(folder_dir)
+
+    all_bookmark_objects = load_bookmarks_from_folder(folder_dir)
+    if not all_bookmark_objects:
         return None
 
     # Get all bookmarks in the same directory as the current bookmark
@@ -692,7 +761,7 @@ def find_previous_bookmark_in_folder(current_bookmark_name, folder_dir):
 
     # Get all bookmarks in the same folder
     folder_bookmarks = []
-    for bookmark_path in bookmarks.keys():
+    for bookmark_path in all_bookmark_objects.keys():
         path_parts = bookmark_path.split('/')
         if len(path_parts) == 1:
             folder_path = 'root'
@@ -726,8 +795,13 @@ def find_previous_bookmark_in_folder(current_bookmark_name, folder_dir):
 
 def find_first_bookmark_in_folder(current_bookmark_name, folder_dir):
     """Find the first bookmark in the same directory as the current bookmark."""
-    bookmarks = load_bookmarks_from_folder(folder_dir)
-    if not bookmarks:
+    print_color('??? ---- find_first_bookmark_in_folder current_bookmark_name:', 'red')
+    pprint(current_bookmark_name)
+    print_color('??? ---- find_first_bookmark_in_folder folder_dir:', 'red')
+    pprint(folder_dir)
+
+    all_bookmark_objects = load_bookmarks_from_folder(folder_dir)
+    if not all_bookmark_objects:
         return None
 
     # Get all bookmarks in the same directory as the current bookmark
@@ -736,7 +810,7 @@ def find_first_bookmark_in_folder(current_bookmark_name, folder_dir):
 
     # Get all bookmarks in the same folder
     folder_bookmarks = []
-    for bookmark_path in bookmarks.keys():
+    for bookmark_path in all_bookmark_objects.keys():
         path_parts = bookmark_path.split('/')
         if len(path_parts) == 1:
             folder_path = 'root'
@@ -762,8 +836,13 @@ def find_first_bookmark_in_folder(current_bookmark_name, folder_dir):
 
 def find_last_bookmark_in_folder(current_bookmark_name, folder_dir):
     """Find the last bookmark in the same directory as the current bookmark."""
-    bookmarks = load_bookmarks_from_folder(folder_dir)
-    if not bookmarks:
+    print_color('??? ---- find_last_bookmark_in_folder current_bookmark_name:', 'red')
+    pprint(current_bookmark_name)
+    print_color('??? ---- find_last_bookmark_in_folder folder_dir:', 'red')
+    pprint(folder_dir)
+
+    all_bookmark_objects = load_bookmarks_from_folder(folder_dir)
+    if not all_bookmark_objects:
         return None
 
     # Get all bookmarks in the same directory as the current bookmark
@@ -772,7 +851,7 @@ def find_last_bookmark_in_folder(current_bookmark_name, folder_dir):
 
     # Get all bookmarks in the same folder
     folder_bookmarks = []
-    for bookmark_path in bookmarks.keys():
+    for bookmark_path in all_bookmark_objects.keys():
         path_parts = bookmark_path.split('/')
         if len(path_parts) == 1:
             folder_path = 'root'
@@ -842,25 +921,25 @@ def resolve_navigation_bookmark(navigation_command, folder_dir):
         return None, None
 
     # Load the bookmark info for the target bookmark
-    bookmarks = load_bookmarks_from_folder(folder_dir)
-    if target_bookmark not in bookmarks:
+    all_bookmark_objects = load_bookmarks_from_folder(folder_dir)
+    if target_bookmark not in all_bookmark_objects:
         print(f"❌ Target bookmark '{target_bookmark}' not found in folder")
         return None, None
 
-    bookmark_info = bookmarks[target_bookmark]
+    bookmark_info = all_bookmark_objects[target_bookmark]
     print(f"🎯 Navigating to: {folder_name}:{target_bookmark.replace('/', ':')}")
     return target_bookmark, bookmark_info
 
 
-def get_all_bookmark_paths(active_folders):
+def get_all_bookmark_paths(valid_root_dir_names):
     """
     Return a flat list of all bookmark paths from all active folders.
     """
     bookmark_paths = []
 
-    for folder in active_folders:
-        bookmarks = load_bookmarks_from_folder(folder)
-        bookmark_paths.extend(bookmarks.keys())
+    for folder in valid_root_dir_names:
+        all_bookmark_objects = load_bookmarks_from_folder(folder)
+        bookmark_paths.extend(all_bookmark_objects.keys())
 
     return bookmark_paths
 
@@ -869,13 +948,13 @@ def build_bookmark_token_map(include_tags_and_descriptions=True):
     """
     Return a dict mapping each bookmark path to a token set for matching.
     """
-    from app.bookmarks_folders import get_all_active_folders
+    from app.bookmarks_folders import get_all_valid_root_dir_names
     from app.bookmarks_meta import load_bookmark_meta, load_folder_meta
 
     bookmark_token_map = {}
-    active_folders = get_all_active_folders()
+    valid_root_dir_names = get_all_valid_root_dir_names()
 
-    for folder_path in active_folders:
+    for folder_path in valid_root_dir_names:
         folder_name = os.path.basename(folder_path)
 
         # Load folder-level metadata
@@ -884,9 +963,9 @@ def build_bookmark_token_map(include_tags_and_descriptions=True):
         folder_description = folder_meta.get("description", "") if include_tags_and_descriptions else ""
 
         # Load bookmarks
-        bookmarks = load_bookmarks_from_folder(folder_path)
+        all_bookmark_objects = load_bookmarks_from_folder(folder_path)
 
-        for bookmark_path, bookmark_data in bookmarks.items():
+        for bookmark_path, bookmark_data in all_bookmark_objects.items():
             full_key = f"{folder_name}:{bookmark_path}".replace("/", ":")  # normalized key
 
             tokens = set()
@@ -990,14 +1069,14 @@ def token_match_bookmarks(query_string, folder_dir):
     """
     Returns a list of bookmark paths where all query tokens appear in the path.
     """
-    bookmarks = load_bookmarks_from_folder(folder_dir)
-    if not bookmarks:
+    all_bookmark_objects = load_bookmarks_from_folder(folder_dir)
+    if not all_bookmark_objects:
         return []
 
     query_tokens = set(query_string.lower().replace(":", " ").replace("/", " ").split())
     matches = []
 
-    for path in bookmarks.keys():
+    for path in all_bookmark_objects.keys():
         path_tokens = set(re.split(r"[-_/]", path.lower()))
         if query_tokens.issubset(path_tokens):
             matches.append(path)

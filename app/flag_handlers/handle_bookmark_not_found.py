@@ -25,55 +25,73 @@ from app.bookmarks_redis import (
 )
 from redis_friendly_converter import convert_file as convert_redis_to_friendly
 from app.bookmarks_consts import REDIS_DUMP_DIR, IS_DEBUG, SCREENSHOT_SAVE_SCALE
-from app.utils import get_media_source_info, print_color
+from app.utils import get_media_source_info, print_color, print_def_name
 from app.flag_handlers.save_obs_screenshot import save_obs_screenshot
 from app.flag_handlers.save_redis_and_friendly_json import save_redis_and_friendly_json
 
+IS_PRINT_DEF_NAME = True
 
 
-
+@print_def_name(IS_PRINT_DEF_NAME)
 def handle_bookmark_not_found(
-    bookmark_name,
-    specified_folder_path,
+    bookmark_tail_name,
+    cli_bookmark_dir,
     is_super_dry_run,
     is_blank_slate,
     is_use_preceding_bookmark,
     is_save_updates,
     is_no_obs,
     tags,
-    source_bookmark_arg
+    cli_args_list
 ):
+    print_color('---- bookmark_tail_name:', 'cyan')
+    pprint(bookmark_tail_name)
+    print_color('---- cli_bookmark_dir:', 'cyan')
+    pprint(cli_bookmark_dir)
+
+    if not bookmark_tail_name:
+        print("❌ No bookmark name provided")
+        return 1
+
+
 
     ## NEW BOOKMARK ##
     print("🧪 DEBUG: Entering new bookmark workflow")
-    print(f"🆕 Bookmark '{bookmark_name}' doesn't exist - creating new bookmark...")
+    print(
+        f"🆕 Bookmark '{bookmark_tail_name}' doesn't exist - creating new bookmark...")
 
     # Handle folder:bookmark format
-    if specified_folder_path:
-        print_color('---- specified_folder_path:', 'cyan')
-        pprint(specified_folder_path)
+    if cli_bookmark_dir:
+        print_color('---- cli_bookmark_dir:', 'cyan')
+        pprint(cli_bookmark_dir)
         # Check if specified folder exists
-        folder_dir = find_folder_by_name(specified_folder_path)
+        folder_dir = find_folder_by_name(cli_bookmark_dir)
         print_color('---- 1 folder_dir:', 'magenta')
         pprint(folder_dir)
 
         if not folder_dir:
-            print(f"📁 Creating folder: '{specified_folder_path}'")
-            folder_dir = create_folder_with_name(specified_folder_path)
+            print(f"📁 Creating folder: '{cli_bookmark_dir}'")
+            folder_dir = create_folder_with_name(cli_bookmark_dir)
             print_color('---- 2 folder_dir:', 'magenta')
             pprint(folder_dir)
             if not folder_dir:
-                print(f"❌ Failed to create folder '{specified_folder_path}'")
+                print(f"❌ Failed to create folder '{cli_bookmark_dir}'")
                 return 1
         else:
-            print(f"✅ Using existing folder: '{specified_folder_path}'")
+            print(f"✅ Using existing folder: '{cli_bookmark_dir}'")
 
-        bookmark_dir = os.path.join(folder_dir, bookmark_name)
+        print_color('handle_bookmark_not_found folder_dir:', 'red')
+        pprint(folder_dir)
+        print_color('handle_bookmark_not_found bookmark_name:', 'red')
+        pprint(bookmark_tail_name)
+
+        bookmark_dir = os.path.join(
+            folder_dir, bookmark_tail_name)
         print(f"🆕 Creating new bookmark at: '{bookmark_dir}'")
 
     else:
         # Let user select which folder to create the bookmark in
-        folder_dir = select_folder_for_new_bookmark(bookmark_name)
+        folder_dir = select_folder_for_new_bookmark(bookmark_tail_name)
         print_color('---- 3 folder_dir:', 'magenta')
         pprint(folder_dir)
         if not folder_dir:
@@ -81,7 +99,7 @@ def handle_bookmark_not_found(
             return 1
 
     # Create bookmark directory
-    bookmark_dir = os.path.join(folder_dir, bookmark_name)
+    bookmark_dir = os.path.join(folder_dir, bookmark_tail_name)
     os.makedirs(bookmark_dir, exist_ok=True)
 
 
@@ -96,9 +114,9 @@ def handle_bookmark_not_found(
             return 1
     elif is_use_preceding_bookmark:
         # Handle --use-preceding-bookmark flag for new bookmark
-        if source_bookmark_arg:
+        if cli_args_list:
             print(f"📋 Using specified bookmark's Redis state for new bookmark '{bookmark_name}'...")
-            if not copy_specific_bookmark_redis_state(source_bookmark_arg, bookmark_name, folder_dir):
+            if not copy_specific_bookmark_redis_state(cli_args_list, bookmark_name, folder_dir):
                 print("❌ Failed to copy specified bookmark's Redis state")
                 return 1
         else:

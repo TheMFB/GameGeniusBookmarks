@@ -1,3 +1,4 @@
+from pprint import pprint
 import os
 import json
 import subprocess
@@ -12,7 +13,7 @@ from app.bookmarks import load_obs_bookmark_directly
 from app.bookmarks_meta import create_bookmark_meta
 from app.utils import get_media_source_info
 from redis_friendly_converter import convert_file as convert_redis_to_friendly
-from app.bookmarks_folders import get_all_active_folders
+from app.bookmarks_folders import get_all_valid_root_dir_names
 from app.bookmarks_redis import (
     run_redis_command,
     copy_initial_redis_state,
@@ -24,8 +25,8 @@ from app.bookmarks_consts import IS_DEBUG, REDIS_DUMP_DIR, SCREENSHOT_SAVE_SCALE
 
 
 
-def handle_matched_bookmark_name(
-    matched_bookmark_name,
+def handle_matched_bookmark(
+    matched_rel_bookmark_path,
     bookmark_info,
     is_show_image,
     is_no_obs,
@@ -35,65 +36,87 @@ def handle_matched_bookmark_name(
     is_save_updates,
     is_save_last_redis,
     tags,
-    source_bookmark_arg
+    cli_args_list
 ):
 
     ## MATCHED BOOKMARK ##
 
+    print('')
+    print('')
+    print('')
+    print('')
+    print('')
+    print('')
+    print('---- matched_rel_bookmark_path:')
+    pprint(matched_rel_bookmark_path)
 
-    if matched_bookmark_name:
-        # TODO(KERCH): Pull this out into a "handle_matched_bookmark_name"
+    print('---- bookmark_info:')
+    pprint(bookmark_info)
+
+    print('---- cli_args_list:')
+    pprint(cli_args_list)
+
+
+    if matched_rel_bookmark_path:
+        # TODO(KERCH): Pull this out into a "handle_matched_bookmark"
         # EXISTING BOOKMARK WORKFLOW
-        print(f"📖 Bookmark '{matched_bookmark_name}' exists - loading OBS state...")
+        print(f"📖 Bookmark '{matched_rel_bookmark_path}' exists - loading OBS state...")
 
         # Load the OBS bookmark using the matched name
-        success = load_obs_bookmark_directly(matched_bookmark_name, bookmark_info)
+        success = load_obs_bookmark_directly(matched_rel_bookmark_path, bookmark_info)
         if not success:
             print("❌ Failed to load OBS bookmark")
             return 1
 
         # Update the bookmark name for the rest of the process
-        bookmark_name = matched_bookmark_name
+        bookmark_name = matched_rel_bookmark_path
 
         # Find which folder this bookmark belongs to
         folder_dir = None
-        active_folders = get_all_active_folders()
-        for folder_path in active_folders:
-            print(f"🔍 Searching in folder: {folder_path}")  # ← add this here
-            bookmark_name_full = os.path.join(folder_path, matched_bookmark_name)
-            if os.path.exists(bookmark_name_full):
-                folder_dir = folder_path
-                folder_name = os.path.basename(folder_dir)
-                print(f"🎯 Using folder: {folder_name}")
+        active_folders = get_all_valid_root_dir_names()
+        print('---- active_folders:')
+        pprint(active_folders)
 
-                if is_show_image:
-                    screenshot_path = os.path.join(folder_dir, bookmark_name, "screenshot.jpg")
-                    if os.path.exists(screenshot_path):
-                        print(f"🖼️ Displaying screenshot in terminal: {screenshot_path}")
-                        try:
-                            result = subprocess.run(
-                                ["imgcat", screenshot_path],
-                                check=True,
-                                capture_output=True,
-                                text=True
-                            )
-                            print(result.stdout)
 
-                        except subprocess.CalledProcessError as e:
-                            print(f"❌ imgcat failed with error:\n{e.stderr}")
-                        except Exception as e:
-                            print(f"⚠️  Failed to display image in terminal: {e}")
-                    else:
-                        print(f"❌ No screenshot.jpg found at: {screenshot_path}")
 
-                break
+        # for active_folder_name in active_folders:
+        #     # ← add this here
+        #     print(f"🔍 Searching in folder: {active_folder_name}")
+        #     bookmark_name_full = os.path.join(folder_path, matched_rel_bookmark_path)
+
+        #     if os.path.exists(bookmark_name_full):
+        #         folder_dir = folder_path
+        #         # folder_name = os.path.basename(folder_dir)
+        #         print(f"🎯 Using folder: {folder_name}")
+
+        #         if is_show_image:
+        #             screenshot_path = os.path.join(folder_dir, bookmark_name, "screenshot.jpg")
+        #             if os.path.exists(screenshot_path):
+        #                 print(f"🖼️ Displaying screenshot in terminal: {screenshot_path}")
+        #                 try:
+        #                     result = subprocess.run(
+        #                         ["imgcat", screenshot_path],
+        #                         check=True,
+        #                         capture_output=True,
+        #                         text=True
+        #                     )
+        #                     print(result.stdout)
+
+        #                 except subprocess.CalledProcessError as e:
+        #                     print(f"❌ imgcat failed with error:\n{e.stderr}")
+        #                 except Exception as e:
+        #                     print(f"⚠️  Failed to display image in terminal: {e}")
+        #             else:
+        #                 print(f"❌ No screenshot.jpg found at: {screenshot_path}")
+
+        #         break
 
         if not folder_dir:
-            print(f"❌ Could not determine folder for bookmark '{matched_bookmark_name}'")
+            print(f"❌ Could not determine folder for bookmark '{matched_rel_bookmark_path}'")
             return 1
 
         # Check if redis_before.json exists in the bookmark directory
-        bookmark_dir = os.path.join(folder_dir, matched_bookmark_name)
+        bookmark_dir = os.path.join(folder_dir, matched_rel_bookmark_path)
         redis_before_path = os.path.join(bookmark_dir, "redis_before.json")
 
         if IS_DEBUG:
@@ -104,8 +127,8 @@ def handle_matched_bookmark_name(
             print(f"💾 Super dry run mode: Skipping all Redis operations")
         elif is_blank_slate:
             # Handle --blank-slate flag for existing bookmark
-            print(f"🆕 Using initial blank slate Redis state for '{matched_bookmark_name}'...")
-            if not copy_initial_redis_state(matched_bookmark_name, folder_dir):
+            print(f"🆕 Using initial blank slate Redis state for '{matched_rel_bookmark_path}'...")
+            if not copy_initial_redis_state(matched_rel_bookmark_path, folder_dir):
                 print("❌ Failed to copy initial Redis state")
                 return 1
             # Update the path since we just created/copied the file
@@ -113,14 +136,14 @@ def handle_matched_bookmark_name(
 
         elif is_use_preceding_bookmark:
             # Handle --use-preceding-bookmark flag for existing bookmark
-            if source_bookmark_arg:
-                print(f"📋 Using specified bookmark's Redis state for '{matched_bookmark_name}'...")
-                if not copy_specific_bookmark_redis_state(source_bookmark_arg, matched_bookmark_name, folder_dir):
+            if cli_args_list:
+                print(f"📋 Using specified bookmark's Redis state for '{matched_rel_bookmark_path}'...")
+                if not copy_specific_bookmark_redis_state(cli_args_list, matched_rel_bookmark_path, folder_dir):
                     print("❌ Failed to copy specified bookmark's Redis state")
                     return 1
             else:
-                print(f"📋 Using preceding bookmark's Redis state for '{matched_bookmark_name}'...")
-                if not copy_preceding_redis_state(matched_bookmark_name, folder_dir):
+                print(f"📋 Using preceding bookmark's Redis state for '{matched_rel_bookmark_path}'...")
+                if not copy_preceding_redis_state(matched_rel_bookmark_path, folder_dir):
                     print("❌ Failed to copy preceding Redis state")
                     return 1
 
@@ -196,7 +219,7 @@ def handle_matched_bookmark_name(
                     print(f"🔍 Files in Redis dump directory: {files}")
 
         # Take screenshot only if it doesn't exist (skip if no-obs mode)
-        print(f"🧪 DEBUG: is_no_obs={is_no_obs}, matched_bookmark_name={matched_bookmark_name}, bookmark_dir={bookmark_dir}")
+        print(f"🧪 DEBUG: is_no_obs={is_no_obs}, matched_rel_bookmark_path={matched_rel_bookmark_path}, bookmark_dir={bookmark_dir}")
         print("🧪 DEBUG: Reached screenshot check for existing bookmark")
         if is_no_obs:
             print(f"📷 No-OBS mode: Skipping screenshot capture")
@@ -205,7 +228,7 @@ def handle_matched_bookmark_name(
             if os.path.exists(screenshot_path):
                 if IS_DEBUG:
                     print(f"📸 Screenshot already exists, preserving: {screenshot_path}")
-                print(f"📸 Using existing screenshot: {matched_bookmark_name or bookmark_name}/screenshot.jpg")
+                print(f"📸 Using existing screenshot: {matched_rel_bookmark_path or bookmark_name}/screenshot.jpg")
             else:
                 try:
                     cl = obs.ReqClient(host="localhost", port=4455, password="", timeout=3)
@@ -231,7 +254,7 @@ def handle_matched_bookmark_name(
 
                     if IS_DEBUG:
                         print(f"📋 Screenshot saved to: {screenshot_path}")
-                    print(f"📸 Screenshot saved to: {matched_bookmark_name or bookmark_name}/screenshot.jpg")
+                    print(f"📸 Screenshot saved to: {matched_rel_bookmark_path or bookmark_name}/screenshot.jpg")
 
                 except Exception as e:
                     print(f"⚠️  1 Could not take screenshot: {e}")
@@ -249,14 +272,14 @@ def handle_matched_bookmark_name(
                     'timestamp': 0,
                     'timestamp_formatted': '00:00:00'
                 }
-                create_bookmark_meta(bookmark_dir, matched_bookmark_name, minimal_media_info, tags)
+                create_bookmark_meta(bookmark_dir, matched_rel_bookmark_path, minimal_media_info, tags)
                 if IS_DEBUG:
                     print(f"📋 Created minimal bookmark metadata (no OBS info)")
             else:
                 media_info = get_media_source_info()
                 if media_info:
                     if os.path.exists(bookmark_dir):
-                        create_bookmark_meta(bookmark_dir, matched_bookmark_name, media_info, tags)
+                        create_bookmark_meta(bookmark_dir, matched_rel_bookmark_path, media_info, tags)
                         if IS_DEBUG:
                             print(f"📋 Created bookmark metadata with tags: {tags}")
                     else:

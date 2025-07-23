@@ -5,11 +5,10 @@ Integration script that coordinates OBS bookmarks with Redis state management
 from pprint import pprint
 import os
 import json
-from app.bookmarks_consts import IS_DEBUG, HIDDEN_COLOR, RESET_COLOR, USAGE_HELP
-from app.bookmarks_folders import get_all_active_folders, find_folder_by_name
-from app.bookmarks_meta import load_folder_meta, compute_hoistable_tags
-from app.bookmarks import load_bookmarks_from_folder, get_last_used_bookmark, get_bookmark_info, get_all_bookmarks_in_json_format
-from app.utils import print_color, get_embedded_file_link
+from app.bookmarks_consts import IS_DEBUG, HIDDEN_COLOR, RESET_COLOR, BOOKMARKS_DIR
+from app.bookmarks_meta import compute_hoistable_tags
+from app.bookmarks import get_last_used_bookmark, get_all_bookmarks_in_json_format
+from app.utils import print_color, get_embedded_bookmark_file_link, abs_to_rel_path
 
 IS_PRINT_VIDEO_FILE_NAMES = True
 IS_PULL_TAGS_WHEN_SINGLE_CHILD = True
@@ -37,7 +36,7 @@ def collect_all_bookmark_tags_recursive(node):
     return all_tags
 
 def print_all_folders_and_bookmarks(
-        current_folder_path=None,
+        current_folder_abs_path=None,
         current_bookmark_name=None,
         current_bookmark_info=None,
         is_print_just_current_folder_bookmarks=False
@@ -45,8 +44,8 @@ def print_all_folders_and_bookmarks(
     """Print all folders and their bookmarks, highlighting the current one"""
 
     if IS_DEBUG:
-        print_color('---- current_folder_path:', 'magenta')
-        pprint(current_folder_path)
+        print_color('---- current_folder_abs_path:', 'magenta')
+        pprint(current_folder_abs_path)
         print_color('---- current_bookmark_name:', 'magenta')
         pprint(current_bookmark_name)
 
@@ -56,13 +55,16 @@ def print_all_folders_and_bookmarks(
         last_used_info = get_last_used_bookmark()
         if last_used_info:
             current_bookmark_name = last_used_info.get('bookmark_name', '')
-            current_folder_path = last_used_info.get('rel_bookmark_dir', '')
+            current_folder_abs_path = last_used_info.get('rel_bookmark_dir', '')
+
+    current_folder_rel_path = abs_to_rel_path(current_folder_abs_path, BOOKMARKS_DIR)
+
 
     if IS_DEBUG:
         print_color('---- current_bookmark_name after:', 'magenta')
         pprint(current_bookmark_name)
-        print_color('---- rel_bookmark_dir after:', 'magenta')
-        pprint(current_folder_path)
+        print_color('---- current_folder_rel_path after:', 'magenta')
+        pprint(current_folder_rel_path)
 
     all_bookmarks = get_all_bookmarks_in_json_format()
 
@@ -72,7 +74,7 @@ def print_all_folders_and_bookmarks(
         indent_level=0,
         parent_path="",
         current_bookmark_name=None,
-        current_folder_path=None,
+        current_folder_abs_path=None,
         inherited_tags=None
     ):
         if inherited_tags is None:
@@ -82,16 +84,17 @@ def print_all_folders_and_bookmarks(
         if folder_name is not None:
             # Compute the full colon path of this folder
             full_folder_path = parent_path  # this folder's colon-style path (already passed in)
-            full_last_used_path = f"{current_folder_path}:{current_bookmark_name}" if current_folder_path and current_bookmark_name else ""
+            full_last_used_path = f"{current_folder_abs_path}:{current_bookmark_name}" if current_folder_abs_path and current_bookmark_name else ""
 
             # Should we highlight this folder?
             should_highlight = full_last_used_path == full_folder_path or full_last_used_path.startswith(full_folder_path + ":")
 
-            folder_line = f"{indent}{get_embedded_file_link(full_folder_path, '📁')} {folder_name}"
+            folder_line = f"{indent}{get_embedded_bookmark_file_link(full_folder_path, '📁')} {folder_name}"
             if should_highlight:
                 print_color(folder_line, 'green')
             else:
                 print(folder_line)
+
 
 
 
@@ -128,21 +131,50 @@ def print_all_folders_and_bookmarks(
             timestamp = bookmark_info.get('timestamp', 'unknown time')
             if len(timestamp) < 5:
                 timestamp = '0' + timestamp
-            full_path = f"{parent_path}:{bookmark_name}" if parent_path else bookmark_name
-            is_current = (
-                current_bookmark_name and
-                (current_bookmark_name == full_path or current_bookmark_name.endswith(":" + bookmark_name))
-            )
-            hidden_ref_text = f" {HIDDEN_COLOR} {full_path}{RESET_COLOR}"
+            full_rel_path = f"{parent_path}:{bookmark_name}" if parent_path else bookmark_name
+
+
+            # print('---- current_bookmark_name:')
+            # pprint(current_bookmark_name)
+
+
+
+            full_found_rel_bookmark = f"{full_rel_path}:{bookmark_name}"
+            full_current_bookmark = f"{current_folder_rel_path}:{current_bookmark_name}"
+
+            # print('+++++ full_found_rel_bookmark:', full_found_rel_bookmark)
+            # print('+++++ full_current_bookmark:', full_current_bookmark)
+
+            is_current = current_bookmark_name and full_found_rel_bookmark == full_current_bookmark
+
+            if is_current:
+                print('')
+                print('')
+                print('')
+                print('')
+                print('')
+                print('')
+
+                print('+++++ is_current !!!!!:')
+                print('')
+                print('')
+                print('')
+                print('')
+                print('')
+                print('')
+
+
+
+            hidden_ref_text = f" {HIDDEN_COLOR} {full_rel_path}{RESET_COLOR}"
             if is_current:
                 print(
-                    f"\033[32m{indent}   • {timestamp} {get_embedded_file_link(full_path, '📖')} {bookmark_name} (current)\033[0m" + hidden_ref_text)
-            elif full_path == f"{current_folder_path}:{current_bookmark_name}":
+                    f"\033[32m{indent}   • {timestamp} {get_embedded_bookmark_file_link(full_rel_path, '📖')} {bookmark_name} (current)\033[0m" + hidden_ref_text)
+            elif full_rel_path == f"{current_folder_abs_path}:{current_bookmark_name}":
                 print(
-                    f"{indent}   • {timestamp} {get_embedded_file_link(full_path, '📖')} \033[32m{bookmark_name} (current)\033[0m" + hidden_ref_text)
+                    f"{indent}   • {timestamp} {get_embedded_bookmark_file_link(full_rel_path, '📖')} \033[32m{bookmark_name} (current)\033[0m" + hidden_ref_text)
             else:
                 print(
-                    f"{indent}   • {timestamp} {get_embedded_file_link(full_path, '📖')} {bookmark_name} {hidden_ref_text}")
+                    f"{indent}   • {timestamp} {get_embedded_bookmark_file_link(full_rel_path, '📖')} {bookmark_name} {hidden_ref_text}")
 
             bookmark_description = bookmark_info.get('description', '')
             if bookmark_description:
@@ -159,7 +191,7 @@ def print_all_folders_and_bookmarks(
                 indent_level + 1,
                 next_path,
                 current_bookmark_name=current_bookmark_name,
-                current_folder_path=current_folder_path,
+                current_folder_abs_path=current_folder_abs_path,
                 inherited_tags=effective_inherited_tags
             )
 
@@ -172,20 +204,18 @@ def print_all_folders_and_bookmarks(
             indent_level=0,
             parent_path=folder_name,
             current_bookmark_name=current_bookmark_name,
-            current_folder_path=current_folder_path
+            current_folder_abs_path=current_folder_abs_path
         )
 
 
     print('')
     print("=" * 50)
 
-    # TODO(MFB): The current folder path is os-based and only has the basename, and the bookmark name contains pathing.
-    # if '/' in current_folder_path:
-    #     current_folder_path = current_folder_path.split('/')[-1]
-    # current_bookmark = current_folder_path + ":" + current_bookmark_name
-    # current_bookmark = current_bookmark.replace('/', ':')
-    # print_color(f"🔍 Current bookmark: bm {current_bookmark}", 'magenta')
+    current_bookmark = current_folder_abs_path + ":" + current_bookmark_name
+    rel_current_bookmark = abs_to_rel_path(current_bookmark, BOOKMARKS_DIR)
+    rel_current_bookmark = rel_current_bookmark.replace('/', ':')
 
+    print_color(f"🔍 Current bookmark: bm {rel_current_bookmark}", 'magenta')
     return
 
 
@@ -242,7 +272,7 @@ def print_bookmarks_in_folder(folder_path, indent=0, last_used_path=None, inheri
     # pprint(full_folder_path)
 
     # print_all_folders_and_bookmarks(
-    #     current_folder_path=full_folder_path,
+    #     current_folder_abs_path=full_folder_path,
     #     current_bookmark_name=None,
     #     is_print_just_current_folder_bookmarks=True
     # )

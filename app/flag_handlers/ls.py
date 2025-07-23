@@ -5,7 +5,7 @@ from app.bookmarks_print import print_all_folders_and_bookmarks
 from app.bookmarks import token_match_bookmarks
 
 
-def ls(args):
+def handle_ls(args):
     # Remove -ls so we can check what came before it
     args_copy = args.copy()
     args_copy.remove('-ls') if '-ls' in args_copy else args_copy.remove('--ls')
@@ -42,10 +42,10 @@ def ls(args):
     else:
         # Fall back to which-style logic
         from app.bookmarks import find_matching_bookmark
-        from app.bookmarks_folders import get_all_active_folders
+        from app.bookmarks_folders import get_all_valid_root_dir_names
         from app.utils import print_color
 
-        all_folders = get_all_active_folders()
+        all_folders = get_all_valid_root_dir_names()
         all_matches = []
 
         for folder in all_folders:
