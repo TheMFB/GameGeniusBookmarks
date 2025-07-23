@@ -41,7 +41,7 @@ def handle_ls(args):
         return 0
     else:
         # Fall back to which-style logic
-        from app.bookmarks import find_matching_bookmark
+        from app.bookmarks import find_matching_bookmarks
         from app.bookmarks_folders import get_all_valid_root_dir_names
         from app.utils import print_color
 

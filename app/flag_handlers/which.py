@@ -1,6 +1,6 @@
 import os
 import json
-from app.bookmarks import find_matching_bookmark
+from app.bookmarks import find_matching_bookmarks
 from app.bookmarks_folders import parse_cli_bookmark_args
 
 def handle_which(args):
@@ -28,13 +28,13 @@ def handle_which(args):
 
     if cli_bookmark_dir:
         folder_path = os.path.join("obs_bookmark_saves", cli_bookmark_dir)
-        folder_matches = find_matching_bookmark(fuzzy_input, folder_path)
+        folder_matches = find_matching_bookmarks(fuzzy_input, folder_path)
         if folder_matches:
             matches = [m for m in folder_matches if isinstance(m, str)]
 
     # Fallback to search entire tree
     if not matches:
-        folder_matches = find_matching_bookmark(fuzzy_input, "obs_bookmark_saves")
+        folder_matches = find_matching_bookmarks(fuzzy_input, "obs_bookmark_saves")
         matches = [m for m in folder_matches if isinstance(m, str)]
 
     if not matches:

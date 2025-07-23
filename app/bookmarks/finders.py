@@ -166,14 +166,14 @@ def get_all_bookmarks_in_json_format():
 
 
 @print_def_name(IS_PRINT_DEF_NAME)
-def find_matching_bookmark(bookmark_path_rel, root_dir_name):
+def find_matching_bookmarks(bookmark_path_rel, root_dir_name):
     """
     Find all matching bookmarks using step-through logic and fallback fuzzy matching.
     Returns a list of (bookmark_path, bookmark_info) tuples.
     """
     all_bookmark_objects = load_bookmarks_from_folder(root_dir_name)
     if not all_bookmark_objects:
-        return []
+        return [(None, None)]
 
     all_saved_bookmark_paths = list(all_bookmark_objects.keys())
     matches = []
@@ -181,9 +181,8 @@ def find_matching_bookmark(bookmark_path_rel, root_dir_name):
     # First try exact match
     if bookmark_path_rel in all_saved_bookmark_paths:
         if IS_DEBUG:
-            print(
-                f"🎯 Found exact bookmark_path_rel match: '{bookmark_path_rel}'")
-        return [(bookmark_path_rel, all_bookmark_objects[bookmark_path_rel])]
+            print(f"🎯 Found exact bookmark_path_rel match: '{bookmark_path_rel}'")
+        return (bookmark_path_rel, all_bookmark_objects[bookmark_path_rel])
 
     # Normalize user input
     user_input_parts = split_path_into_array(bookmark_path_rel)
@@ -217,10 +216,10 @@ def find_matching_bookmark(bookmark_path_rel, root_dir_name):
         return matches
 
     # No matches found
-    return []
+    return [(None, None)]
 
 
-def find_matching_bookmark_strict(bookmark_query, folder_dir):
+def find_matching_bookmarks_strict(bookmark_query, folder_dir):
     """
     Return exact match path if the normalized bookmark path matches query.
     Used during creation to avoid fuzzy fallbacks.

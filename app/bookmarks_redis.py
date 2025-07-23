@@ -7,7 +7,7 @@ import os
 
 from app.bookmarks_consts import IS_DEBUG, INITIAL_REDIS_STATE_DIR
 from app.bookmarks_folders import get_all_valid_root_dir_names, parse_cli_bookmark_args, find_folder_by_name
-from app.bookmarks import find_preceding_bookmark, find_matching_bookmark
+from app.bookmarks import find_preceding_bookmark, find_matching_bookmarks
 
 
 def run_redis_command(command_args):
@@ -106,7 +106,7 @@ def copy_specific_bookmark_redis_state(cli_args_list, target_bookmark_name, targ
             return False
 
         # Find bookmark in that folder
-        matched_name, source_bookmark_info = find_matching_bookmark(
+        matched_name, source_bookmark_info = find_matching_bookmarks(
             source_bookmark_name, source_folder_dir)
         if not matched_name:
             print(
@@ -117,7 +117,7 @@ def copy_specific_bookmark_redis_state(cli_args_list, target_bookmark_name, targ
         # Search across all folders
         active_folders = get_all_valid_root_dir_names()
         for folder_path in active_folders:
-            matched_name, bookmark_info = find_matching_bookmark(
+            matched_name, bookmark_info = find_matching_bookmarks(
                 source_bookmark_name, folder_path)
             if matched_name:
                 source_bookmark_name = matched_name

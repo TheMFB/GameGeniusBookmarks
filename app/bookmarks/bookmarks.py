@@ -6,7 +6,7 @@ from pprint import pprint
 
 from app.bookmarks_folders import get_all_valid_root_dir_names
 from app.utils import print_color, print_def_name
-from app.bookmarks.finders import find_matching_bookmark, load_bookmarks_from_folder
+from app.bookmarks.finders import find_matching_bookmarks, load_bookmarks_from_folder
 
 IS_AGGREGATE_TAGS = False
 IS_PRINT_DEF_NAME = True
@@ -28,16 +28,12 @@ def get_bookmark_info(bookmark_tail_name):
     # Search for bookmark across all folders, collect all matches
     for root_dir_name in valid_root_dir_names:
         matches = []
-        matched_name, bookmark_info = find_matching_bookmark(bookmark_tail_name, root_dir_name)
-        if matched_name and bookmark_info:
-            # If find_matching_bookmark returns a single match, add it
-            matches.append((matched_name, bookmark_info))
-        elif matched_name and bookmark_info is None:
-            # If user chose to create a new bookmark, skip
-            continue
-        # If find_matching_bookmark returns multiple matches, add them all
-        # (You may need to refactor find_matching_bookmark to return all matches instead of prompting)
-        # For now, let's assume it only returns one or zero
+        # matched_name, bookmark_info = find_matching_bookmarks(bookmark_tail_name, root_dir_name)
+        results = find_matching_bookmarks(bookmark_tail_name, root_dir_name)
+        for (matched_name, bookmark_info) in results:
+            if matched_name and bookmark_info:
+                matches.append((matched_name, bookmark_info))
+
 
         all_matches.extend(matches)
 
