@@ -1,13 +1,4 @@
-# type: ignore
-"""
-Integration script that coordinates OBS bookmarks with Redis state management
-"""
-from pprint import pprint
-from redis_friendly_converter import convert_file as convert_redis_to_friendly
 import os
-import sys
-import subprocess
-import time
 import json
 from datetime import datetime
 
@@ -198,6 +189,7 @@ def get_current_folder_dir():
 
 @print_def_name(IS_PRINT_DEF_NAME)
 def find_folder_by_name(folder_name):
+    """Find folder directory by name or full relative path (e.g. kerch/comp/m02)"""
     # TODO(MFB): This is not working as expected. We should pull in the all bookmarks json, and attempt to step through the tree, and see if there are any full / partial matches. The all_active_folders is giving a full system path, but only the basename for what we need.
 
     # ---- 0 cli_bookmark_dir:
@@ -211,7 +203,6 @@ def find_folder_by_name(folder_name):
     print_color('---- 0 folder_name find_folder_by_name:', 'green')
     print(folder_name)
 
-    """Find folder directory by name or full relative path (e.g. kerch/comp/m02)"""
     active_folders = get_all_valid_root_dir_names()
     for folder_path in active_folders:
         print_color('---- 1 folder_path find_folder_by_name:', 'magenta')

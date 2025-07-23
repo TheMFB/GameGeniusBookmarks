@@ -1,13 +1,7 @@
-# type: ignore
-from pprint import pprint
-from typing import Literal, Tuple, Optional
-import obsws_python as obs
+from typing import Tuple, Optional
 import os
-import base64
 from pathlib import Path
-from functools import wraps
 
-from app.bookmarks_consts import BOOKMARKS_DIR
 
 def abs_to_rel_path(abs_path, base_dir):
     """Convert an absolute path to a relative path."""
@@ -40,7 +34,7 @@ def convert_bookmark_path(
     # ('mfb3:MFB:TEST', '01', 'mfb3:MFB:TEST:01')
 
     # Absolute bookmark_dir output
-    print(convert_bookmark_path("01", "mfb3/MFB/TEST", is_absolute_path=True, bookmarks_dir=BOOKMARKS_DIR))
+    print(convert_bookmark_path("01", "mfb3/MFB/TEST", is_absolute_path=True, bookmark_dir=BOOKMARK_DIR))
     # ('/.../obs_bookmark_saves/mfb3/MFB/TEST', '01', '/.../obs_bookmark_saves/mfb3/MFB/TEST/01')
     """
     # Parse input
@@ -50,7 +44,7 @@ def convert_bookmark_path(
             value = args[0]
             if ':' in value:
                 parts = value.split(':')
-            elif '/' in value or (bookmarks_dir and value.startswith(bookmarks_dir)):
+            elif '/' in value or (bookmark_dir and value.startswith(bookmark_dir)):
                 parts = bookmark_dir(value).parts
             else:
                 parts = [value]
@@ -67,7 +61,7 @@ def convert_bookmark_path(
         value = args[0]
         if ':' in value:
             parts = value.split(':')
-        elif '/' in value or (bookmarks_dir and value.startswith(bookmarks_dir)):
+        elif '/' in value or (bookmark_dir and value.startswith(bookmark_dir)):
             parts = Path(value).parts
         else:
             parts = [value]
@@ -90,14 +84,14 @@ def convert_bookmark_path(
 
     # Add absolute if requested
     if is_absolute_path:
-        if not bookmarks_dir:
-            raise ValueError("bookmarks_dir is required for absolute bookmark_dir output")
+        if not bookmark_dir:
+            raise ValueError("bookmark_dir is required for absolute bookmark_dir output")
         if bookmark_dir:
-            bookmark_dir = str(Path(bookmarks_dir) / bookmark_dir)
-            bookmark_path = str(Path(bookmarks_dir) / bookmark_path)
+            bookmark_dir = str(Path(bookmark_dir) / bookmark_dir)
+            bookmark_path = str(Path(bookmark_dir) / bookmark_path)
         else:
-            bookmark_dir = str(Path(bookmarks_dir))
-            bookmark_path = str(Path(bookmarks_dir) / bookmark_tail_name)
+            bookmark_dir = str(Path(bookmark_dir))
+            bookmark_path = str(Path(bookmark_dir) / bookmark_tail_name)
 
     return (bookmark_dir, bookmark_tail_name, bookmark_path)
 
@@ -107,26 +101,3 @@ def split_path_into_array(path):
     # Replace both ':' and '/' with a single consistent delimiter (e.g., '/')
     path = path.replace(':', '/')
     return [part.lower() for part in path.strip('/').split('/')]
-
-
-def memoize_in_memory(func):
-    """
-    Decorator to cache function results in memory for the duration of the process,
-    keyed by the function's arguments and keyword arguments.
-    """
-    cache = {}
-
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        # Create a key from args and kwargs (must be hashable)
-        key = (args, tuple(sorted(kwargs.items())))
-        if key in cache:
-            return cache[key]
-        result = func(*args, **kwargs)
-        cache[key] = result
-        return result
-
-    return wrapper
-# TODO(MFB): Fix the print_def_name decorator. It's not working as expected.
-# IS_PRINT_FILE_LINK= True
-# IS_ADJUST_TO_STACK = True

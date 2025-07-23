@@ -9,7 +9,7 @@ from datetime import datetime
 from PIL import Image
 import obsws_python as obs
 
-from app.bookmarks import load_obs_bookmark_directly
+from app.utils.obs_utils import load_obs_bookmark_directly
 from app.bookmarks_meta import create_bookmark_meta
 from app.utils import get_media_source_info
 from redis_friendly_converter import convert_file as convert_redis_to_friendly

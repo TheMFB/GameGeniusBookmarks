@@ -5,7 +5,8 @@ import obsws_python as obs
 import os
 import base64
 
-from app.bookmarks_consts import BOOKMARKS_DIR
+from app.bookmarks_consts import IS_DEBUG
+from app.videos import construct_full_video_file_path
 
 
 def open_video_in_obs(video_path: str, source_name: str = "Media Source"):
@@ -111,3 +112,92 @@ def get_media_source_info():
     except Exception as e:
         print(f"❌ Failed to get media source info: {e}")
         raise e
+
+
+def load_obs_bookmark_directly(bookmark_path_rel, bookmark_info):
+    # TODO(MFB): Look into me and see if this is the bookmark name or the whole bookmark (path+name)
+    """Load OBS bookmark directly without using the bookmark manager script"""
+
+    try:
+        if IS_DEBUG:
+            print(f"🔍 Debug - Loading bookmark_path_rel: {bookmark_path_rel}")
+            print(
+                f"🔍 Debug - Bookmark info keys: {list(bookmark_info.keys())}")
+            print(
+                f"🔍 Debug - video_filename: {bookmark_info.get('video_filename', 'NOT_FOUND')}")
+            print(
+                f"🔍 Debug - timestamp: {bookmark_info.get('timestamp', 'NOT_FOUND')}")
+            print(
+                f"🔍 Debug - timestamp_formatted: {bookmark_info.get('timestamp_formatted', 'NOT_FOUND')}")
+
+        if not bookmark_info:
+            print(f"❌ No file path found in bookmark_path_rel metadata")
+            if IS_DEBUG:
+                print(
+                    f"🔍 Debug - Available keys in bookmark_info: {list(bookmark_info.keys())}")
+            return False
+
+        cl = obs.ReqClient(host="localhost", port=4455, password="", timeout=3)
+
+        # Load the media file if different
+        current_settings = cl.send(
+            "GetInputSettings", {"inputName": "Media Source"})
+        current_file = current_settings.input_settings.get("local_file", "")
+
+        if IS_DEBUG:
+            pprint(current_settings)
+            print(f"🔍 Debug - Current OBS file: {current_file}")
+
+        # Construct the full video file path from env variable
+        video_filename = bookmark_info.get('video_filename', '')
+        video_file_path = construct_full_video_file_path(video_filename)
+
+        if not video_filename:
+            print(f"❌ No file path found in bookmark_path_rel metadata")
+            if IS_DEBUG:
+                print(
+                    f"🔍 Debug - Available keys in bookmark_info: {list(bookmark_info.keys())}")
+            return False
+
+        if current_file != video_file_path:
+            print(f"📁 Loading video file: {video_file_path}")
+            cl.send("SetInputSettings", {
+                "inputName": "Media Source",
+                "inputSettings": {
+                    "local_file": video_file_path
+                }
+            })
+            # Wait longer for the media to load before trying to set cursor
+            import time
+            time.sleep(2)  # Increased from 1 to 2 seconds
+
+        # Start playing the media first
+        cl.send("TriggerMediaInputAction", {
+            "inputName": "Media Source",
+            "mediaAction": "OBS_WEBSOCKET_MEDIA_INPUT_ACTION_PLAY"
+        })
+
+        # Wait a moment for playback to start
+        import time
+        time.sleep(0.5)
+
+        # Set the timestamp
+        cl.send("SetMediaInputCursor", {
+            "inputName": "Media Source",
+            # Convert seconds to milliseconds
+            "mediaCursor": int(bookmark_info['timestamp'] * 1000)
+        })
+
+        # Pause the media
+        cl.send("TriggerMediaInputAction", {
+            "inputName": "Media Source",
+            "mediaAction": "OBS_WEBSOCKET_MEDIA_INPUT_ACTION_PAUSE"
+        })
+
+        print(
+            f"✅ Loaded OBS to timestamp from bookmark: {bookmark_info['timestamp_formatted']}")
+        return True
+
+    except Exception as e:
+        print(f"❌ Failed to load OBS bookmark directly: {e}")
+        return False

@@ -1,13 +1,6 @@
-"""
-Integration script that coordinates OBS bookmarks with Redis state management
-"""
-from pprint import pprint
 import os
-import json
-from datetime import datetime
 from dotenv import load_dotenv
 
-from app.bookmarks_consts import IS_DEBUG, IS_DEBUG_FULL
 
 # Load environment variables
 load_dotenv()

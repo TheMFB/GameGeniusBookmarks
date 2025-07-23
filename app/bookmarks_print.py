@@ -1,13 +1,10 @@
-# type: ignore
-"""
-Integration script that coordinates OBS bookmarks with Redis state management
-"""
 from pprint import pprint
 import os
 import json
 from app.bookmarks_consts import IS_DEBUG, HIDDEN_COLOR, RESET_COLOR, BOOKMARKS_DIR
 from app.bookmarks_meta import compute_hoistable_tags
-from app.bookmarks import get_last_used_bookmark, get_all_bookmarks_in_json_format
+from app.bookmarks.last_used import get_last_used_bookmark
+from app.bookmarks.finders import get_all_bookmarks_in_json_format
 from app.utils import print_color, get_embedded_bookmark_file_link, abs_to_rel_path
 
 IS_PRINT_VIDEO_FILE_NAMES = True
