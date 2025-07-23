@@ -16,14 +16,14 @@ def abs_to_rel_path(abs_path, base_dir):
 
 def convert_bookmark_path(
     *args,
-    bookmarks_dir: Optional[str] = None,
+    bookmark_dir: Optional[str] = None,
     is_absolute_path: bool = False,
     is_colon_separated: bool = False
 ) -> Tuple[str, str, str]: # (bookmark_dir, bookmark_tail_name, bookmark_path)
     """
     Flexible conversion utility for bookmark paths.
 
-    # One-argument: full bookmark_dir
+    # One-argument: full bookmark_dir∂
     print(convert_bookmark_path("mfb3/MFB/TEST/01"))
     # ('mfb3/MFB/TEST', '01', 'mfb3/MFB/TEST/01')
     

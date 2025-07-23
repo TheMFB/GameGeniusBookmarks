@@ -23,13 +23,14 @@ IS_PRINT_DEF_NAME = True
 
 @print_def_name(IS_PRINT_DEF_NAME)
 @memoize
-def load_bookmarks_from_folder(folder_dir):
-    """Load bookmarks from folder directory by scanning for bookmark directories recursively"""
+def load_bookmarks_from_folder(folder_dir_abs):
     matched_bookmarks = {}
-    # print_color('Loading bookmarks from folder: ' + folder_dir, 'cyan')
+    print_color('Loading bookmarks from folder: ' + folder_dir_abs, 'cyan')
 
-    if not os.path.exists(folder_dir):
+    if not os.path.exists(folder_dir_abs):
         return matched_bookmarks
+
+    root_name = os.path.basename(folder_dir_abs)
 
     def scan_for_bookmarks(directory, current_path=""):
         """Recursively scan directory for bookmark_meta.json files"""
@@ -42,9 +43,9 @@ def load_bookmarks_from_folder(folder_dir):
                     # This is a bookmark directory
                     # Use forward slashes for consistency across platforms
                     if current_path:
-                        bookmark_key = f"{current_path}/{item}"
+                        bookmark_key = f"{root_name}/{current_path}/{item}"
                     else:
-                        bookmark_key = item
+                        bookmark_key = f"{root_name}/{item}"
 
                     # Use the new load_bookmark_meta function
                     from app.bookmarks_meta import load_bookmark_meta
@@ -63,7 +64,7 @@ def load_bookmarks_from_folder(folder_dir):
                         new_path = item
                     scan_for_bookmarks(item_path, new_path)
 
-    scan_for_bookmarks(folder_dir)
+    scan_for_bookmarks(folder_dir_abs)
     return matched_bookmarks
 
 
@@ -171,28 +172,7 @@ def is_strict_equal(path1, path2):
 def find_matching_bookmark(rel_bookmark_path, root_dir_name):
     """Find matching bookmark using step-through logic and fallback fuzzy matching."""
 
-    print('=' * 50)
-    print_color('---- find_matching_bookmark rel_bookmark_path:', 'magenta')
-    pprint(rel_bookmark_path)
-
     all_bookmark_objects = load_bookmarks_from_folder(root_dir_name)
-    print('')
-    print('')
-    print('')
-    print('')
-    print('')
-    print('')
-
-    print_color('---- all_bookmark_objects ----', 'magenta')
-    pprint(all_bookmark_objects)
-    print('')
-    print('')
-    print('')
-    print('')
-    print('')
-    print('')
-    print('')
-
 
     if not all_bookmark_objects:
         return None, None
@@ -371,6 +351,7 @@ def get_bookmark_info(bookmark_tail_name):
 
     # Search for bookmark across all folders
     for root_dir_name in valid_root_dir_names:
+        # TODO(MFB): We need to pull out all matches, THEN prompt the user for a selection.
         matched_name, bookmark_info = find_matching_bookmark(
             bookmark_tail_name, root_dir_name)
         if matched_name:

@@ -59,4 +59,7 @@ openobs() { bookmark "$@" -v; }
 
 ```
 
-
+# Glossary
+- `bookmark_dir` -> the entire path except for the bookmark name
+- `bookmark_tail_name` -> the bookmark name that is found at the end of the path
+- `bookmark_path` -> the whole directory including the name
