@@ -25,7 +25,7 @@ from app.bookmarks_redis import (
 )
 from redis_friendly_converter import convert_file as convert_redis_to_friendly
 from app.bookmarks_consts import REDIS_DUMP_DIR, IS_DEBUG, SCREENSHOT_SAVE_SCALE
-from app.utils import get_media_source_info, print_color, print_def_name
+from app.utils import get_media_source_info, print_color, print_def_name, convert_bookmark_path
 from app.flag_handlers.save_obs_screenshot import save_obs_screenshot
 from app.flag_handlers.save_redis_and_friendly_json import save_redis_and_friendly_json
 
@@ -53,41 +53,35 @@ def handle_bookmark_not_found(
         print("❌ No bookmark name provided")
         return 1
 
-
-
     ## NEW BOOKMARK ##
-    print("🧪 DEBUG: Entering new bookmark workflow")
-    print(
-        f"🆕 Bookmark '{bookmark_tail_name}' doesn't exist - creating new bookmark...")
+    print(f"🆕 Bookmark '{bookmark_tail_name}' doesn't exist - creating new bookmark...")
 
     # Handle folder:bookmark format
     if cli_bookmark_dir:
         print_color('---- cli_bookmark_dir:', 'cyan')
         pprint(cli_bookmark_dir)
-        # Check if specified folder exists
-        folder_dir = find_folder_by_name(cli_bookmark_dir)
-        print_color('---- 1 folder_dir:', 'magenta')
-        pprint(folder_dir)
 
-        if not folder_dir:
+        # Check if specified folder exists
+        bookmark_dir = find_folder_by_name(cli_bookmark_dir)
+        print_color('---- 1 folder_dir:', 'magenta')
+        pprint(bookmark_dir)
+        if not bookmark_dir:
             print(f"📁 Creating folder: '{cli_bookmark_dir}'")
-            folder_dir = create_folder_with_name(cli_bookmark_dir)
+            bookmark_dir = create_folder_with_name(cli_bookmark_dir)
             print_color('---- 2 folder_dir:', 'magenta')
-            pprint(folder_dir)
-            if not folder_dir:
+            pprint(bookmark_dir)
+            if not bookmark_dir:
                 print(f"❌ Failed to create folder '{cli_bookmark_dir}'")
                 return 1
         else:
             print(f"✅ Using existing folder: '{cli_bookmark_dir}'")
 
-        print_color('handle_bookmark_not_found folder_dir:', 'red')
-        pprint(folder_dir)
-        print_color('handle_bookmark_not_found bookmark_name:', 'red')
+        print_color('handle_bookmark_not_found bookmark_dir:', 'red')
+        pprint(bookmark_dir)
+        print_color('handle_bookmark_not_found bookmark_tail_name:', 'red')
         pprint(bookmark_tail_name)
 
-        bookmark_dir = os.path.join(
-            folder_dir, bookmark_tail_name)
-        print(f"🆕 Creating new bookmark at: '{bookmark_dir}'")
+        print(f"🆕 Creating new bookmark at: '{cli_bookmark_dir}'")
 
     else:
         # Let user select which folder to create the bookmark in
@@ -99,7 +93,12 @@ def handle_bookmark_not_found(
             return 1
 
     # Create bookmark directory
-    bookmark_dir = os.path.join(folder_dir, bookmark_tail_name)
+
+    bookmark_dir_rel, bookmark_tail_name, bookmark_path_rel = convert_bookmark_path(
+        cli_bookmark_dir, bookmark_tail_name)
+    bookmark_dir_abs, bookmark_tail_name, bookmark_path_abs = convert_bookmark_path(
+        cli_bookmark_dir, bookmark_tail_name, is_absolute_path=True)
+
     os.makedirs(bookmark_dir, exist_ok=True)
 
 

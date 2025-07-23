@@ -6,7 +6,7 @@
 
 # Run
 
-`python ./runonce_redis_integration.py --help`
+`python ./main.py --help`
 
 # .ENV File
 
@@ -31,7 +31,7 @@ bookmark() {
     echo -e "\033[1;36m> bookmark $@\033[0m"
     cd ~/dev/MFBTech/GameGeniusProject/GameGenius/game-genius-bookmarks/
     source .venv/bin/activate
-    python ./runonce_redis_integration.py "$@"
+    python ./main.py "$@"
 }
 bm() { bookmark "$@"; }
 

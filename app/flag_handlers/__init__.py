@@ -10,3 +10,4 @@ from .save_obs_screenshot import *
 from .save_redis_and_friendly_json import *
 from .run_main_process import *
 from .handle_redis_operations import *
+from .process_flags import *

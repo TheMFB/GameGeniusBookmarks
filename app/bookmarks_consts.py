@@ -20,7 +20,7 @@ load_dotenv()
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Bookmarks directory is now in the repo root
-BOOKMARKS_DIR = os.path.join(REPO_ROOT, "obs_bookmark_saves")
+ABS_OBS_BOOKMARKS_DIR = os.path.join(REPO_ROOT, "obs_bookmark_saves")
 
 # Redis dump directory - use the GameGenius directory from environment variable
 GAME_GENIUS_DIR = os.environ.get('GAME_GENIUS_DIRECTORY', '')
@@ -30,7 +30,7 @@ INITIAL_REDIS_STATE_DIR = os.path.join(REPO_ROOT, "app")
 IS_PRINT_JUST_CURRENT_FOLDER_BOOKMARKS = True
 
 USAGE_HELP = """
-Usage: runonce_redis_integration.py <bookmark_name> [--save-updates] [-s] [--use-preceding-bookmark <folder:bookmark>] [-p <folder:bookmark>] [--blank-slate] [-b] [-v <video_path>] [--open-video <video_path>] [--tags <tag1> <tag2> ...]
+Usage: main.py <bookmark_name> [--save-updates] [-s] [--use-preceding-bookmark <folder:bookmark>] [-p <folder:bookmark>] [--blank-slate] [-b] [-v <video_path>] [--open-video <video_path>] [--tags <tag1> <tag2> ...]
 
 Navigation commands:
   next, previous, first, last    Navigate to adjacent bookmarks in the same directory
@@ -58,19 +58,19 @@ Navigation:
                                              (requires a last used bookmark to be set)
 
 Examples:
-  runonce_redis_integration.py my-bookmark
-  runonce_redis_integration.py my-bookmark
-  runonce_redis_integration.py my-bookmark folder:other-bookmark
-  runonce_redis_integration.py my-bookmark --blank-slate
-  runonce_redis_integration.py next -p -s
-  runonce_redis_integration.py previous
-  runonce_redis_integration.py first
-  runonce_redis_integration.py last
-  runonce_redis_integration.py -v /path/to/video.mp4
-  runonce_redis_integration.py --open-video /path/to/video.mp4
-  runonce_redis_integration.py --tags tag1 tag2
-  runonce_redis_integration.py my-bookmark -sd
-  runonce_redis_integration.py my-bookmark --no-obs -t important highlight
+  main.py my-bookmark
+  main.py my-bookmark
+  main.py my-bookmark folder:other-bookmark
+  main.py my-bookmark --blank-slate
+  main.py next -p -s
+  main.py previous
+  main.py first
+  main.py last
+  main.py -v /path/to/video.mp4
+  main.py --open-video /path/to/video.mp4
+  main.py --tags tag1 tag2
+  main.py my-bookmark -sd
+  main.py my-bookmark --no-obs -t important highlight
 """
 
 SCREENSHOT_SAVE_SCALE = 0.5

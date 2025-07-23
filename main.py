@@ -10,166 +10,48 @@ from pprint import pprint
 from app.utils import print_color, convert_bookmark_path
 from app.bookmarks_consts import IS_DEBUG, REDIS_DUMP_DIR, OPTIONS_HELP, IS_PRINT_JUST_CURRENT_FOLDER_BOOKMARKS
 from app.bookmarks_folders import get_all_valid_root_dir_names, parse_cli_bookmark_args
-from app.bookmarks import get_bookmark_info, save_last_used_bookmark, resolve_navigation_bookmark, get_last_used_bookmark, find_matching_bookmark_strict
+from app.bookmarks import get_bookmark_info, save_last_used_bookmark, resolve_navigation_bookmark, get_last_used_bookmark, find_matching_bookmarks_strict
 from app.bookmarks_print import print_all_folders_and_bookmarks
-from app.flag_handlers import handle_help, handle_ls, handle_which, find_preceding_bookmark, open_video, find_tags, handle_matched_bookmark, handle_bookmark_not_found, handle_main_process, handle_redis_operations
-
-
-# Mapping of known standalone flags to their handler functions
-flag_routes = {
-    "--help": handle_help,
-    "-h": handle_help,
-    "--ls": handle_ls,
-    "-ls": handle_ls,
-    "--which": handle_which,
-    "-w": handle_which,
-    "--open-video": open_video,
-    "-v": open_video,
-}
-
-
-# Define supported flags
-supported_flags = [
-    "-a",
-    "--add",
-    "-s",
-    "--save-updates",
-    "-p",
-    "--use-preceding-bookmark",
-    "-b",
-    "--blank-slate",
-    "-d",
-    "--dry-run",
-    "-sd",
-    "--super-dry-run",
-    "--no-obs",
-    "--save-last-redis",
-    "-v",
-    "--open-video",
-    "-t",
-    "--tags",
-    "--show-image",
-]
-
+from app.flag_handlers import handle_help, handle_ls, handle_which, find_preceding_bookmark, open_video, find_tags, handle_matched_bookmark, handle_bookmark_not_found, handle_main_process, handle_redis_operations, process_flags, ProcessedFlags
+from app.bookmarks.navigation import process_navigation, navigation_commands
 
 def main():
-    cli_args_list = None
     matched_bookmark_name = None
     bookmark_tail_name = None
     bookmark_name = None
     bookmark_path_rel = None
-    tags = []
-    # Parse command line arguments
+
     args = sys.argv[1:]
+    args_for_run_bookmarks = args[0]
+
+    # Process Flags
+    process_flags_results: ProcessedFlags | int = process_flags(args)
+    if process_flags_results == 0 or process_flags_results == 1:
+        # See if the user sent a "routed flag" that terminates the program after use
+        return process_flags_results
+
     if IS_DEBUG:
         print(f"🔍 Debug - args: {args}")
 
-    # Route simple flags using the flag_routes table
-    for flag, handler in flag_routes.items():
-        if flag in args:
-            return handler(args)
 
-    # Otherwise, we have a bookmark/reserved bookmark name
-
-    args_for_run_bookmarks = args[0]
-
-    # Check if this is a navigation command
-    navigation_commands = ["next", "previous", "first", "last"]
-    is_navigation = args_for_run_bookmarks in navigation_commands
-
-    # Check for unsupported flags
-    ignore_flags = ["--scale"]
-    unsupported_flags = [arg for arg in args if arg.startswith(
-        "--") and arg not in supported_flags + ignore_flags]
-    if unsupported_flags:
-        print(f"⚠️  Warning: Unsupported flags detected: {unsupported_flags}")
-        print(OPTIONS_HELP)
-        print()
-
-    is_save_last_redis = "--save-last-redis" in args or "-s" in args
-    is_save_updates = "--save-updates" in args or "-s" in args
-    is_use_preceding_bookmark = "--use-preceding-bookmark" in args or "-p" in args
-    is_blank_slate = "--blank-slate" in args or "-b" in args
-    is_dry_run = "--dry-run" in args or "-d" in args
-    is_super_dry_run = "--super-dry-run" in args or "-sd" in args
-    is_no_obs = "--no-obs" in args  # ✅ FIXED this line
-    is_show_image = "--show-image" in args
-    is_add_bookmark = "--add" in args or "-a" in args
-
-    if is_super_dry_run:
-        print("💧 SUPER DRY RUN: Will skip Redis operations and Docker commands.")
-        print("💧 Still creating/updating bookmarks and metadata.")
-        if IS_DEBUG:
-            print(f"🔍 Debug - is_super_dry_run: {is_super_dry_run}")
-    if is_dry_run and IS_DEBUG:
-
-        print(f"🔍 Debug - is_dry_run: {is_dry_run}")
-        # TODO(MFB): Print what this does (different f)
-
-    # Parse the source bookmark for --use-preceding-bookmark if specified
-
-    if is_use_preceding_bookmark:
-        cli_args_list = find_preceding_bookmark(args)
-
-    # Parse tags from command line
-    if "--tags" in args or "-t" in args:
-        tags = find_tags(args)
-
-    if IS_DEBUG:
-        print(f"🔍 Debug - is_save_last_redis: {is_save_last_redis}")
-        print(f"🔍 Debug - is_save_updates: {is_save_updates}")
-        print(f"🔍 Debug - is_blank_slate: {is_blank_slate}")
-        print(f"🔍 Debug - is_no_obs: {is_no_obs}")
-
-    # Parse folder:bookmark format if present (only if not navigation)
-    # TODO(MFB): Globally change these back to bookmark_name
+    ### Pulling out bookmark dir and bookmark tail name from CLI ###
     cli_bookmark_dir, bookmark_tail_name = parse_cli_bookmark_args(
         args_for_run_bookmarks)
-    print_color('---- parse_cli_bookmark_args cli_bookmark_dir:', 'cyan')
-    pprint(cli_bookmark_dir)
-    print_color('---- parse_cli_bookmark_args bookmark_tail_name:', 'cyan')
-    pprint(bookmark_tail_name)
+    rel_bookmark_dir, bookmark_tail_name, bookmark_path_rel = convert_bookmark_path(cli_bookmark_dir, bookmark_tail_name)
+
+    print_color('===== CLI BOOKMARK PATH ======', 'green')
+    pprint(bookmark_path_rel)
+    print('=' * 40)
     print('')
 
+    # TODO(KERCH): Further break up this file into smaller files.
 
     # Handle navigation commands
+    is_navigation = args_for_run_bookmarks in navigation_commands
     if is_navigation:
-        # TODO(MFB): Need to check Navigation commands here.
-        print_color('---- is_navigation ----', 'magenta')
-        # Get the last used bookmark to determine the folder
-        last_used_info = get_last_used_bookmark()
-        if not last_used_info:
-            print(
-                f"❌ No last used bookmark found. Cannot navigate with '{args_for_run_bookmarks}'")
-            return 1
-
-        folder_name = last_used_info.get("rel_bookmark_dir")
-
-        # Find the folder directory
-        folder_dir = None
-        valid_root_dir_names = get_all_valid_root_dir_names()
-        for folder_path in valid_root_dir_names:
-            # TODO(MFB): This is where we need to look for our navigation bugfix.
-            if os.path.basename(folder_path) == folder_name:
-                folder_dir = folder_path
-                break
-
-        if not folder_dir:
-            print(f"❌ Could not find folder directory for '{folder_name}'")
-            return 1
-
-        # Resolve the navigation command
-        matched_bookmark_path_rel, bookmark_info = resolve_navigation_bookmark(
-            args_for_run_bookmarks, folder_dir)
-        print('+++++ ? resolve_navigation_bookmark matched_bookmark_path_rel:')
-        pprint(matched_bookmark_path_rel)
-
-        if not matched_bookmark_path_rel:
-            print(
-                f"❌ No bookmark name found for'{matched_bookmark_path_rel}' '{args_for_run_bookmarks}'")
-            return 1
-
-
+        navigation_results = process_navigation(args_for_run_bookmarks)
+        if navigation_results == 0 or navigation_results == 1:
+            return navigation_results
     else:
         print_color('---- not navigation ----', 'magenta')
         # TODO(MFB): GOOD TO HERE ==================================================
@@ -180,43 +62,16 @@ def main():
         print('+++++ get_bookmark_info matched_bookmark_path_rel:')
         pprint(matched_bookmark_path_rel)
 
-    if IS_DEBUG:
-        print(
-            f"🎯 Starting integrated runonce-redis workflow for bookmark: '{matched_bookmark_path_rel}'")
-        print(f"🔧 Redis dump directory: {REDIS_DUMP_DIR}")
-        if is_save_last_redis:
-            print(f"💾 Mode: Save current Redis state as redis_after.json")
-        if is_save_updates:
-            print(f"💾 Mode: Save redis state updates (before and after)")
-        if is_use_preceding_bookmark:
-            print(
-                f"📋 Mode: Use preceding bookmark's redis_after.json as redis_before.json")
-        if is_blank_slate:
-            print(f"🆕 Mode: Use initial blank slate Redis state")
-        if is_dry_run:
-            print(f"📖 Mode: Load bookmark only (no main process)")
-        if is_super_dry_run:
-            print(f"💾 Super dry run mode: Skipping all OBS operations")
-        if is_no_obs:
-            print(f"📷 No-OBS mode: Skipping all OBS operations")
-
     # Ensure Redis dump directory exists
     if not os.path.exists(REDIS_DUMP_DIR):
         print(f"❌ Redis dump directory does not exist: {REDIS_DUMP_DIR}")
         return 1
 
-    # Check if bookmark exists (with fuzzy matching)
-    # This check is now redundant if we are resolving a navigation command
-    # if not is_add_bookmark and not matched_bookmark_name:
-    #     print(f"❌ Bookmark '{args_for_run_bookmarks}' not found. Use -a or --add to create it.")
-    #     return 1
-    # If the bookmark exists, continue as normal (do not return early)
-
     # Check for exact bookmark path match
-    if is_add_bookmark and cli_bookmark_dir:
+    if process_flags_results["is_add_bookmark"] and cli_bookmark_dir:
         print_color('---- is_add_bookmark and cli_bookmark_dir ----', 'magenta')
         folder_path = os.path.join("obs_bookmark_saves", cli_bookmark_dir)
-        existing_path = find_matching_bookmark_strict(
+        existing_path = find_matching_bookmarks_strict(
             bookmark_tail_name, folder_path)
         print_color('---- bookmark_tail_name:', 'red')
         pprint(bookmark_tail_name)
@@ -263,15 +118,15 @@ def main():
         result = handle_matched_bookmark(
             matched_bookmark_name,
             bookmark_info,
-            is_show_image,
-            is_no_obs,
-            is_super_dry_run,
-            is_blank_slate,
-            is_use_preceding_bookmark,
-            is_save_updates,
-            is_save_last_redis,
-            tags,
-            cli_args_list
+            process_flags_results["is_show_image"],
+            process_flags_results["is_no_obs"],
+            process_flags_results["is_super_dry_run"],
+            process_flags_results["is_blank_slate"],
+            process_flags_results["is_use_preceding_bookmark"],
+            process_flags_results["is_save_updates"],
+            process_flags_results["is_save_last_redis"],
+            process_flags_results["tags"],
+            process_flags_results["cli_args_list"]
         )
         if isinstance(result, int):
             print("❌ Error in handle_matched_bookmark")
@@ -290,33 +145,19 @@ def main():
 
     else:
         print_color('---- no matched_bookmark_name ----', 'magenta')
-        print_color('---- cli_bookmark_dir:', 'cyan')
-        pprint(cli_bookmark_dir)
-        print('')
 
-        # If we matched a folder path (e.g. from fuzzy match), split it
-
-        if ':' in cli_bookmark_dir:
-            parts = cli_bookmark_dir.split(':')
-            cli_bookmark_dir = '/'.join(parts)
-            bookmark_tail_name = bookmark_name
-        else:
-            # fallback (user gave folder manually or it's blank)
-            bookmark_tail_name = bookmark_name
-
-        rel_bookmark_dir, bookmark_tail_name, bookmark_path_rel = convert_bookmark_path(cli_bookmark_dir, bookmark_tail_name)
 
         # Bookmark does not exist, and user intends to create it
         folder_dir = handle_bookmark_not_found(
             bookmark_tail_name,
             cli_bookmark_dir,
-            is_super_dry_run,
-            is_blank_slate,
-            is_use_preceding_bookmark,
-            is_save_updates,
-            is_no_obs,
-            tags,
-            cli_args_list
+            process_flags_results["is_super_dry_run"],
+            process_flags_results["is_blank_slate"],
+            process_flags_results["is_use_preceding_bookmark"],
+            process_flags_results["is_save_updates"],
+            process_flags_results["is_no_obs"],
+            process_flags_results["tags"],
+            process_flags_results["cli_args_list"]
         )
 
         print('+++++ handle_bookmark_not_found folder_dir:')
@@ -327,7 +168,7 @@ def main():
             return folder_dir
 
     # Run the main process (unless dry run modes)
-    if not is_dry_run and not is_super_dry_run:
+    if not process_flags_results["is_dry_run"] and not process_flags_results["is_super_dry_run"]:
         print("🚀 Running main process...")
         result = handle_main_process()
         if result != 0:
@@ -336,12 +177,12 @@ def main():
 
     # Check if redis_after.json already exists before saving final state (skip in dry run modes)
     should_save_redis_after = False
-    if not is_dry_run and not is_super_dry_run:
+    if not process_flags_results["is_dry_run"] and not process_flags_results["is_super_dry_run"]:
         should_save_redis_after = handle_redis_operations(
-            folder_dir, bookmark_tail_name, is_save_updates
+            folder_dir, bookmark_tail_name, process_flags_results["is_save_updates"]
         )
     else:
-        if is_super_dry_run:
+        if process_flags_results["is_super_dry_run"]:
             print(f"💾 Super dry run mode: Skipping final Redis state save")
         else:
             print(f"📖 Load-only mode: Skipping final Redis state save")
@@ -382,19 +223,19 @@ def main():
         folder_name = os.path.basename(folder_dir)
         print(f"📋 Skipping final folder metadata update for '{folder_name}'")
 
-    if is_super_dry_run:
+    if process_flags_results["is_super_dry_run"]:
         print(f"✅ Super dry run workflow completed successfully!")
         if IS_DEBUG:
             print(f"   Bookmark: '{bookmark_name}'")
             print(f"   OBS bookmark loaded")
             print(f"   No Redis operations performed")
-    elif is_dry_run:
+    elif process_flags_results["is_dry_run"]:
         print(f"✅ Load-only workflow completed successfully!")
         if IS_DEBUG:
             print(f"   Bookmark: '{bookmark_name}'")
             print(f"   OBS bookmark loaded")
             print(f"   Redis before: {bookmark_name}/redis_before.json")
-    elif is_no_obs:
+    elif process_flags_results["is_no_obs"]:
         print(f"✅ No-OBS workflow completed successfully!")
         if IS_DEBUG:
             print(f"   Bookmark: '{bookmark_name}'")

@@ -1,7 +1,7 @@
 from pprint import pprint
 import os
 import json
-from app.bookmarks_consts import IS_DEBUG, HIDDEN_COLOR, RESET_COLOR, BOOKMARKS_DIR
+from app.bookmarks_consts import IS_DEBUG, HIDDEN_COLOR, RESET_COLOR, ABS_OBS_BOOKMARKS_DIR
 from app.bookmarks_meta import compute_hoistable_tags
 from app.bookmarks.last_used import get_last_used_bookmark
 from app.bookmarks.finders import get_all_bookmarks_in_json_format
@@ -54,7 +54,7 @@ def print_all_folders_and_bookmarks(
             current_bookmark_name = last_used_info.get('bookmark_name', '')
             current_folder_abs_path = last_used_info.get('rel_bookmark_dir', '')
 
-    current_folder_rel_path = abs_to_rel_path(current_folder_abs_path, BOOKMARKS_DIR)
+    current_folder_rel_path = abs_to_rel_path(current_folder_abs_path, ABS_OBS_BOOKMARKS_DIR)
 
 
     if IS_DEBUG:
@@ -209,7 +209,7 @@ def print_all_folders_and_bookmarks(
     print("=" * 50)
 
     current_bookmark = current_folder_abs_path + ":" + current_bookmark_name
-    rel_current_bookmark = abs_to_rel_path(current_bookmark, BOOKMARKS_DIR)
+    rel_current_bookmark = abs_to_rel_path(current_bookmark, ABS_OBS_BOOKMARKS_DIR)
     rel_current_bookmark = rel_current_bookmark.replace('/', ':')
 
     print_color(f"🔍 Current bookmark: bm {rel_current_bookmark}", 'magenta')

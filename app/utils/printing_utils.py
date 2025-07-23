@@ -2,7 +2,7 @@ from typing import Literal
 import base64
 import os
 
-from app.bookmarks_consts import BOOKMARKS_DIR
+from app.bookmarks_consts import ABS_OBS_BOOKMARKS_DIR
 
 
 def get_embedded_file_link(func):
@@ -17,9 +17,9 @@ def get_embedded_file_link(func):
 def get_embedded_bookmark_file_link(colon_separated_path, text):
     slash_separated_path = colon_separated_path.replace(':', '/')
     if text == "📁":
-        file_path = BOOKMARKS_DIR + '/' + slash_separated_path + "/folder_meta.json"
+        file_path = ABS_OBS_BOOKMARKS_DIR + '/' + slash_separated_path + "/folder_meta.json"
     else:
-        file_path = BOOKMARKS_DIR + '/' + slash_separated_path + "/bookmark_meta.json"
+        file_path = ABS_OBS_BOOKMARKS_DIR + '/' + slash_separated_path + "/bookmark_meta.json"
 
     # Ensure three slashes after file:
     uri = f"file://{file_path}" if file_path.startswith(

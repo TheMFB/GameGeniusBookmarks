@@ -3,7 +3,7 @@ import json
 from datetime import datetime
 
 from app.utils import print_color
-from app.bookmarks_consts import IS_DEBUG, BOOKMARKS_DIR, EXCLUDED_DIRS
+from app.bookmarks_consts import IS_DEBUG, ABS_OBS_BOOKMARKS_DIR, EXCLUDED_DIRS
 from app.bookmarks_meta import load_folder_meta, create_folder_meta
 from app.utils.decorators import print_def_name
 
@@ -11,21 +11,21 @@ IS_PRINT_DEF_NAME = True
 
 @print_def_name(IS_PRINT_DEF_NAME)
 def get_all_valid_root_dir_names():
-    """Collect all folder paths under BOOKMARKS_DIR that contain folder_meta.json (excluding archive)"""
+    """Collect all folder paths under ABS_OBS_BOOKMARKS_DIR that contain folder_meta.json (excluding archive)"""
     try:
         if IS_DEBUG:
-            print(f"🔍 Scanning for folders inside: {BOOKMARKS_DIR}")
+            print(f"🔍 Scanning for folders inside: {ABS_OBS_BOOKMARKS_DIR}")
 
-        if not os.path.exists(BOOKMARKS_DIR):
-            print(f"❌ Bookmarks directory does not exist: {BOOKMARKS_DIR}")
+        if not os.path.exists(ABS_OBS_BOOKMARKS_DIR):
+            print(f"❌ Bookmarks directory does not exist: {ABS_OBS_BOOKMARKS_DIR}")
             return []
 
         excluded_dirs = EXCLUDED_DIRS
         active_folders = []
 
-        # Only scan the immediate subdirectories of BOOKMARKS_DIR
-        for item in os.listdir(BOOKMARKS_DIR):
-            item_path = os.path.join(BOOKMARKS_DIR, item)
+        # Only scan the immediate subdirectories of ABS_OBS_BOOKMARKS_DIR
+        for item in os.listdir(ABS_OBS_BOOKMARKS_DIR):
+            item_path = os.path.join(ABS_OBS_BOOKMARKS_DIR, item)
             if os.path.isdir(item_path) and item not in excluded_dirs:
                 # Check if this directory contains a folder_meta.json (indicating it's a folder, not a bookmark)
                 folder_meta_file = os.path.join(item_path, "folder_meta.json")
@@ -92,8 +92,8 @@ def create_new_folder():
     """Create a new folder when no active folders exist"""
     try:
         # Ensure bookmarks directory exists
-        if not os.path.exists(BOOKMARKS_DIR):
-            os.makedirs(BOOKMARKS_DIR)
+        if not os.path.exists(ABS_OBS_BOOKMARKS_DIR):
+            os.makedirs(ABS_OBS_BOOKMARKS_DIR)
 
         # Prompt for folder name
         print("📝 No active folders found. Creating a new folder...")
@@ -104,7 +104,7 @@ def create_new_folder():
             return None
 
         # Create folder directory
-        folder_dir = os.path.join(BOOKMARKS_DIR, folder_name)
+        folder_dir = os.path.join(ABS_OBS_BOOKMARKS_DIR, folder_name)
         if os.path.exists(folder_dir):
             print(f"⚠️  Folder '{folder_name}' already exists")
             return folder_dir
@@ -129,17 +129,17 @@ def get_current_folder_dir():
     """Get the current OBS folder directory"""
     try:
         if IS_DEBUG:
-            print(f"🔍 Looking for folders in: {BOOKMARKS_DIR}")
+            print(f"🔍 Looking for folders in: {ABS_OBS_BOOKMARKS_DIR}")
 
-        if not os.path.exists(BOOKMARKS_DIR):
-            print(f"❌ Bookmarks directory does not exist: {BOOKMARKS_DIR}")
+        if not os.path.exists(ABS_OBS_BOOKMARKS_DIR):
+            print(f"❌ Bookmarks directory does not exist: {ABS_OBS_BOOKMARKS_DIR}")
             return None
 
         # Get existing folders (excluding archive and screenshots dirs)
         excluded_dirs = EXCLUDED_DIRS
         folders = []
-        for item in os.listdir(BOOKMARKS_DIR):
-            item_path = os.path.join(BOOKMARKS_DIR, item)
+        for item in os.listdir(ABS_OBS_BOOKMARKS_DIR):
+            item_path = os.path.join(ABS_OBS_BOOKMARKS_DIR, item)
             if os.path.isdir(item_path) and item not in excluded_dirs:
                 folders.append(item)
 
@@ -154,7 +154,7 @@ def get_current_folder_dir():
         most_recent = folders[0]
         most_recent_time = 0
         for folder in folders:
-            folder_path = os.path.join(BOOKMARKS_DIR, folder)
+            folder_path = os.path.join(ABS_OBS_BOOKMARKS_DIR, folder)
             folder_meta_file = os.path.join(folder_path, "folder_meta.json")
 
             # Check folder_meta.json last_modified, fall back to directory mtime
@@ -178,7 +178,7 @@ def get_current_folder_dir():
                 most_recent_time = mod_time
                 most_recent = folder
 
-        folder_dir = os.path.join(BOOKMARKS_DIR, most_recent)
+        folder_dir = os.path.join(ABS_OBS_BOOKMARKS_DIR, most_recent)
         if IS_DEBUG:
             print(f"🎯 Using folder directory: {folder_dir}")
         return folder_dir
@@ -208,8 +208,8 @@ def find_folder_by_name(folder_name):
         print_color('---- 1 folder_path find_folder_by_name:', 'magenta')
         print(folder_path)
 
-        # Match either exact basename or full relative path from BOOKMARKS_DIR
-        rel_path = os.path.relpath(folder_path, BOOKMARKS_DIR)
+        # Match either exact basename or full relative path from ABS_OBS_BOOKMARKS_DIR
+        rel_path = os.path.relpath(folder_path, ABS_OBS_BOOKMARKS_DIR)
         folder_basename = os.path.basename(folder_path)
 
         # ✅ Check for exact matches first
@@ -227,11 +227,11 @@ def create_folder_with_name(rel_folder_dir):
 
     try:
         # Ensure bookmarks directory exists
-        if not os.path.exists(BOOKMARKS_DIR):
-            os.makedirs(BOOKMARKS_DIR)
+        if not os.path.exists(ABS_OBS_BOOKMARKS_DIR):
+            os.makedirs(ABS_OBS_BOOKMARKS_DIR)
 
         # Create folder directory
-        abs_folder_dir = os.path.join(BOOKMARKS_DIR, rel_folder_dir)
+        abs_folder_dir = os.path.join(ABS_OBS_BOOKMARKS_DIR, rel_folder_dir)
         if os.path.exists(abs_folder_dir):
             print(f"⚠️  Folder '{abs_folder_dir}' already exists")
             return abs_folder_dir
