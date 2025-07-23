@@ -57,7 +57,7 @@ def main():
     matched_bookmark_name = None
     bookmark_tail_name = None
     bookmark_name = None
-    rel_bookmark_path = None
+    bookmark_path_rel = None
     tags = []
     # Parse command line arguments
     args = sys.argv[1:]
@@ -159,14 +159,14 @@ def main():
             return 1
 
         # Resolve the navigation command
-        matched_rel_bookmark_path, bookmark_info = resolve_navigation_bookmark(
+        matched_bookmark_path_rel, bookmark_info = resolve_navigation_bookmark(
             args_for_run_bookmarks, folder_dir)
-        print('+++++ ? resolve_navigation_bookmark matched_rel_bookmark_path:')
-        pprint(matched_rel_bookmark_path)
+        print('+++++ ? resolve_navigation_bookmark matched_bookmark_path_rel:')
+        pprint(matched_bookmark_path_rel)
 
-        if not matched_rel_bookmark_path:
+        if not matched_bookmark_path_rel:
             print(
-                f"❌ No bookmark name found for'{matched_rel_bookmark_path}' '{args_for_run_bookmarks}'")
+                f"❌ No bookmark name found for'{matched_bookmark_path_rel}' '{args_for_run_bookmarks}'")
             return 1
 
 
@@ -175,14 +175,14 @@ def main():
         # TODO(MFB): GOOD TO HERE ==================================================
 
         # Normal bookmark lookup
-        matched_rel_bookmark_path, bookmark_info = get_bookmark_info(
+        matched_bookmark_path_rel, bookmark_info = get_bookmark_info(
             bookmark_tail_name)
-        print('+++++ get_bookmark_info matched_rel_bookmark_path:')
-        pprint(matched_rel_bookmark_path)
+        print('+++++ get_bookmark_info matched_bookmark_path_rel:')
+        pprint(matched_bookmark_path_rel)
 
     if IS_DEBUG:
         print(
-            f"🎯 Starting integrated runonce-redis workflow for bookmark: '{matched_rel_bookmark_path}'")
+            f"🎯 Starting integrated runonce-redis workflow for bookmark: '{matched_bookmark_path_rel}'")
         print(f"🔧 Redis dump directory: {REDIS_DUMP_DIR}")
         if is_save_last_redis:
             print(f"💾 Mode: Save current Redis state as redis_after.json")
@@ -304,7 +304,7 @@ def main():
             # fallback (user gave folder manually or it's blank)
             bookmark_tail_name = bookmark_name
 
-        rel_bookmark_dir, bookmark_tail_name, rel_bookmark_path = convert_bookmark_path(cli_bookmark_dir, bookmark_tail_name)
+        rel_bookmark_dir, bookmark_tail_name, bookmark_path_rel = convert_bookmark_path(cli_bookmark_dir, bookmark_tail_name)
 
         # Bookmark does not exist, and user intends to create it
         folder_dir = handle_bookmark_not_found(

@@ -12,7 +12,8 @@ from datetime import datetime
 from app.bookmarks_consts import IS_DEBUG
 from app.bookmarks_folders import get_all_valid_root_dir_names
 from app.utils import print_color, split_path_into_array, print_def_name, memoize
-from app.bookmarks_meta import construct_full_video_file_path
+from app.videos import construct_full_video_file_path
+from app.bookmarks_meta import load_bookmark_meta_from_rel, load_bookmark_meta_from_abs
 
 IS_AGGREGATE_TAGS = False
 IS_PRINT_DEF_NAME = True
@@ -48,8 +49,7 @@ def load_bookmarks_from_folder(folder_dir_abs):
                         bookmark_key = f"{root_name}/{item}"
 
                     # Use the new load_bookmark_meta function
-                    from app.bookmarks_meta import load_bookmark_meta
-                    bookmark_meta = load_bookmark_meta(item_path)
+                    bookmark_meta = load_bookmark_meta_from_rel(item_path)
                     if bookmark_meta:
                         matched_bookmarks[bookmark_key] = bookmark_meta
                     else:
@@ -76,13 +76,7 @@ def load_folder_meta(folder_path):
             return json.load(f)
     return None
 
-def load_bookmark_meta(bookmark_path):
-    """Load bookmark metadata from bookmark_meta.json"""
-    bookmark_meta_path = os.path.join(bookmark_path, "bookmark_meta.json")
-    if os.path.exists(bookmark_meta_path):
-        with open(bookmark_meta_path, 'r') as f:
-            return json.load(f)
-    return None
+
 
 @print_def_name(IS_PRINT_DEF_NAME)
 @memoize
@@ -113,7 +107,7 @@ def get_all_bookmarks_in_json_format():
                 subfolders[item] = scan_folder(item_path)
             elif item == "bookmark_meta.json":
                 # This folder is a bookmark (leaf)
-                bookmark_meta = load_bookmark_meta(folder_path)
+                bookmark_meta = load_bookmark_meta_from_abs(folder_path)
                 node.update({
                     'tags': bookmark_meta.get('tags', []),
                     'description': bookmark_meta.get('description', ''),
@@ -169,158 +163,55 @@ def is_strict_equal(path1, path2):
 
 
 @print_def_name(IS_PRINT_DEF_NAME)
-def find_matching_bookmark(rel_bookmark_path, root_dir_name):
-    """Find matching bookmark using step-through logic and fallback fuzzy matching."""
-
+def find_matching_bookmark(bookmark_path_rel, root_dir_name):
+    """
+    Find all matching bookmarks using step-through logic and fallback fuzzy matching.
+    Returns a list of (bookmark_path, bookmark_info) tuples.
+    """
     all_bookmark_objects = load_bookmarks_from_folder(root_dir_name)
-
     if not all_bookmark_objects:
-        return None, None
+        return []
 
     all_saved_bookmark_paths = list(all_bookmark_objects.keys())
-    print_color('----len all_saved_bookmark_paths:', 'magenta')
-    print(len(all_saved_bookmark_paths))
-    pprint(all_saved_bookmark_paths)
+    matches = []
 
     # First try exact match
-    if rel_bookmark_path in all_saved_bookmark_paths:
+    if bookmark_path_rel in all_saved_bookmark_paths:
         if IS_DEBUG:
-            print(f"🎯 Found exact rel_bookmark_path match: '{rel_bookmark_path}'")
-        return rel_bookmark_path, all_saved_bookmark_paths[rel_bookmark_path]
+            print(f"🎯 Found exact bookmark_path_rel match: '{bookmark_path_rel}'")
+        return [(bookmark_path_rel, all_bookmark_objects[bookmark_path_rel])]
 
     # Normalize user input
-    user_input_parts = split_path_into_array(rel_bookmark_path)
-
+    user_input_parts = split_path_into_array(bookmark_path_rel)
     if IS_DEBUG:
         print(f"🔎 Normalized user input: {user_input_parts}")
 
     # Try stepwise matching
     stepwise_matches = stepwise_match(user_input_parts, all_saved_bookmark_paths)
-
     if stepwise_matches:
-        if len(stepwise_matches) == 1:
-            target = stepwise_matches[0]
-            if IS_DEBUG:
-                print(f"🎯 Stepwise match resolved to: '{target}'")
-            return target, all_bookmark_objects[target]
-        else:
-            print(
-                f"🤔 Multiple all_bookmark_objects found matching '{rel_bookmark_path}':")
-            print(
-                f"   Please be more specific. Found {len(stepwise_matches)} matches:")
-            for i, match in enumerate(sorted(stepwise_matches), 1):
-                rel_bookmark_path = all_bookmark_objects[match]
-                display_match = match.replace('/', ' : ')
-                print(
-                    f"   {i}. {rel_bookmark_path.get('timestamp_formatted', 'unknown time')} - {display_match}")
-            print(
-                f"   {len(stepwise_matches) + 1}. Create new rel_bookmark_path '{rel_bookmark_path}'")
+        for match in stepwise_matches:
+            matches.append((match, all_bookmark_objects[match]))
+        return matches
 
-            while True:
-                try:
-                    choice = input(
-                        f"Enter choice (1-{len(stepwise_matches) + 1}): ").strip()
-                    choice_num = int(choice)
-
-                    if 1 <= choice_num <= len(stepwise_matches):
-                        selected_match = sorted(stepwise_matches)[
-                            choice_num - 1]
-                        print(f"✅ Selected bookmark: '{selected_match}'")
-                        return selected_match, all_bookmark_objects[selected_match]
-                    elif choice_num == len(stepwise_matches) + 1:
-                        print(f"✅ Creating new bookmark: '{rel_bookmark_path}'")
-                        return stepwise_matches[0], None
-                    else:
-                        print(
-                            f"❌ Invalid choice. Please enter 1-{len(stepwise_matches) + 1}")
-                except ValueError:
-                    print("❌ Please enter a valid number")
-                except KeyboardInterrupt:
-                    print("\n❌ Cancelled")
-                    return None, None
-
-
-    # Fallback fuzzy match
     # Fallback fuzzy match (with scoring)
+    normalized_input = bookmark_path_rel.lower()
     scored_matches = []
-    normalized_input = rel_bookmark_path.lower()
-
     for path, info in all_bookmark_objects.items():
         path_lower = path.lower()
         tokens = set(path_lower.replace('/', ' ').replace('-', ' ').split())
-        score = 0
-
-        # Token overlap boost
-        input_tokens = set(normalized_input.split())
-        score += len(tokens & input_tokens)
-
-        # Prefix boost
-        if path_lower.startswith(normalized_input):
-            score += 3
-
-        # Substring boost
-        if normalized_input in path_lower:
-            score += 1
-
+        input_tokens = set(normalized_input.replace('/', ' ').replace('-', ' ').split())
+        score = len(tokens & input_tokens)
         if score > 0:
-            scored_matches.append((score, path))
+            scored_matches.append((score, path, info))
+    if scored_matches:
+        # Sort by score descending, then path
+        scored_matches.sort(key=lambda x: (-x[0], x[1]))
+        for _, path, info in scored_matches:
+            matches.append((path, info))
+        return matches
 
-    if not scored_matches:
-        return None, None
-
-    # Sort by score (descending), then alphabetically
-    scored_matches.sort(key=lambda x: (-x[0], x[1]))
-    matches = [m[1] for m in scored_matches]
-
-
-    if len(matches) == 0:
-        return None, None
-    elif len(matches) == 1:
-        target = matches[0]
-        if IS_DEBUG:
-            print(f"🎯 Fuzzy fallback match: '{target}'")
-        return target, all_bookmark_objects[target]
-    else:
-        print(f"\n🤔 Multiple bookmarks matched '{bookmark}':\n")
-        sorted_matches = sorted(matches)
-
-        for i, match in enumerate(sorted_matches, 1):
-            rel_bookmark_path = all_bookmark_objects[match]
-            time_str = rel_bookmark_path.get("timestamp_formatted", "unknown time")
-            tags_str = ", ".join(rel_bookmark_path.get("tags", [])) if rel_bookmark_path.get("tags") else "none"
-            path_parts = match.split("/")
-            bookmark_label = path_parts[-1]
-            folder_path = " / ".join(path_parts[:-1]) if len(path_parts) > 1 else "(root)"
-
-            print(f"  [{i}] {bookmark_label}")
-            print(f"      • Time: {time_str}")
-            print(f"      • Path: {folder_path}")
-            print(f"      • Tags: {tags_str}")
-
-        print(f"  [{len(matches) + 1}] ➕ Create new rel_bookmark_path '{rel_bookmark_path}'\n")
-
-
-        while True:
-            try:
-                choice = input(
-                    f"Enter choice (1-{len(matches) + 1}): ").strip()
-                choice_num = int(choice)
-
-                if 1 <= choice_num <= len(matches):
-                    selected_match = sorted(matches)[choice_num - 1]
-                    print(f"✅ Selected rel_bookmark_path: '{selected_match}'")
-                    return selected_match, all_bookmark_objects[selected_match]
-                elif choice_num == len(matches) + 1:
-                    print(f"✅ Creating new rel_bookmark_path: '{rel_bookmark_path}'")
-                    return None, None
-                else:
-                    print(
-                        f"❌ Invalid choice. Please enter 1-{len(matches) + 1}")
-            except ValueError:
-                print("❌ Please enter a valid number")
-            except KeyboardInterrupt:
-                print("\n❌ Cancelled")
-                return None, None
+    # No matches found
+    return []
 
 
 def find_matching_bookmark_strict(bookmark_query, folder_dir):
@@ -339,9 +230,9 @@ def find_matching_bookmark_strict(bookmark_query, folder_dir):
 
 @print_def_name(IS_PRINT_DEF_NAME)
 def get_bookmark_info(bookmark_tail_name):
-    # TODO(MFB): Look into me and see if this is the bookmark name or the whole bookmark (path+name)
-    """Get information about a bookmark if it exists, with fuzzy matching across all folders"""
-    # Get all active folders
+    """
+    Get information about a bookmark if it exists, with fuzzy matching across all folders.
+    """
     valid_root_dir_names = get_all_valid_root_dir_names()
     print_color('---- valid_root_dir_names ----', 'magenta')
     pprint(valid_root_dir_names)
@@ -349,36 +240,75 @@ def get_bookmark_info(bookmark_tail_name):
     if not valid_root_dir_names:
         return None, None
 
-    # Search for bookmark across all folders
+    all_matches = []
+    # Search for bookmark across all folders, collect all matches
     for root_dir_name in valid_root_dir_names:
-        # TODO(MFB): We need to pull out all matches, THEN prompt the user for a selection.
-        matched_name, bookmark_info = find_matching_bookmark(
-            bookmark_tail_name, root_dir_name)
-        if matched_name:
-            folder_name = os.path.basename(root_dir_name)
-            if IS_DEBUG:
-                print(
-                    f"🎯 Found bookmark '{matched_name}' in folder '{folder_name}'")
-            return matched_name, bookmark_info
+        matches = []
+        matched_name, bookmark_info = find_matching_bookmark(bookmark_tail_name, root_dir_name)
+        if matched_name and bookmark_info:
+            # If find_matching_bookmark returns a single match, add it
+            matches.append((matched_name, bookmark_info))
+        elif matched_name and bookmark_info is None:
+            # If user chose to create a new bookmark, skip
+            continue
+        # If find_matching_bookmark returns multiple matches, add them all
+        # (You may need to refactor find_matching_bookmark to return all matches instead of prompting)
+        # For now, let's assume it only returns one or zero
+
+        all_matches.extend(matches)
+
+    # If only one match, return it
+    if len(all_matches) == 1:
+        return all_matches[0]
+
+    # If multiple, prompt the user
+    if all_matches:
+        print(f"\n🤔 Multiple bookmarks matched '{bookmark_tail_name}':\n")
+        for i, (match, info) in enumerate(all_matches, 1):
+            time_str = info.get("timestamp_formatted", "unknown time")
+            tags_str = ", ".join(info.get("tags", [])) if info.get("tags") else "none"
+            path_parts = match.split("/")
+            bookmark_label = path_parts[-1]
+            folder_path = " / ".join(path_parts[:-1]) if len(path_parts) > 1 else "(root)"
+            print(f"  [{i}] {bookmark_label}")
+            print(f"      • Time: {time_str}")
+            print(f"      • Path: {folder_path}")
+            print(f"      • Tags: {tags_str}")
+        print(f"  [{len(all_matches) + 1}] ➕ Create new bookmark '{bookmark_tail_name}'\n")
+
+        while True:
+            choice = input(f"Enter choice (1-{len(all_matches) + 1}): ")
+            try:
+                choice_num = int(choice)
+                if 1 <= choice_num <= len(all_matches):
+                    selected_match, selected_info = all_matches[choice_num - 1]
+                    print(f"✅ Selected bookmark: '{selected_match}'")
+                    return selected_match, selected_info
+                elif choice_num == len(all_matches) + 1:
+                    print(f"✅ Creating new bookmark: '{bookmark_tail_name}'")
+                    return None, None
+                else:
+                    print("❌ Invalid choice. Please try again.")
+            except ValueError:
+                print("❌ Please enter a number.")
 
     print(f"❌ No bookmarks found matching '{bookmark_tail_name}'")
-    # Bookmark not found in any folder
     return None, None
 
-def load_obs_bookmark_directly(rel_bookmark_path, bookmark_info):
+def load_obs_bookmark_directly(bookmark_path_rel, bookmark_info):
     # TODO(MFB): Look into me and see if this is the bookmark name or the whole bookmark (path+name)
     """Load OBS bookmark directly without using the bookmark manager script"""
 
     try:
         if IS_DEBUG:
-            print(f"🔍 Debug - Loading rel_bookmark_path: {rel_bookmark_path}")
+            print(f"🔍 Debug - Loading bookmark_path_rel: {bookmark_path_rel}")
             print(f"🔍 Debug - Bookmark info keys: {list(bookmark_info.keys())}")
             print(f"🔍 Debug - video_filename: {bookmark_info.get('video_filename', 'NOT_FOUND')}")
             print(f"🔍 Debug - timestamp: {bookmark_info.get('timestamp', 'NOT_FOUND')}")
             print(f"🔍 Debug - timestamp_formatted: {bookmark_info.get('timestamp_formatted', 'NOT_FOUND')}")
 
         if not bookmark_info:
-            print(f"❌ No file path found in rel_bookmark_path metadata")
+            print(f"❌ No file path found in bookmark_path_rel metadata")
             if IS_DEBUG:
                 print(f"🔍 Debug - Available keys in bookmark_info: {list(bookmark_info.keys())}")
             return False
@@ -399,7 +329,7 @@ def load_obs_bookmark_directly(rel_bookmark_path, bookmark_info):
         video_file_path = construct_full_video_file_path(video_filename)
 
         if not video_filename:
-            print(f"❌ No file path found in rel_bookmark_path metadata")
+            print(f"❌ No file path found in bookmark_path_rel metadata")
             if IS_DEBUG:
                 print(f"🔍 Debug - Available keys in bookmark_info: {list(bookmark_info.keys())}")
             return False
@@ -930,7 +860,7 @@ def build_bookmark_token_map(include_tags_and_descriptions=True):
     Return a dict mapping each bookmark path to a token set for matching.
     """
     from app.bookmarks_folders import get_all_valid_root_dir_names
-    from app.bookmarks_meta import load_bookmark_meta, load_folder_meta
+    from app.bookmarks_meta import load_bookmark_meta_from_rel, load_folder_meta
 
     bookmark_token_map = {}
     valid_root_dir_names = get_all_valid_root_dir_names()
@@ -961,7 +891,8 @@ def build_bookmark_token_map(include_tags_and_descriptions=True):
             if include_tags_and_descriptions:
                 # Add bookmark-level meta
                 full_path = os.path.join(folder_path, bookmark_path)
-                meta = load_bookmark_meta(full_path)
+                # TODO(MFB): I'm not sure this is rel...
+                meta = load_bookmark_meta_from_rel(full_path)
 
                 tokens.update([tag.lower() for tag in meta.get("tags", [])])
 

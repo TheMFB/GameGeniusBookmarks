@@ -5,34 +5,9 @@ from pprint import pprint
 import os
 import json
 from datetime import datetime
-from dotenv import load_dotenv
 
 from app.bookmarks_consts import IS_DEBUG, IS_DEBUG_FULL
-
-# Load environment variables
-load_dotenv()
-
-def get_video_path_from_env():
-    """Get the VIDEO_PATH from environment variables."""
-    # TODO(MFB): This is being called for each bookmark when we are assembling the bookmarks. This should really only be called once.
-    video_path = os.getenv('VIDEO_PATH_2')
-    if not video_path:
-        print("⚠️  VIDEO_PATH not found in environment variables")
-        return None
-    return video_path
-
-def construct_full_video_file_path(video_filename):
-    """Construct the full file path from VIDEO_PATH and filename."""
-    video_path = get_video_path_from_env()
-    if not video_path:
-        return None
-
-    # Ensure the video path ends with a separator
-    if not video_path.endswith('/') and not video_path.endswith('\\'):
-        video_path += '/'
-
-    return os.path.join(video_path, video_filename)
-
+from app.videos import construct_full_video_file_path
 
 def load_folder_meta(folder_path):
     """Load folder metadata from folder_meta.json"""
@@ -48,16 +23,17 @@ def load_folder_meta(folder_path):
             return {}
     return {}
 
+# TODO(MFB): Do we have enough to make a tags folder?
 def compute_hoistable_tags(list_of_tag_sets):
-    """Given a list of tag sets (one per bookmark), return the set of tags shared by all"""
+    """Given a list of tag sets (one per bookmark), return the set of tags shared by all -- in order to bring them up to the next parent folder"""
     if not list_of_tag_sets:
         return set()
     return set.intersection(*list_of_tag_sets)
 
 
-def load_bookmark_meta(bookmark_dir):
+def load_bookmark_meta_from_rel(bookmark_dir_rel):
     """Load bookmark metadata and construct full file path."""
-    meta_file = os.path.join(bookmark_dir, "bookmark_meta.json")
+    meta_file = os.path.join(bookmark_dir_rel, "bookmark_meta.json")
     if os.path.exists(meta_file):
         try:
             with open(meta_file, 'r') as f:
@@ -97,10 +73,17 @@ def load_bookmark_meta(bookmark_dir):
             return meta_data
         except json.JSONDecodeError:
             if IS_DEBUG:
-                print(f"⚠️  Could not parse bookmark_meta.json in {bookmark_dir}")
+                print(f"⚠️  Could not parse bookmark_meta.json in {bookmark_dir_rel}")
             return {}
     return {}
 
+def load_bookmark_meta_from_abs(bookmark_path_abs):
+    """Load bookmark metadata from bookmark_meta.json"""
+    bookmark_meta_path = os.path.join(bookmark_path_abs, "bookmark_meta.json")
+    if os.path.exists(bookmark_meta_path):
+        with open(bookmark_meta_path, 'r') as f:
+            return json.load(f)
+    return None
 
 def create_folder_meta(abs_folder_dir, description="", tags=None):
     """Create or update folder_meta.json file"""
