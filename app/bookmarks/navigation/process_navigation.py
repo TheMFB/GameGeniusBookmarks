@@ -2,17 +2,11 @@
 Integration script that coordinates OBS bookmarks with Redis state management
 """
 import os
-import sys
-import subprocess
 from pprint import pprint
-# from networkx import to_dict_of_dicts
-
-from app.utils import print_color, convert_bookmark_path
-from app.bookmarks_consts import IS_DEBUG, REDIS_DUMP_DIR, OPTIONS_HELP, IS_PRINT_JUST_CURRENT_FOLDER_BOOKMARKS
-from app.bookmarks_folders import get_all_valid_root_dir_names, parse_cli_bookmark_args
-from app.bookmarks import get_bookmark_info, save_last_used_bookmark, resolve_navigation_bookmark, get_last_used_bookmark, find_matching_bookmarks_strict
-from app.bookmarks_print import print_all_folders_and_bookmarks
-from app.flag_handlers import handle_help, handle_ls, handle_which, find_preceding_bookmark, open_video, find_tags, handle_matched_bookmark, handle_bookmark_not_found, handle_main_process, handle_redis_operations, process_flags
+from app.utils import print_color
+from app.bookmarks_folders import get_all_valid_root_dir_names
+from app.bookmarks import get_last_used_bookmark
+from app.bookmarks.navigation import resolve_navigation_bookmark
 
 navigation_commands = ["next", "previous", "first", "last"]
 

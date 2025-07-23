@@ -14,11 +14,10 @@ class BookmarkPathDictionary(TypedDict):
     bookmark_tail_name: str
 
     # Colon-separated
-    bookmark_dir_colon_abs: str
     bookmark_dir_colon_rel: str
-
-    bookmark_path_colon_abs: str
     bookmark_path_colon_rel: str
+    # bookmark_dir_colon_abs: str # We never will use a colon-separated absolute path, as colon-syntax is for our internal use.
+    # bookmark_path_colon_abs: str # We never will use a colon-separated absolute path, as colon-syntax is for our internal use.
 
     # Slash-separated
     bookmark_dir_slash_abs: str
@@ -28,7 +27,6 @@ class BookmarkPathDictionary(TypedDict):
     bookmark_path_slash_rel: str
 
 
-# TODO(KERCH): Instead of sending out a large tuple, let's return a dictionary with all the values abs, rel, colon, slash, path, dir -- mix and match all that make sense). Make a class like we did for the process_flags.py, and then return that object. Anything that uses convert_bookmark_path should then be updated to accept the object, and pull out the values that they want. (you'll be removing the is_absolute_path and is_colon_separated optional params as they'll always be in the return.)
 @print_def_name(IS_PRINT_DEF_NAME)
 @memoize
 def convert_bookmark_path(
@@ -104,26 +102,17 @@ def convert_bookmark_path(
 
     # Absolute
     if not bookmark_dir:
-        bookmark_dir_colon_abs = None
-        bookmark_path_colon_abs = None
         bookmark_dir_slash_abs = None
         bookmark_path_slash_abs = None
     else:
-        bookmark_dir_colon_abs = str(
-            Path(ABS_OBS_BOOKMARKS_DIR) / bookmark_dir_slash_rel)
-        bookmark_path_colon_abs = str(
-            Path(ABS_OBS_BOOKMARKS_DIR) / bookmark_path_slash_rel)
         bookmark_dir_slash_abs = str(
             Path(ABS_OBS_BOOKMARKS_DIR) / bookmark_dir_slash_rel)
         bookmark_path_slash_abs = str(
-            Path(ABS_OBS_BOOKMARKS_DIR) / bookmark_dir_slash_rel)
-
+            Path(ABS_OBS_BOOKMARKS_DIR) / bookmark_path_slash_rel)
 
     return {
         "bookmark_tail_name": bookmark_tail_name,
-        "bookmark_dir_colon_abs": bookmark_dir_colon_abs,
         "bookmark_dir_colon_rel": bookmark_dir_colon_rel,
-        "bookmark_path_colon_abs": bookmark_path_colon_abs,
         "bookmark_path_colon_rel": bookmark_path_colon_rel,
         "bookmark_dir_slash_abs": bookmark_dir_slash_abs,
         "bookmark_dir_slash_rel": bookmark_dir_slash_rel,

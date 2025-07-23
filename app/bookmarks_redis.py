@@ -7,7 +7,8 @@ import os
 
 from app.bookmarks_consts import IS_DEBUG, INITIAL_REDIS_STATE_DIR
 from app.bookmarks_folders import get_all_valid_root_dir_names, parse_cli_bookmark_args, find_folder_by_name
-from app.bookmarks import find_preceding_bookmark, find_matching_bookmarks
+from app.bookmarks import find_matching_bookmarks
+from app.flag_handlers.preceding_bookmark import find_preceding_bookmark
 
 
 def run_redis_command(command_args):
