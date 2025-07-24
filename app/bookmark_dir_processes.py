@@ -21,7 +21,7 @@ def get_all_valid_root_dir_names():
             return []
 
         excluded_dirs = EXCLUDED_DIRS
-        active_folders = []
+        live_folders = []
 
         # Only scan the immediate subdirectories of ABS_OBS_BOOKMARKS_DIR
         for item in os.listdir(ABS_OBS_BOOKMARKS_DIR):
@@ -30,14 +30,14 @@ def get_all_valid_root_dir_names():
                 # Check if this directory contains a folder_meta.json (indicating it's a folder, not a bookmark)
                 folder_meta_file = os.path.join(item_path, "folder_meta.json")
                 if os.path.exists(folder_meta_file):
-                    active_folders.append(item_path)
+                    live_folders.append(item_path)
                     if IS_DEBUG:
-                        print(f"✅ Found active folder: {item_path}")
+                        print(f"✅ Found live folder: {item_path}")
 
-        return active_folders
+        return live_folders
 
     except Exception as e:
-        print(f"⚠️  Error while finding active folders: {e}")
+        print(f"⚠️  Error while finding live folders: {e}")
         return []
 
 
@@ -47,39 +47,39 @@ def select_dir_for_new_bookmark(bookmark_name):
     print_color('---- 0 bookmark_name select_dir_for_new_bookmark:', 'green')
     print(bookmark_name)
 
-    active_folders = get_all_valid_root_dir_names()
+    live_folders = get_all_valid_root_dir_names()
 
-    if not active_folders:
-        print("❌ No active folders found")
+    if not live_folders:
+        print("❌ No live folders found")
         return create_new_bookmark_dir()
 
     print(f"📝 Creating new bookmark '{bookmark_name}' - select folder:")
 
     # Show existing folders
-    for i, folder_path in enumerate(active_folders, 1):
+    for i, folder_path in enumerate(live_folders, 1):
         folder_name = os.path.basename(folder_path)
         folder_meta = load_folder_meta(folder_path)
         created_at = folder_meta.get('created_at', 'unknown')
         print(f"   {i}. {folder_name} (created: {created_at[:10]})")
 
-    print(f"   {len(active_folders) + 1}. Create new folder")
+    print(f"   {len(live_folders) + 1}. Create new folder")
 
     while True:
         try:
             choice = input(
-                f"Enter choice (1-{len(active_folders) + 1}): ").strip()
+                f"Enter choice (1-{len(live_folders) + 1}): ").strip()
             choice_num = int(choice)
 
-            if 1 <= choice_num <= len(active_folders):
-                selected_folder = active_folders[choice_num - 1]
+            if 1 <= choice_num <= len(live_folders):
+                selected_folder = live_folders[choice_num - 1]
                 print(
                     f"✅ Selected folder: {os.path.basename(selected_folder)}")
                 return selected_folder
-            elif choice_num == len(active_folders) + 1:
+            elif choice_num == len(live_folders) + 1:
                 return create_new_bookmark_dir()
             else:
                 print(
-                    f"❌ Invalid choice. Please enter 1-{len(active_folders) + 1}")
+                    f"❌ Invalid choice. Please enter 1-{len(live_folders) + 1}")
         except ValueError:
             print("❌ Please enter a valid number")
         except KeyboardInterrupt:
@@ -89,14 +89,14 @@ def select_dir_for_new_bookmark(bookmark_name):
 
 @print_def_name(IS_PRINT_DEF_NAME)
 def create_new_bookmark_dir():
-    """Create a new folder when no active folders exist"""
+    """Create a new folder when no live folders exist"""
     try:
         # Ensure bookmarks directory exists
         if not os.path.exists(ABS_OBS_BOOKMARKS_DIR):
             os.makedirs(ABS_OBS_BOOKMARKS_DIR)
 
         # Prompt for folder name
-        print("📝 No active folders found. Creating a new folder...")
+        print("📝 No live folders found. Creating a new folder...")
         folder_name = input("Enter new folder name: ").strip()
 
         if not folder_name:
@@ -125,9 +125,9 @@ def create_new_bookmark_dir():
 
 
 @print_def_name(IS_PRINT_DEF_NAME)
-def find_bookmark_dir_by_name(folder_name):
+def find_bookmark_dir_by_name(bookmark_dir_rel):
     """Find folder directory by name or full relative path (e.g. kerch/comp/m02)"""
-    # TODO(MFB): This is not working as expected. We should pull in the all bookmarks json, and attempt to step through the tree, and see if there are any full / partial matches. The all_active_folders is giving a full system path, but only the basename for what we need.
+    # TODO(MFB): This is not working as expected. We should pull in the all bookmarks json, and attempt to step through the tree, and see if there are any full / partial matches. The all_live_folders is giving a full system path, but only the basename for what we need.
 
     # ---- 0 cli_bookmark_dir:
     # 'videos/0001_green_dog/g01/m01'
@@ -137,24 +137,32 @@ def find_bookmark_dir_by_name(folder_name):
     # /Users/mfb/dev/MFBTech/GameGeniusProject/GameGenius/game-genius-bookmarks/obs_bookmark_saves/videos
     # ---- 1 folder_dir find_bookmark_dir_by_name:
     # None
-    print_color('---- 0 folder_name find_bookmark_dir_by_name:', 'green')
-    print(folder_name)
+    print_color('---- 0 bookmark_dir_abs find_bookmark_dir_by_name:', 'green')
+    print(bookmark_dir_abs)
 
-    active_folders = get_all_valid_root_dir_names()
-    for folder_path in active_folders:
-        print_color('---- 1 folder_path find_bookmark_dir_by_name:', 'magenta')
-        print(folder_path)
+
+
+
+
+    live_root_dirs_abs = get_all_valid_root_dir_names()
+    for live_root_dir_abs in live_root_dirs_abs:
+        print_color(
+            '---- 1 live_root_dir_abs find_bookmark_dir_by_name:', 'magenta')
+        print(live_root_dir_abs)
 
         # Match either exact basename or full relative path from ABS_OBS_BOOKMARKS_DIR
-        rel_path = os.path.relpath(folder_path, ABS_OBS_BOOKMARKS_DIR)
-        folder_basename = os.path.basename(folder_path)
+        live_root_dir_name = os.path.relpath(live_root_dir_abs, ABS_OBS_BOOKMARKS_DIR)
+        print_color(
+            '++++ 2 live_root_dir_name find_bookmark_dir_by_name:', 'magenta')
+        print(live_root_dir_name)
+
 
         # ✅ Check for exact matches first
-        if folder_name == folder_basename or folder_name == rel_path:
+        if folder_name == live_root_dir_name or folder_name == rel_path:
             return rel_path
 
         # ✅ Check for partial matches (e.g., "respawn" should match "respawn-allies")
-        if folder_name.lower() in folder_basename.lower():
+        if folder_name.lower() in live_root_dir_name.lower():
             return rel_path
 
     return None

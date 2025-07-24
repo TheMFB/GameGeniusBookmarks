@@ -116,8 +116,8 @@ def copy_specific_bookmark_redis_state(cli_args_list, target_bookmark_name, targ
         source_bookmark_name = matched_name
     else:
         # Search across all folders
-        active_folders = get_all_valid_root_dir_names()
-        for folder_path in active_folders:
+        live_folders = get_all_valid_root_dir_names()
+        for folder_path in live_folders:
             matched_name, bookmark_info = find_matching_bookmarks(
                 source_bookmark_name, folder_path)
             if matched_name:

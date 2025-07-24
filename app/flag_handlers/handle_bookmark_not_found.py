@@ -25,7 +25,7 @@ from app.bookmarks_redis import (
 )
 from redis_friendly_converter import convert_file as convert_redis_to_friendly
 from app.bookmarks_consts import REDIS_DUMP_DIR, IS_DEBUG, SCREENSHOT_SAVE_SCALE
-from app.utils import get_media_source_info, print_color, print_def_name, convert_bookmark_path
+from app.utils import get_media_source_info, print_color, print_def_name, convert_bookmark_path_to_dict
 from app.flag_handlers.save_obs_screenshot import save_obs_screenshot
 from app.flag_handlers.save_redis_and_friendly_json import save_redis_and_friendly_json
 
@@ -34,8 +34,7 @@ IS_PRINT_DEF_NAME = True
 
 @print_def_name(IS_PRINT_DEF_NAME)
 def handle_bookmark_not_found(
-    bookmark_tail_name,
-    cli_bookmark_dir,
+    cli_bookmark_obj,
     is_super_dry_run,
     is_blank_slate,
     is_use_preceding_bookmark,
@@ -44,6 +43,15 @@ def handle_bookmark_not_found(
     tags,
     cli_args_list
 ):
+    """
+    The bookmark was not found / we have opted to create a new bookmark.
+
+
+
+    """
+    bookmark_tail_name = cli_bookmark_obj["bookmark_tail_name"]
+    cli_bookmark_dir = cli_bookmark_obj["cli_bookmark_dir"]
+
     print_color('---- bookmark_tail_name:', 'cyan')
     pprint(bookmark_tail_name)
     print_color('---- cli_bookmark_dir:', 'cyan')
@@ -62,9 +70,11 @@ def handle_bookmark_not_found(
         pprint(cli_bookmark_dir)
 
         # Check if specified folder exists
+        # TODO(MFB): Failing:
         bookmark_dir = find_bookmark_dir_by_name(cli_bookmark_dir)
-        print_color('---- 1 folder_dir:', 'magenta')
+        print_color('---- 1 folder_dir found:', 'magenta')
         pprint(bookmark_dir)
+
         if not bookmark_dir:
             print(f"📁 Creating folder: '{cli_bookmark_dir}'")
             bookmark_dir = create_dir_with_name(cli_bookmark_dir)
@@ -93,10 +103,10 @@ def handle_bookmark_not_found(
             return 1
 
     # Create bookmark directory
-    bookmark_path_dict = convert_bookmark_path(
+    cli_bookmark_obj = convert_bookmark_path_to_dict(
         cli_bookmark_dir, bookmark_tail_name)
 
-    bookmark_dir_abs = bookmark_path_dict["bookmark_dir_slash_abs"]
+    bookmark_dir_abs = cli_bookmark_obj["bookmark_dir_slash_abs"]
 
     os.makedirs(bookmark_dir_abs, exist_ok=True)
 

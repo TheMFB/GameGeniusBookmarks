@@ -1,8 +1,8 @@
-from typing import TypedDict
 import os
 from pathlib import Path
 from app.bookmarks_consts import ABS_OBS_BOOKMARKS_DIR
 from app.utils.decorators import print_def_name, memoize
+from app.types.bookmark_types import BookmarkPathDictionary
 
 IS_PRINT_DEF_NAME = True
 
@@ -12,26 +12,9 @@ def abs_to_rel_path(abs_path, base_dir):
     """Convert an absolute path to a relative path."""
     return os.path.relpath(abs_path, base_dir)
 
-class BookmarkPathDictionary(TypedDict):
-    bookmark_tail_name: str
-
-    # Colon-separated
-    bookmark_dir_colon_rel: str
-    bookmark_path_colon_rel: str
-    # bookmark_dir_colon_abs: str # We never will use a colon-separated absolute path, as colon-syntax is for our internal use.
-    # bookmark_path_colon_abs: str # We never will use a colon-separated absolute path, as colon-syntax is for our internal use.
-
-    # Slash-separated
-    bookmark_dir_slash_abs: str
-    bookmark_dir_slash_rel: str
-
-    bookmark_path_slash_abs: str
-    bookmark_path_slash_rel: str
-
-
 @print_def_name(IS_PRINT_DEF_NAME)
 @memoize
-def convert_bookmark_path(
+def convert_bookmark_path_to_dict(
     *args
 ) -> BookmarkPathDictionary:
     """
@@ -39,23 +22,23 @@ def convert_bookmark_path(
 
     # TODO(KERCH): Update this documentation.
     # One-argument: full bookmark_dir
-    print(convert_bookmark_path("mfb3/MFB/TEST/01"))
+    print(convert_bookmark_path_to_dict("mfb3/MFB/TEST/01"))
     # ('mfb3/MFB/TEST', '01', 'mfb3/MFB/TEST/01')
     
     # Two-argument: tail and bookmark_dir
-    print(convert_bookmark_path("01", "mfb3/MFB/TEST"))
+    print(convert_bookmark_path_to_dict("01", "mfb3/MFB/TEST"))
     # ('mfb3/MFB/TEST', '01', 'mfb3/MFB/TEST/01')
 
     # Two-argument: full bookmark_dir and full bookmark_dir
-    print(convert_bookmark_path("mfb3/MFB/TEST/01", "mfb3/MFB/TEST/01"))
+    print(convert_bookmark_path_to_dict("mfb3/MFB/TEST/01", "mfb3/MFB/TEST/01"))
     # ('mfb3/MFB/TEST', '01', 'mfb3/MFB/TEST/01')
 
     # Colon-separated
-    print(convert_bookmark_path("01", "mfb3:MFB:TEST", is_colon_separated=True))
+    print(convert_bookmark_path_to_dict("01", "mfb3:MFB:TEST", is_colon_separated=True))
     # ('mfb3:MFB:TEST', '01', 'mfb3:MFB:TEST:01')
 
     # Absolute bookmark_dir output
-    print(convert_bookmark_path("01", "mfb3/MFB/TEST", is_absolute_path=True, bookmark_dir=BOOKMARK_DIR))
+    print(convert_bookmark_path_to_dict("01", "mfb3/MFB/TEST", is_absolute_path=True, bookmark_dir=BOOKMARK_DIR))
     # ('/.../obs_bookmark_saves/mfb3/MFB/TEST', '01', '/.../obs_bookmark_saves/mfb3/MFB/TEST/01')
     """
     # Parse input

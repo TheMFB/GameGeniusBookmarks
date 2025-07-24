@@ -1,3 +1,4 @@
+from pprint import pprint
 import os
 
 from app.bookmarks_consts import IS_DEBUG
@@ -89,7 +90,7 @@ def load_bookmarks_from_folder(folder_dir_abs):
 @print_def_name(IS_PRINT_DEF_NAME)
 @memoize
 def get_all_bookmarks_in_json_format():
-    """Recursively scan all active folders and build a nested JSON structure with folder and bookmark tags/descriptions, including aggregated tags as 'tags'."""
+    """Recursively scan all live folders and build a nested JSON structure with folder and bookmark tags/descriptions, including aggregated tags as 'tags'."""
     def scan_folder(folder_path):
         node = {}
         # Add folder meta if present
@@ -219,14 +220,15 @@ def find_matching_bookmarks(bookmark_path_rel, root_dir_name):
     return [(None, None)]
 
 
-def find_matching_bookmarks_strict(bookmark_query, folder_dir):
+def is_bookmark_path_in_live_bookmarks_strict(cli_bookmark_path_rel):
     """
     Return exact match path if the normalized bookmark path matches query.
     Used during creation to avoid fuzzy fallbacks.
     """
-    all_bookmark_objects = load_bookmarks_from_folder(folder_dir)
-    if not all_bookmark_objects:
+    all_bookmarks_object = get_all_bookmarks_in_json_format()
+    pprint(all_bookmarks_object)
+
+    if not all_bookmarks_object:
         return None
 
-    query_norm = bookmark_query.strip().replace(':', '/')
-    return query_norm if query_norm in all_bookmark_objects else None
+    return cli_bookmark_path_rel in all_bookmarks_object

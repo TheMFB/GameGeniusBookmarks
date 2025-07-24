@@ -39,7 +39,8 @@ supported_flags = [
 
 
 class ProcessedFlags(TypedDict):
-    is_save_last_redis: bool
+    is_overwrite_redis_after: bool
+    is_overwrite_redis_before: bool
     is_save_updates: bool
     is_use_preceding_bookmark: bool
     is_blank_slate: bool
@@ -49,7 +50,24 @@ class ProcessedFlags(TypedDict):
     is_show_image: bool
     is_add_bookmark: bool
     cli_args_list: list[str] | None
+
     tags: list[str] | None
+
+
+default_processed_flags: ProcessedFlags = {
+    "is_overwrite_redis_after": False,
+    "is_overwrite_redis_before": False,
+    "is_save_updates": False,
+    "is_use_preceding_bookmark": False,
+    "is_blank_slate": False,
+    "is_dry_run": False,
+    "is_super_dry_run": False,
+    "is_no_obs": False,
+    "is_show_image": False,
+    "is_add_bookmark": True,
+    "cli_args_list": None,
+    "tags": None,
+}
 
 def process_flags(args) -> ProcessedFlags | int:
     """Process command line flags and return a dictionary of flag values."""
@@ -72,7 +90,7 @@ def process_flags(args) -> ProcessedFlags | int:
         print(OPTIONS_HELP)
         print()
 
-    is_save_last_redis = "--save-last-redis" in args or "-s" in args
+    is_overwrite_redis_after = "--save-last-redis" in args or "-s" in args
     is_save_updates = "--save-updates" in args or "-s" in args
     is_use_preceding_bookmark = "--use-preceding-bookmark" in args or "-p" in args
     is_blank_slate = "--blank-slate" in args or "-b" in args
@@ -80,7 +98,7 @@ def process_flags(args) -> ProcessedFlags | int:
     is_super_dry_run = "--super-dry-run" in args or "-sd" in args
     is_no_obs = "--no-obs" in args  # ✅ FIXED this line
     is_show_image = "--show-image" in args
-    is_add_bookmark = "--add" in args or "-a" in args
+    # is_add_bookmark = "--add" in args or "-a" in args
 
     if is_super_dry_run:
         print("💧 SUPER DRY RUN: Will skip Redis operations and Docker commands.")
@@ -102,13 +120,14 @@ def process_flags(args) -> ProcessedFlags | int:
         tags = find_tags(args)
 
     if IS_DEBUG:
-        print(f"🔍 Debug - is_save_last_redis: {is_save_last_redis}")
+        print(f"🔍 Debug - is_overwrite_redis_after: {is_overwrite_redis_after}")
         print(f"🔍 Debug - is_save_updates: {is_save_updates}")
         print(f"🔍 Debug - is_blank_slate: {is_blank_slate}")
         print(f"🔍 Debug - is_no_obs: {is_no_obs}")
 
     return {
-        "is_save_last_redis": is_save_last_redis,
+        **default_processed_flags,
+        "is_overwrite_redis_after": is_overwrite_redis_after,
         "is_save_updates": is_save_updates,
         "is_use_preceding_bookmark": is_use_preceding_bookmark,
         "is_blank_slate": is_blank_slate,
@@ -116,7 +135,7 @@ def process_flags(args) -> ProcessedFlags | int:
         "is_super_dry_run": is_super_dry_run,
         "is_no_obs": is_no_obs,
         "is_show_image": is_show_image,
-        "is_add_bookmark": is_add_bookmark,
+        # "is_add_bookmark": is_add_bookmark,
         "cli_args_list": cli_args_list,
         "tags": tags,
     }

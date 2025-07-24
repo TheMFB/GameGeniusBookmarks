@@ -1,80 +1,44 @@
 """
 Integration script that coordinates OBS bookmarks with Redis state management
 """
+import os
 import re
 from pprint import pprint
+import json
 
 from app.bookmark_dir_processes import get_all_valid_root_dir_names
 from app.utils import print_color, print_def_name
 from app.bookmarks.finders import find_matching_bookmarks, load_bookmarks_from_folder
+from app.types import MatchedBookmarkObj, BookmarkPathDictionary
 
 IS_AGGREGATE_TAGS = False
 IS_PRINT_DEF_NAME = True
 
 
 @print_def_name(IS_PRINT_DEF_NAME)
-def get_bookmark_info(bookmark_tail_name):
+def get_bookmark_info(cli_bookmark_obj: BookmarkPathDictionary) -> MatchedBookmarkObj | None:
     """
-    Get information about a bookmark if it exists, with fuzzy matching across all folders.
+    Get the information file from the bookmark 
     """
-    valid_root_dir_names = get_all_valid_root_dir_names()
     print_color('---- valid_root_dir_names ----', 'magenta')
-    pprint(valid_root_dir_names)
-    print('')
-    if not valid_root_dir_names:
-        return None, None
 
-    all_matches = []
-    # Search for bookmark across all folders, collect all matches
-    for root_dir_name in valid_root_dir_names:
-        matches = []
-        # matched_name, bookmark_info = find_matching_bookmarks(bookmark_tail_name, root_dir_name)
-        results = find_matching_bookmarks(bookmark_tail_name, root_dir_name)
-        for (matched_name, bookmark_info) in results:
-            if matched_name and bookmark_info:
-                matches.append((matched_name, bookmark_info))
+    bookmark_path_slash_abs = cli_bookmark_obj["bookmark_path_slash_abs"]
+    meta_file = os.path.join(bookmark_path_slash_abs, "bookmark_meta.json")
 
+    if not os.path.exists(meta_file):
+        print(f"❌ Bookmark metadata file not found: {meta_file}")
+        return None
 
-        all_matches.extend(matches)
-
-    # If only one match, return it
-    if len(all_matches) == 1:
-        return all_matches[0]
-
-    # If multiple, prompt the user
-    if all_matches:
-        print(f"\n🤔 Multiple bookmarks matched '{bookmark_tail_name}':\n")
-        for i, (match, info) in enumerate(all_matches, 1):
-            time_str = info.get("timestamp_formatted", "unknown time")
-            tags_str = ", ".join(info.get("tags", [])) if info.get("tags") else "none"
-            path_parts = match.split("/")
-            bookmark_label = path_parts[-1]
-            folder_path = " / ".join(path_parts[:-1]) if len(path_parts) > 1 else "(root)"
-            print(f"  [{i}] {bookmark_label}")
-            print(f"      • Time: {time_str}")
-            print(f"      • Path: {folder_path}")
-            print(f"      • Tags: {tags_str}")
-        print(f"  [{len(all_matches) + 1}] ➕ Create new bookmark '{bookmark_tail_name}'\n")
-
-        while True:
-            choice = input(f"Enter choice (1-{len(all_matches) + 1}): ")
-            try:
-                choice_num = int(choice)
-                if 1 <= choice_num <= len(all_matches):
-                    selected_match, selected_info = all_matches[choice_num - 1]
-                    print(f"✅ Selected bookmark: '{selected_match}'")
-                    return selected_match, selected_info
-                elif choice_num == len(all_matches) + 1:
-                    print(f"✅ Creating new bookmark: '{bookmark_tail_name}'")
-                    return None, None
-                else:
-                    print("❌ Invalid choice. Please try again.")
-            except ValueError:
-                print("❌ Please enter a number.")
-
-    print(f"❌ No bookmarks found matching '{bookmark_tail_name}'")
-    return None, None
-
+    try:
+        with open(meta_file, 'r') as f:
+            meta_data = json.load(f)
+            return {
+                **cli_bookmark_obj,
+                "bookmark_info": meta_data,
+            }
+    except Exception as e:
+        print(f"❌ Error loading bookmark metadata: {e}")
+        return cli_bookmark_obj
 
 
 def create_bookmark_symlinks(folder_name, bookmark_name):
@@ -191,7 +155,7 @@ def token_match_bookmarks(query_string, folder_dir):
 
 # def get_all_bookmark_paths(valid_root_dir_names):
 #     """
-#     Return a flat list of all bookmark paths from all active folders.
+#     Return a flat list of all bookmark paths from all live folders.
 #     """
 #     bookmark_paths = []
 
@@ -292,7 +256,7 @@ def token_match_bookmarks(query_string, folder_dir):
 #     top_matches = [match[1] for match in scored_matches[:top_n]]
 #     return top_matches
 
-# def interactive_fuzzy_lookup(query: str, top_n: int = 5):
+# def interlive_fuzzy_lookup(query: str, top_n: int = 5):
 #     """
 #     Perform fuzzy matching and ask user to choose a bookmark from the top N matches.
 #     Returns the selected bookmark path, or None if cancelled.
