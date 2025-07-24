@@ -37,7 +37,12 @@ def main():
     ### Pulling out bookmark dir and bookmark tail name from CLI ###
     cli_bookmark_dir, bookmark_tail_name = parse_cli_bookmark_args(
         args_for_run_bookmarks)
-    rel_bookmark_dir, bookmark_tail_name, bookmark_path_rel = convert_bookmark_path(cli_bookmark_dir, bookmark_tail_name)
+
+    bookmark_path_dict = convert_bookmark_path(cli_bookmark_dir, bookmark_tail_name)
+
+    # rel_bookmark_dir = bookmark_path_dict["bookmark_dir_slash_rel"]
+    bookmark_tail_name = bookmark_path_dict["bookmark_tail_name"]
+    bookmark_path_rel = bookmark_path_dict["bookmark_path_slash_rel"]
 
     print_color('===== CLI BOOKMARK PATH ======', 'green')
     pprint(bookmark_path_rel)

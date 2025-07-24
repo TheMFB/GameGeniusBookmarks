@@ -6,6 +6,8 @@ from app.utils.decorators import print_def_name, memoize
 
 IS_PRINT_DEF_NAME = True
 
+# TODO(KERCH): These are no longer just "utilities" -- we should put some of these into their own folders. (I couldn't find abs_to_rel_path earlier lol)
+
 def abs_to_rel_path(abs_path, base_dir):
     """Convert an absolute path to a relative path."""
     return os.path.relpath(abs_path, base_dir)
@@ -69,7 +71,15 @@ def convert_bookmark_path(
                 parts = [value]
         else:
             # (bookmark_tail_name, bookmark_dir)
-            bookmark_tail_name, bookmark_dir = args
+            # bookmark_tail_name, bookmark_dir = args
+            arg1, arg2 = args
+            if ':' in arg1 or '/' in arg1:
+                bookmark_dir = arg1
+                bookmark_tail_name = arg2
+            else:
+                bookmark_dir = arg2
+                bookmark_tail_name = arg1
+
             if ':' in bookmark_dir:
                 path_parts = bookmark_dir.split(':')
             else:

@@ -93,13 +93,12 @@ def handle_bookmark_not_found(
             return 1
 
     # Create bookmark directory
-
-    bookmark_dir_rel, bookmark_tail_name, bookmark_path_rel = convert_bookmark_path(
+    bookmark_path_dict = convert_bookmark_path(
         cli_bookmark_dir, bookmark_tail_name)
-    bookmark_dir_abs, bookmark_tail_name, bookmark_path_abs = convert_bookmark_path(
-        cli_bookmark_dir, bookmark_tail_name, is_absolute_path=True)
 
-    os.makedirs(bookmark_dir, exist_ok=True)
+    bookmark_dir_abs = bookmark_path_dict["bookmark_dir_slash_abs"]
+
+    os.makedirs(bookmark_dir_abs, exist_ok=True)
 
 
     # Handle Redis state based on flags (skip if super dry run)
@@ -107,20 +106,23 @@ def handle_bookmark_not_found(
         print(f"💾 Super dry run mode: Skipping all Redis operations")
     elif is_blank_slate:
         # Handle --blank-slate flag for new bookmark
-        print(f"🆕 Using initial blank slate Redis state for new bookmark '{bookmark_name}'...")
-        if not copy_initial_redis_state(bookmark_name, folder_dir):
+        print(
+            f"🆕 Using initial blank slate Redis state for new bookmark '{bookmark_tail_name}'...")
+        if not copy_initial_redis_state(bookmark_tail_name, folder_dir):
             print("❌ Failed to copy initial Redis state")
             return 1
     elif is_use_preceding_bookmark:
         # Handle --use-preceding-bookmark flag for new bookmark
         if cli_args_list:
-            print(f"📋 Using specified bookmark's Redis state for new bookmark '{bookmark_name}'...")
-            if not copy_specific_bookmark_redis_state(cli_args_list, bookmark_name, folder_dir):
+            print(
+                f"📋 Using specified bookmark's Redis state for new bookmark '{bookmark_tail_name}'...")
+            if not copy_specific_bookmark_redis_state(cli_args_list, bookmark_tail_name, folder_dir):
                 print("❌ Failed to copy specified bookmark's Redis state")
                 return 1
         else:
-            print(f"📋 Using preceding bookmark's Redis state for new bookmark '{bookmark_name}'...")
-            if not copy_preceding_redis_state(bookmark_name, folder_dir):
+            print(
+                f"📋 Using preceding bookmark's Redis state for new bookmark '{bookmark_tail_name}'...")
+            if not copy_preceding_redis_state(bookmark_tail_name, folder_dir):
                 print("❌ Failed to copy preceding Redis state")
                 return 1
 
@@ -128,12 +130,13 @@ def handle_bookmark_not_found(
         if is_save_updates:
             print(f"💾 Saving pulled-in Redis state as redis_before.json...")
             # The copy functions already create redis_before.json, so we just need to ensure it exists
-            bookmark_dir = os.path.join(folder_dir, bookmark_name)
+            bookmark_dir = os.path.join(folder_dir, bookmark_tail_name)
             redis_before_path = os.path.join(bookmark_dir, "redis_before.json")
             if os.path.exists(redis_before_path):
                 if IS_DEBUG:
                     print(f"📋 Redis before state saved: {redis_before_path}")
 
+    # TODO(MFB): ++++++++ HERE ++++++++
 
     # Normal flow - save current Redis state (skip if super dry run)
     if not is_super_dry_run:
