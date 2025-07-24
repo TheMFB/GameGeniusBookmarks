@@ -7,14 +7,15 @@ import subprocess
 from pprint import pprint
 # from networkx import to_dict_of_dicts
 
-from app.utils import print_color, convert_bookmark_path_to_dict
+from app.utils import print_color, convert_exact_bookmark_path_to_dict
 from app.bookmarks_consts import IS_DEBUG, IS_PRINT_JUST_CURRENT_FOLDER_BOOKMARKS
 from app.bookmark_dir_processes import parse_cli_bookmark_args
 from app.bookmarks import get_bookmark_info, save_last_used_bookmark, is_bookmark_path_in_live_bookmarks_strict
 from app.bookmarks_print import print_all_folders_and_bookmarks
-from app.flag_handlers import handle_matched_bookmark, handle_bookmark_not_found, handle_main_process, handle_redis_operations, process_flags, CurrentRunSettings
+from app.flag_handlers import handle_matched_bookmark, handle_bookmark_not_found, handle_main_process, handle_save_redis_after_json, process_flags, CurrentRunSettings
 from app.types import MatchedBookmarkObj
 from bookmarks.navigation.process_navigation import process_navigation
+
 
 def main():
     matched_bookmark_obj: MatchedBookmarkObj | None = None
@@ -29,7 +30,7 @@ def main():
         return current_run_settings_obj
 
     # Process CLI bookmark Input
-    cli_bookmark_dir, bookmark_tail_name = parse_cli_bookmark_args(
+    cli_bookmark_dir, cli_bookmark_tail_name = parse_cli_bookmark_args(
         args_for_run_bookmarks)
 
     # Navigation
@@ -39,31 +40,31 @@ def main():
         return matched_bookmark_obj
 
     # CLI Bookmark Object
-    cli_bookmark_obj = convert_bookmark_path_to_dict(
-        cli_bookmark_dir, bookmark_tail_name)
+    cli_bookmark_obj = convert_exact_bookmark_path_to_dict(
+        cli_bookmark_dir, cli_bookmark_tail_name)
 
     # If not enough info to proceed, return an error
     if not matched_bookmark_obj and (not cli_bookmark_obj["bookmark_dir_slash_abs"] or not cli_bookmark_obj["bookmark_tail_name"]):
         print(f"❌ No bookmark name provided")
         return 1
 
-
     # # TODO(MFB): Dafuq? - This will only look at the tail and then ask the user what to do...
     # # Normal bookmark lookup
     # matched_bookmark_path_rel, bookmark_info = get_bookmark_info(
-    #     bookmark_tail_name)
+    #     cli_bookmark_tail_name)
     # print('+++++ get_bookmark_info matched_bookmark_path_rel:')
     # pprint(matched_bookmark_path_rel)
-
 
     # Check for exact bookmark path match
     if not matched_bookmark_obj and current_run_settings_obj["is_add_bookmark"] and cli_bookmark_obj["bookmark_path_colon_rel"]:
         print_color('---- is_add_bookmark and cli_bookmark_dir ----', 'magenta')
 
+        # TODO(MFB): Pull this out.
         if is_bookmark_path_in_live_bookmarks_strict(
                 cli_bookmark_obj):
             # We have an exact match, prompt the user what to do with the Redis saves
-            print(f"⚠️ Bookmark already exists: {cli_bookmark_obj["bookmark_dir_colon_rel"]}")
+            print(
+                f"⚠️ Bookmark already exists: {cli_bookmark_obj["bookmark_dir_colon_rel"]}")
             print("What would you like to do?")
             print("  1. Load existing")
             print("  2. Overwrite before redis")
@@ -111,23 +112,18 @@ def main():
         print_color('==== no matched_bookmark_obj ====', 'magenta')
 
         # Bookmark does not exist, and user intends to create it
-        folder_dir = handle_bookmark_not_found(
-            cli_bookmark_obj,
-            current_run_settings_obj["is_super_dry_run"],
-            current_run_settings_obj["is_blank_slate"],
-            current_run_settings_obj["is_use_preceding_bookmark"],
-            current_run_settings_obj["is_save_updates"],
-            current_run_settings_obj["is_no_obs"],
-            current_run_settings_obj["tags"],
-            current_run_settings_obj["cli_args_list"]
+        matched_bookmark_obj = handle_bookmark_not_found(
+            cli_bookmark_dir,
+            cli_bookmark_tail_name,
+            current_run_settings_obj
         )
 
-        print('+++++ handle_bookmark_not_found folder_dir:')
-        pprint(folder_dir)
+        print('+++++ handle_bookmark_not_found but created matched_bookmark_obj:')
+        pprint(matched_bookmark_obj)
 
-        if folder_dir == 1 or folder_dir == 0:
+        if matched_bookmark_obj == 1 or matched_bookmark_obj == 0:
             print(f"❌ Error in handle_bookmark_not_found")
-            return folder_dir
+            return matched_bookmark_obj
 
     # Run the main process (unless dry run modes)
     if not current_run_settings_obj["is_dry_run"] and not current_run_settings_obj["is_super_dry_run"]:
@@ -138,10 +134,9 @@ def main():
             return result
 
     # Check if redis_after.json already exists before saving final state (skip in dry run modes)
-    should_save_redis_after = False
     if not current_run_settings_obj["is_dry_run"] and not current_run_settings_obj["is_super_dry_run"]:
-        should_save_redis_after = handle_redis_operations(
-            folder_dir, bookmark_tail_name, current_run_settings_obj["is_save_updates"]
+        should_save_redis_after = handle_save_redis_after_json(
+            matched_bookmark_obj, current_run_settings_obj
         )
     else:
         if current_run_settings_obj["is_super_dry_run"]:
@@ -150,21 +145,17 @@ def main():
             print(f"📖 Load-only mode: Skipping final Redis state save")
 
     # Save the last used bookmark at the end of successful operations
-    if folder_dir:
-        print_color('---- folder_dir:', 'red')
-        pprint(folder_dir)
-        folder_name = os.path.basename(folder_dir)
-        save_last_used_bookmark(folder_name, bookmark_name, bookmark_info)
-        if IS_DEBUG:
-            print(
-                f"📋 Saved last used bookmark: '{folder_name}:{bookmark_name}'")
+    if matched_bookmark_obj["bookmark_dir_slash_abs"]:
+        print_color('saving last used bookmark', 'red')
+        folder_name = os.path.basename(matched_bookmark_obj["bookmark_dir_slash_abs"])
+        save_last_used_bookmark(matched_bookmark_obj)
 
-        # Handle --preview flag
+    # Handle --preview flag
     if '--preview' in args or '-pv' in args:
         import platform
 
         screenshot_path = os.path.join(
-            folder_dir, bookmark_name, "screenshot.jpg")
+            matched_bookmark_obj["bookmark_dir_slash_abs"], matched_bookmark_obj["bookmark_tail_name"], "screenshot.jpg")
         if os.path.exists(screenshot_path):
             print(f"🖼️ Previewing screenshot: {screenshot_path}")
             if platform.system() == "Darwin":
@@ -177,53 +168,22 @@ def main():
                 print(f"⚠️ Preview not supported on this platform.")
             return 0
         else:
-            print(f"❌ No screenshot.jpg found for bookmark '{bookmark_name}'")
+            print(f"❌ No screenshot.jpg found for bookmark '{matched_bookmark_obj['bookmark_tail_name']}'")
             return 1
 
     # Don't update folder metadata at the end - only update when actually creating new folders
-    if IS_DEBUG and folder_dir:
-        folder_name = os.path.basename(folder_dir)
+    if IS_DEBUG and matched_bookmark_obj["bookmark_dir_slash_abs"]:
+        folder_name = os.path.basename(matched_bookmark_obj["bookmark_dir_slash_abs"])
         print(f"📋 Skipping final folder metadata update for '{folder_name}'")
 
-    if current_run_settings_obj["is_super_dry_run"]:
-        print(f"✅ Super dry run workflow completed successfully!")
-        if IS_DEBUG:
-            print(f"   Bookmark: '{bookmark_name}'")
-            print(f"   OBS bookmark loaded")
-            print(f"   No Redis operations performed")
-    elif current_run_settings_obj["is_dry_run"]:
-        print(f"✅ Load-only workflow completed successfully!")
-        if IS_DEBUG:
-            print(f"   Bookmark: '{bookmark_name}'")
-            print(f"   OBS bookmark loaded")
-            print(f"   Redis before: {bookmark_name}/redis_before.json")
-    elif current_run_settings_obj["is_no_obs"]:
-        print(f"✅ No-OBS workflow completed successfully!")
-        if IS_DEBUG:
-            print(f"   Bookmark: '{bookmark_name}'")
-            print(f"   No OBS operations performed")
-            print(f"   No Redis operations performed")
-    else:
-        if IS_DEBUG:
-            print(f"✅ Integrated workflow completed successfully!")
-            print(f"   Bookmark: '{bookmark_name}'")
-            print(f"   OBS screenshot: {bookmark_name}/screenshot.jpg")
-            print(f"   Redis before: {bookmark_name}/redis_before.json")
-            if should_save_redis_after:
-                print(
-                    f"   Redis after: {bookmark_name}/redis_after.json (new)")
-            else:
-                print(
-                    f"   Redis after: {bookmark_name}/redis_after.json (existing)")
+    print(f"✅ Integrated workflow completed successfully!")
     print('=' * 60)
     print('')
 
     # Print all folders and bookmarks with current one highlighted
-    if folder_dir:
+    if matched_bookmark_obj["bookmark_dir_slash_abs"]:
         print_all_folders_and_bookmarks(
-            current_folder_abs_path=folder_dir,
-            current_bookmark_name=bookmark_name,
-            current_bookmark_info=bookmark_info,
+            bookmark_obj=matched_bookmark_obj,
             is_print_just_current_folder_bookmarks=IS_PRINT_JUST_CURRENT_FOLDER_BOOKMARKS
         )
 

@@ -125,9 +125,9 @@ def create_new_bookmark_dir():
 
 
 @print_def_name(IS_PRINT_DEF_NAME)
-def find_bookmark_dir_by_name(bookmark_dir_rel):
+def find_bookmark_dir_by_name(bookmark_dir_arg: str):
     """Find folder directory by name or full relative path (e.g. kerch/comp/m02)"""
-    # TODO(MFB): This is not working as expected. We should pull in the all bookmarks json, and attempt to step through the tree, and see if there are any full / partial matches. The all_live_folders is giving a full system path, but only the basename for what we need.
+    # TODO(KERCH): ++++ This is not working as expected. We should pull in the all bookmarks json, and attempt to step through the tree, and see if there are any full / partial matches. The all_live_folders is giving a full system path, but only the basename for what we need.
 
     # ---- 0 cli_bookmark_dir:
     # 'videos/0001_green_dog/g01/m01'
@@ -138,34 +138,32 @@ def find_bookmark_dir_by_name(bookmark_dir_rel):
     # ---- 1 folder_dir find_bookmark_dir_by_name:
     # None
     print_color('---- 0 bookmark_dir_abs find_bookmark_dir_by_name:', 'green')
-    print(bookmark_dir_abs)
+    print(bookmark_dir_arg)
 
 
+    # live_root_dirs_abs = get_all_valid_root_dir_names()
+    # for live_root_dir_abs in live_root_dirs_abs:
+    #     print_color(
+    #         '---- 1 live_root_dir_abs find_bookmark_dir_by_name:', 'magenta')
+    #     print(live_root_dir_abs)
+
+    #     # Match either exact basename or full relative path from ABS_OBS_BOOKMARKS_DIR
+    #     live_root_dir_name = os.path.relpath(live_root_dir_abs, ABS_OBS_BOOKMARKS_DIR)
+    #     print_color(
+    #         '++++ 2 live_root_dir_name find_bookmark_dir_by_name:', 'magenta')
+    #     print(live_root_dir_name)
 
 
+    #     # ✅ Check for exact matches first
+    #     if folder_name == live_root_dir_name or folder_name == rel_path:
+    #         return rel_path
 
-    live_root_dirs_abs = get_all_valid_root_dir_names()
-    for live_root_dir_abs in live_root_dirs_abs:
-        print_color(
-            '---- 1 live_root_dir_abs find_bookmark_dir_by_name:', 'magenta')
-        print(live_root_dir_abs)
+    #     # ✅ Check for partial matches (e.g., "respawn" should match "respawn-allies")
+    #     if folder_name.lower() in live_root_dir_name.lower():
+    #         return rel_path
 
-        # Match either exact basename or full relative path from ABS_OBS_BOOKMARKS_DIR
-        live_root_dir_name = os.path.relpath(live_root_dir_abs, ABS_OBS_BOOKMARKS_DIR)
-        print_color(
-            '++++ 2 live_root_dir_name find_bookmark_dir_by_name:', 'magenta')
-        print(live_root_dir_name)
-
-
-        # ✅ Check for exact matches first
-        if folder_name == live_root_dir_name or folder_name == rel_path:
-            return rel_path
-
-        # ✅ Check for partial matches (e.g., "respawn" should match "respawn-allies")
-        if folder_name.lower() in live_root_dir_name.lower():
-            return rel_path
-
-    return None
+    # return None
+    return bookmark_dir_arg
 
 # TODO(KERCH): How is this different from the one above? Any way to combine?
 def create_dir_with_name(rel_folder_dir):

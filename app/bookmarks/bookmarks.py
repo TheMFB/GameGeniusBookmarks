@@ -41,17 +41,11 @@ def get_bookmark_info(cli_bookmark_obj: BookmarkPathDictionary) -> MatchedBookma
         return cli_bookmark_obj
 
 
-def create_bookmark_symlinks(folder_name, bookmark_name):
+def create_bookmark_symlinks(matched_bookmark_obj):
     """Create symlinks for the last used bookmark and its folder."""
     import os
     import shutil
 
-    print_color('??? ---- create_bookmark_symlinks folder_name:', 'red')
-    pprint(folder_name)
-    print_color('??? ---- create_bookmark_symlinks bookmark_name:', 'red')
-    pprint(bookmark_name)
-
-    folder_name = folder_name.replace(':', '/')
 
     # Get the root directory of the bookmark manager
     root_dir = os.path.dirname(os.path.dirname(__file__))
@@ -100,17 +94,20 @@ def create_bookmark_symlinks(folder_name, bookmark_name):
                 print(f"⚠️  Warning: Could not remove {item_path}: {e}")
 
     # Construct the target paths
-    obs_bookmarks_dir = os.path.join(root_dir, "obs_bookmark_saves")
-    bookmark_full_path = os.path.join(obs_bookmarks_dir, folder_name, bookmark_name)
-    bookmark_folder_path = os.path.join(obs_bookmarks_dir, folder_name, os.path.dirname(bookmark_name))
+    bookmark_dir = matched_bookmark_obj["bookmark_dir_slash_abs"]
+    bookmark_path = matched_bookmark_obj["bookmark_path_slash_abs"]
+    bookmark_tail_name = matched_bookmark_obj["bookmark_tail_name"]
+    bookmark_parent_name = os.path.basename(os.path.dirname(bookmark_path))
+
+
 
     # Get the bookmark name and folder name (last parts of the paths)
-    bookmark_basename = os.path.basename(bookmark_name)
-    folder_basename = os.path.basename(os.path.dirname(bookmark_name))
 
     # Define symlink paths
-    bookmark_symlink_path = os.path.join(last_used_bookmark_dir, bookmark_basename)
-    folder_symlink_path = os.path.join(last_used_bookmark_folder_dir, folder_basename)
+    bookmark_symlink_path = os.path.join(
+        last_used_bookmark_dir, bookmark_tail_name)
+    folder_symlink_path = os.path.join(
+        last_used_bookmark_folder_dir, bookmark_parent_name)
 
     try:
         # Create symlink for the specific bookmark (named after the bookmark)
@@ -119,7 +116,7 @@ def create_bookmark_symlinks(folder_name, bookmark_name):
                 os.unlink(bookmark_symlink_path)
             else:
                 os.remove(bookmark_symlink_path)
-        os.symlink(bookmark_full_path, bookmark_symlink_path)
+        os.symlink(bookmark_path, bookmark_symlink_path)
 
         # Create symlink for the bookmark's folder (named after the folder)
         if os.path.exists(folder_symlink_path):
@@ -127,7 +124,7 @@ def create_bookmark_symlinks(folder_name, bookmark_name):
                 os.unlink(folder_symlink_path)
             else:
                 os.remove(folder_symlink_path)
-        os.symlink(bookmark_folder_path, folder_symlink_path)
+        os.symlink(bookmark_dir, folder_symlink_path)
 
     except Exception as e:
         print(f"⚠️  Could not create symlinks: {e}")

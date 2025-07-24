@@ -4,19 +4,25 @@ from app.bookmarks_consts import IS_DEBUG, REDIS_DUMP_DIR
 from redis_friendly_converter import convert_file as convert_redis_to_friendly
 from app.bookmarks_redis import run_redis_command
 
-def handle_redis_operations(folder_dir, bookmark_name, is_save_updates):
+
+def handle_save_redis_after_json(matched_bookmark_obj, current_run_settings_obj):
     """
     Handles saving the final Redis state to redis_after.json
     Returns: True if redis_after was saved, False otherwise
     """
+    bookmark_dir_slash_abs = matched_bookmark_obj["bookmark_dir_slash_abs"]
+    bookmark_tail_name = matched_bookmark_obj["bookmark_tail_name"]
+    # TODO(MFB): Do we need both of these?
+    is_save_updates = current_run_settings_obj["is_save_updates"] or current_run_settings_obj["is_overwrite_redis_after"]
+
     if IS_DEBUG:
-        print(f"🔍 Debug - folder_dir: {folder_dir}")
-        print(f"🔍 Debug - bookmark_name: {bookmark_name}")
+        print(f"🔍 Debug - bookmark_dir_slash_abs: {bookmark_dir_slash_abs}")
+        print(f"🔍 Debug - bookmark_tail_name: {bookmark_tail_name}")
         print(f"🔍 Debug - is_save_updates: {is_save_updates}")
 
     redis_after_exists = False
-    if folder_dir:
-        bookmark_dir = os.path.join(folder_dir, bookmark_name)
+    if bookmark_dir_slash_abs:
+        bookmark_dir = os.path.join(bookmark_dir_slash_abs, bookmark_tail_name)
         final_after_path = os.path.join(bookmark_dir, "redis_after.json")
         redis_after_exists = os.path.exists(final_after_path)
 

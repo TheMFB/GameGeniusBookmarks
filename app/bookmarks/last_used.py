@@ -14,39 +14,18 @@ IS_PRINT_DEF_NAME = True
 
 
 # TODO(KERCH): save_last_used_bookmark
-def save_last_used_bookmark(rel_bookmark_dir, bookmark_name, bookmark_info):
+@print_def_name(IS_PRINT_DEF_NAME)
+def save_last_used_bookmark(matched_bookmark_obj):
     """Save the last used bookmark to a global state file."""
     print('Saving last used bookmark:')
-
-    print_color('??? ---- save_last_used_bookmark rel_bookmark_dir:', 'red')
-    pprint(rel_bookmark_dir)
-    print_color('??? ---- save_last_used_bookmark bookmark_name:', 'red')
-    pprint(bookmark_name)
-
     state_file = os.path.join(os.path.dirname(
         __file__), "../obs_bookmark_saves", "last_bookmark_state.json")
-    if not bookmark_info:
-        bookmark_info = {}
-
-    # Convert slashes to colons in bookmark name for consistency
-    bookmark_dir_colons = rel_bookmark_dir.replace('/', ':')
-
-    state_data = {
-        "bookmark_name": bookmark_name,
-        "description": bookmark_info.get('description', ''),
-        "rel_bookmark_dir": bookmark_dir_colons,
-        "tags": bookmark_info.get('tags', []),
-        "timestamp": bookmark_info.get('timestamp', 0),
-        "timestamp_formatted": bookmark_info.get('timestamp_formatted', ''),
-        "video_filename": bookmark_info.get('video_filename', ''),
-    }
 
     with open(state_file, 'w') as f:
-        json.dump(state_data, f, indent=2)
+        json.dump(matched_bookmark_obj, f, indent=2)
 
     # Create symlinks in shortcuts directory
-    create_bookmark_symlinks(bookmark_dir_colons, bookmark_name)
-
+    create_bookmark_symlinks(matched_bookmark_obj)
 
 
 # TODO(KERCH): get_last_used_bookmark

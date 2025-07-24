@@ -8,7 +8,7 @@ from app.bookmark_dir_processes import get_all_valid_root_dir_names
 from app.bookmarks import get_last_used_bookmark
 from app.bookmarks.navigation import resolve_navigation_bookmark
 from types.bookmark_types import MatchedBookmarkObj
-from utils.utils import convert_bookmark_path_to_dict
+from utils.utils import convert_exact_bookmark_path_to_dict
 
 navigation_commands = ["next", "previous", "first", "last"]
 
@@ -55,7 +55,7 @@ def process_navigation(args_for_run_bookmarks) -> MatchedBookmarkObj | int | Non
                 f"❌ No bookmark name found for'{matched_bookmark_path_rel}' '{args_for_run_bookmarks}'")
             return 1
 
-        matched_bookmark_obj = convert_bookmark_path_to_dict(matched_bookmark_path_rel)
+        matched_bookmark_obj = convert_exact_bookmark_path_to_dict(matched_bookmark_path_rel)
 
         return {
             **matched_bookmark_obj,

@@ -33,28 +33,31 @@ def collect_all_bookmark_tags_recursive(node):
     return all_tags
 
 def print_all_folders_and_bookmarks(
-        current_folder_abs_path=None,
-        current_bookmark_name=None,
-        current_bookmark_info=None,
+        bookmark_obj=None,
         is_print_just_current_folder_bookmarks=False
+        # TODO(KERCH): We no longer have this being used? Re-implement it.
 ):
     """Print all folders and their bookmarks, highlighting the current one"""
 
-    if IS_DEBUG:
-        print_color('---- current_folder_abs_path:', 'magenta')
-        pprint(current_folder_abs_path)
-        print_color('---- current_bookmark_name:', 'magenta')
-        pprint(current_bookmark_name)
-
+    current_bookmark_name = None
+    current_folder_abs_path = None
+    current_folder_rel_path = None
 
     # Get last used bookmark for highlighting if not provided
-    if not current_bookmark_name:
+    if not bookmark_obj:
         last_used_info = get_last_used_bookmark()
         if last_used_info:
+            # TODO(MFB):
+            print('++++ Make sure these match the deconstruction!')
+            print('---- last_used_info:')
+            pprint(last_used_info)
             current_bookmark_name = last_used_info.get('bookmark_name', '')
             current_folder_abs_path = last_used_info.get('rel_bookmark_dir', '')
-
-    current_folder_rel_path = abs_to_rel_path(current_folder_abs_path, ABS_OBS_BOOKMARKS_DIR)
+            current_folder_rel_path = abs_to_rel_path(current_folder_abs_path, ABS_OBS_BOOKMARKS_DIR)
+    else:
+        current_bookmark_name = bookmark_obj["bookmark_tail_name"]
+        current_folder_abs_path = bookmark_obj["bookmark_dir_slash_abs"]
+        current_folder_rel_path = bookmark_obj["bookmark_dir_slash_rel"]
 
 
     if IS_DEBUG:
