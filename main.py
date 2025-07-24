@@ -9,7 +9,7 @@ from pprint import pprint
 
 from app.utils import print_color, convert_bookmark_path
 from app.bookmarks_consts import IS_DEBUG, REDIS_DUMP_DIR, IS_PRINT_JUST_CURRENT_FOLDER_BOOKMARKS
-from app.bookmarks_folders import parse_cli_bookmark_args
+from app.bookmark_dir_processes import parse_cli_bookmark_args
 from app.bookmarks import get_bookmark_info, save_last_used_bookmark, find_matching_bookmarks_strict
 from app.bookmarks_print import print_all_folders_and_bookmarks
 from app.flag_handlers import handle_matched_bookmark, handle_bookmark_not_found, handle_main_process, handle_redis_operations, process_flags, ProcessedFlags

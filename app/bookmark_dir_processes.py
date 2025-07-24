@@ -42,16 +42,16 @@ def get_all_valid_root_dir_names():
 
 
 @print_def_name(IS_PRINT_DEF_NAME)
-def select_folder_for_new_bookmark(bookmark_name):
+def select_dir_for_new_bookmark(bookmark_name):
     """Let user select which folder to create a new bookmark in"""
-    print_color('---- 0 bookmark_name select_folder_for_new_bookmark:', 'green')
+    print_color('---- 0 bookmark_name select_dir_for_new_bookmark:', 'green')
     print(bookmark_name)
 
     active_folders = get_all_valid_root_dir_names()
 
     if not active_folders:
         print("❌ No active folders found")
-        return create_new_folder()
+        return create_new_bookmark_dir()
 
     print(f"📝 Creating new bookmark '{bookmark_name}' - select folder:")
 
@@ -76,7 +76,7 @@ def select_folder_for_new_bookmark(bookmark_name):
                     f"✅ Selected folder: {os.path.basename(selected_folder)}")
                 return selected_folder
             elif choice_num == len(active_folders) + 1:
-                return create_new_folder()
+                return create_new_bookmark_dir()
             else:
                 print(
                     f"❌ Invalid choice. Please enter 1-{len(active_folders) + 1}")
@@ -88,7 +88,7 @@ def select_folder_for_new_bookmark(bookmark_name):
 
 
 @print_def_name(IS_PRINT_DEF_NAME)
-def create_new_folder():
+def create_new_bookmark_dir():
     """Create a new folder when no active folders exist"""
     try:
         # Ensure bookmarks directory exists
@@ -125,87 +125,24 @@ def create_new_folder():
 
 
 @print_def_name(IS_PRINT_DEF_NAME)
-def get_current_folder_dir():
-    """Get the current OBS folder directory"""
-    try:
-        if IS_DEBUG:
-            print(f"🔍 Looking for folders in: {ABS_OBS_BOOKMARKS_DIR}")
-
-        if not os.path.exists(ABS_OBS_BOOKMARKS_DIR):
-            print(f"❌ Bookmarks directory does not exist: {ABS_OBS_BOOKMARKS_DIR}")
-            return None
-
-        # Get existing folders (excluding archive and screenshots dirs)
-        excluded_dirs = EXCLUDED_DIRS
-        folders = []
-        for item in os.listdir(ABS_OBS_BOOKMARKS_DIR):
-            item_path = os.path.join(ABS_OBS_BOOKMARKS_DIR, item)
-            if os.path.isdir(item_path) and item not in excluded_dirs:
-                folders.append(item)
-
-        print(f"🔍 Found folders: {folders}")
-
-        if not folders:
-            print(f"❌ No active folders found")
-            # CREATE NEW FOLDER WHEN NONE EXIST
-            return create_new_folder()
-
-        # Find most recent folder - look for folder with most recent activity
-        most_recent = folders[0]
-        most_recent_time = 0
-        for folder in folders:
-            folder_path = os.path.join(ABS_OBS_BOOKMARKS_DIR, folder)
-            folder_meta_file = os.path.join(folder_path, "folder_meta.json")
-
-            # Check folder_meta.json last_modified, fall back to directory mtime
-            if os.path.exists(folder_meta_file):
-                try:
-                    with open(folder_meta_file, 'r') as f:
-                        folder_meta = json.load(f)
-                        last_modified = folder_meta.get(
-                            'last_modified', folder_meta.get('created_at', ''))
-                        if last_modified:
-                            mod_time = datetime.fromisoformat(
-                                last_modified.replace('Z', '+00:00')).timestamp()
-                        else:
-                            mod_time = os.path.getmtime(folder_path)
-                except:
-                    mod_time = os.path.getmtime(folder_path)
-            else:
-                mod_time = os.path.getmtime(folder_path)
-
-            if mod_time > most_recent_time:
-                most_recent_time = mod_time
-                most_recent = folder
-
-        folder_dir = os.path.join(ABS_OBS_BOOKMARKS_DIR, most_recent)
-        if IS_DEBUG:
-            print(f"🎯 Using folder directory: {folder_dir}")
-        return folder_dir
-    except Exception as e:
-        print(f"⚠️  Could not determine folder directory: {e}")
-        return None
-
-
-@print_def_name(IS_PRINT_DEF_NAME)
-def find_folder_by_name(folder_name):
+def find_bookmark_dir_by_name(folder_name):
     """Find folder directory by name or full relative path (e.g. kerch/comp/m02)"""
     # TODO(MFB): This is not working as expected. We should pull in the all bookmarks json, and attempt to step through the tree, and see if there are any full / partial matches. The all_active_folders is giving a full system path, but only the basename for what we need.
 
     # ---- 0 cli_bookmark_dir:
     # 'videos/0001_green_dog/g01/m01'
-    # ---- 0 folder_name find_folder_by_name:
+    # ---- 0 folder_name find_bookmark_dir_by_name:
     # videos/0001_green_dog/g01/m01
-    # ---- 1 folder_path find_folder_by_name:
+    # ---- 1 folder_path find_bookmark_dir_by_name:
     # /Users/mfb/dev/MFBTech/GameGeniusProject/GameGenius/game-genius-bookmarks/obs_bookmark_saves/videos
-    # ---- 1 folder_dir find_folder_by_name:
+    # ---- 1 folder_dir find_bookmark_dir_by_name:
     # None
-    print_color('---- 0 folder_name find_folder_by_name:', 'green')
+    print_color('---- 0 folder_name find_bookmark_dir_by_name:', 'green')
     print(folder_name)
 
     active_folders = get_all_valid_root_dir_names()
     for folder_path in active_folders:
-        print_color('---- 1 folder_path find_folder_by_name:', 'magenta')
+        print_color('---- 1 folder_path find_bookmark_dir_by_name:', 'magenta')
         print(folder_path)
 
         # Match either exact basename or full relative path from ABS_OBS_BOOKMARKS_DIR
@@ -222,7 +159,8 @@ def find_folder_by_name(folder_name):
 
     return None
 
-def create_folder_with_name(rel_folder_dir):
+# TODO(KERCH): How is this different from the one above? Any way to combine?
+def create_dir_with_name(rel_folder_dir):
     """Create a new folder with the specified name"""
 
     try:
@@ -280,29 +218,30 @@ def parse_cli_bookmark_args(args_for_run_bookmarks):
     return folder_name, bookmark_name
 
 
-@print_def_name(IS_PRINT_DEF_NAME)
-def update_folder_last_bookmark(folder_dir, bookmark_name):
-    """Update the folder metadata with the last used bookmark."""
-    folder_meta_path = os.path.join(folder_dir, "folder_meta.json")
+# TODO(KERCH): This is for a local-last saved bookmark. For now, we're not using it.
+# @print_def_name(IS_PRINT_DEF_NAME)
+# def update_folder_last_bookmark(folder_dir, bookmark_name):
+#     """Update the folder metadata with the last used bookmark."""
+#     folder_meta_path = os.path.join(folder_dir, "folder_meta.json")
 
-    # Load existing metadata or create new
-    if os.path.exists(folder_meta_path):
-        try:
-            with open(folder_meta_path, 'r') as f:
-                meta_data = json.load(f)
-        except json.JSONDecodeError:
-            meta_data = {}
-    else:
-        meta_data = {
-            "created_at": datetime.now().isoformat(),
-            "description": "",
-            "tags": []
-        }
+#     # Load existing metadata or create new
+#     if os.path.exists(folder_meta_path):
+#         try:
+#             with open(folder_meta_path, 'r') as f:
+#                 meta_data = json.load(f)
+#         except json.JSONDecodeError:
+#             meta_data = {}
+#     else:
+#         meta_data = {
+#             "created_at": datetime.now().isoformat(),
+#             "description": "",
+#             "tags": []
+#         }
 
-    # Update last used bookmark
-    meta_data["last_used_bookmark"] = bookmark_name
-    meta_data["last_modified"] = datetime.now().isoformat()
+#     # Update last used bookmark
+#     meta_data["last_used_bookmark"] = bookmark_name
+#     meta_data["last_modified"] = datetime.now().isoformat()
 
-    # Save updated metadata
-    with open(folder_meta_path, 'w') as f:
-        json.dump(meta_data, f, indent=2)
+#     # Save updated metadata
+#     with open(folder_meta_path, 'w') as f:
+#         json.dump(meta_data, f, indent=2)

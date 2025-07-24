@@ -4,7 +4,7 @@ Integration script that coordinates OBS bookmarks with Redis state management
 import re
 from pprint import pprint
 
-from app.bookmarks_folders import get_all_valid_root_dir_names
+from app.bookmark_dir_processes import get_all_valid_root_dir_names
 from app.utils import print_color, print_def_name
 from app.bookmarks.finders import find_matching_bookmarks, load_bookmarks_from_folder
 
@@ -206,7 +206,7 @@ def token_match_bookmarks(query_string, folder_dir):
 #     """
 #     Return a dict mapping each bookmark path to a token set for matching.
 #     """
-#     from app.bookmarks_folders import get_all_valid_root_dir_names
+#     from app.bookmark_dir_processes import get_all_valid_root_dir_names
 #     from app.bookmarks_meta import load_bookmark_meta_from_rel, load_folder_meta
 
 #     bookmark_token_map = {}

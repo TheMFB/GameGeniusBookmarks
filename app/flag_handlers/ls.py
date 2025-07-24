@@ -1,6 +1,6 @@
 import os
 import json
-from app.bookmarks_folders import find_folder_by_name
+from app.bookmark_dir_processes import find_bookmark_dir_by_name
 from app.bookmarks_print import print_all_folders_and_bookmarks
 from app.bookmarks import token_match_bookmarks
 
@@ -33,7 +33,7 @@ def handle_ls(args):
     folder_arg = ' '.join(args_copy).strip()
     print(f"🔍 Searching for tokens: {folder_arg}")
 
-    folder_path = find_folder_by_name(folder_arg)
+    folder_path = find_bookmark_dir_by_name(folder_arg)
 
     if folder_path:
         from app.bookmarks_print import print_bookmarks_in_folder
@@ -42,7 +42,7 @@ def handle_ls(args):
     else:
         # Fall back to which-style logic
         from app.bookmarks import find_matching_bookmarks
-        from app.bookmarks_folders import get_all_valid_root_dir_names
+        from app.bookmark_dir_processes import get_all_valid_root_dir_names
         from app.utils import print_color
 
         all_folders = get_all_valid_root_dir_names()

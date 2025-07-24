@@ -1,7 +1,7 @@
 import os
 
 from app.bookmarks_consts import IS_DEBUG
-from app.bookmarks_folders import get_all_valid_root_dir_names
+from app.bookmark_dir_processes import get_all_valid_root_dir_names
 from app.utils import print_color, split_path_into_array, print_def_name, memoize
 from app.bookmarks_meta import load_bookmark_meta_from_rel, load_bookmark_meta_from_abs, load_folder_meta
 

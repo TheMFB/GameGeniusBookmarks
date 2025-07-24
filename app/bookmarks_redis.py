@@ -6,7 +6,7 @@ import subprocess
 import os
 
 from app.bookmarks_consts import IS_DEBUG, INITIAL_REDIS_STATE_DIR
-from app.bookmarks_folders import get_all_valid_root_dir_names, parse_cli_bookmark_args, find_folder_by_name
+from app.bookmark_dir_processes import get_all_valid_root_dir_names, parse_cli_bookmark_args, find_bookmark_dir_by_name
 from app.bookmarks import find_matching_bookmarks
 from app.flag_handlers.preceding_bookmark import find_preceding_bookmark
 
@@ -101,7 +101,7 @@ def copy_specific_bookmark_redis_state(cli_args_list, target_bookmark_name, targ
 
     if source_folder_name:
         # Specific folder specified
-        source_folder_dir = find_folder_by_name(source_folder_name)
+        source_folder_dir = find_bookmark_dir_by_name(source_folder_name)
         if not source_folder_dir:
             print(f"❌ Source folder '{source_folder_name}' not found")
             return False

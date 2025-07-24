@@ -13,7 +13,7 @@ from app.utils.obs_utils import load_obs_bookmark_directly
 from app.bookmarks_meta import create_bookmark_meta
 from app.utils import get_media_source_info
 from redis_friendly_converter import convert_file as convert_redis_to_friendly
-from app.bookmarks_folders import get_all_valid_root_dir_names
+from app.bookmark_dir_processes import get_all_valid_root_dir_names
 from app.bookmarks_redis import (
     run_redis_command,
     copy_initial_redis_state,

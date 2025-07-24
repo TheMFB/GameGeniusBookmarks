@@ -9,10 +9,10 @@ from datetime import datetime
 from PIL import Image
 import obsws_python as obs  # or however you import OBS
 
-from app.bookmarks_folders import (
-    find_folder_by_name,
-    create_folder_with_name,
-    select_folder_for_new_bookmark,
+from app.bookmark_dir_processes import (
+    find_bookmark_dir_by_name,
+    create_dir_with_name,
+    select_dir_for_new_bookmark,
     create_folder_meta,
 )
 from app.bookmarks import load_bookmarks_from_folder
@@ -62,12 +62,12 @@ def handle_bookmark_not_found(
         pprint(cli_bookmark_dir)
 
         # Check if specified folder exists
-        bookmark_dir = find_folder_by_name(cli_bookmark_dir)
+        bookmark_dir = find_bookmark_dir_by_name(cli_bookmark_dir)
         print_color('---- 1 folder_dir:', 'magenta')
         pprint(bookmark_dir)
         if not bookmark_dir:
             print(f"📁 Creating folder: '{cli_bookmark_dir}'")
-            bookmark_dir = create_folder_with_name(cli_bookmark_dir)
+            bookmark_dir = create_dir_with_name(cli_bookmark_dir)
             print_color('---- 2 folder_dir:', 'magenta')
             pprint(bookmark_dir)
             if not bookmark_dir:
@@ -85,7 +85,7 @@ def handle_bookmark_not_found(
 
     else:
         # Let user select which folder to create the bookmark in
-        folder_dir = select_folder_for_new_bookmark(bookmark_tail_name)
+        folder_dir = select_dir_for_new_bookmark(bookmark_tail_name)
         print_color('---- 3 folder_dir:', 'magenta')
         pprint(folder_dir)
         if not folder_dir:

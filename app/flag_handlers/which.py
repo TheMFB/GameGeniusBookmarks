@@ -1,7 +1,7 @@
 import os
 import json
 from app.bookmarks import find_matching_bookmarks
-from app.bookmarks_folders import parse_cli_bookmark_args
+from app.bookmark_dir_processes import parse_cli_bookmark_args
 
 def handle_which(args):
     which_flag = '--which' if '--which' in args else '-w'
