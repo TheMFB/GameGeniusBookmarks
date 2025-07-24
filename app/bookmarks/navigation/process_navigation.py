@@ -7,8 +7,8 @@ from app.utils import print_color
 from app.bookmark_dir_processes import get_all_valid_root_dir_names
 from app.bookmarks import get_last_used_bookmark
 from app.bookmarks.navigation import resolve_navigation_bookmark
-from types.bookmark_types import MatchedBookmarkObj
-from utils.utils import convert_exact_bookmark_path_to_dict
+from app.types.bookmark_types import MatchedBookmarkObj
+from app.utils.utils import convert_exact_bookmark_path_to_dict
 
 navigation_commands = ["next", "previous", "first", "last"]
 

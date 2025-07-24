@@ -211,9 +211,14 @@ def print_all_folders_and_bookmarks(
     print('')
     print("=" * 50)
 
-    current_bookmark = current_folder_abs_path + ":" + current_bookmark_name
-    rel_current_bookmark = abs_to_rel_path(current_bookmark, ABS_OBS_BOOKMARKS_DIR)
-    rel_current_bookmark = rel_current_bookmark.replace('/', ':')
+    if current_bookmark_name and current_folder_abs_path:
+        current_bookmark = current_folder_abs_path + ":" + current_bookmark_name
+        rel_current_bookmark = abs_to_rel_path(current_bookmark, ABS_OBS_BOOKMARKS_DIR)
+        rel_current_bookmark = rel_current_bookmark.replace('/', ':')
+    else:
+        current_bookmark = None
+        rel_current_bookmark = None
+        rel_current_bookmark = None
 
     print_color(f"🔍 Current bookmark: bm {rel_current_bookmark}", 'magenta')
     return

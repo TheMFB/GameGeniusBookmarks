@@ -14,7 +14,7 @@ from app.bookmarks import get_bookmark_info, save_last_used_bookmark, is_bookmar
 from app.bookmarks_print import print_all_folders_and_bookmarks
 from app.flag_handlers import handle_matched_bookmark, handle_bookmark_not_found, handle_main_process, handle_save_redis_after_json, process_flags, CurrentRunSettings
 from app.types import MatchedBookmarkObj
-from bookmarks.navigation.process_navigation import process_navigation
+from app.bookmarks.navigation.process_navigation import process_navigation
 
 
 def main():
