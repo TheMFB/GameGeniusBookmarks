@@ -1,7 +1,8 @@
-from typing import TypedDict
 from app.bookmarks_consts import IS_DEBUG, OPTIONS_HELP
 from app.flag_handlers import handle_help, handle_ls, handle_which, open_video, find_tags
-from app.flag_handlers.preceding_bookmark import find_preceding_bookmark
+from app.flag_handlers.preceding_bookmark import find_preceding_bookmark_args
+from app.types.bookmark_types import CurrentRunSettings
+
 
 flag_routes = {
     "--help": handle_help,
@@ -37,24 +38,7 @@ supported_flags = [
     "--show-image",
 ]
 
-
-class ProcessedFlags(TypedDict):
-    is_overwrite_redis_after: bool
-    is_overwrite_redis_before: bool
-    is_save_updates: bool
-    is_use_preceding_bookmark: bool
-    is_blank_slate: bool
-    is_dry_run: bool
-    is_super_dry_run: bool
-    is_no_obs: bool
-    is_show_image: bool
-    is_add_bookmark: bool
-    cli_args_list: list[str] | None
-
-    tags: list[str] | None
-
-
-default_processed_flags: ProcessedFlags = {
+default_processed_flags: CurrentRunSettings = {
     "is_overwrite_redis_after": False,
     "is_overwrite_redis_before": False,
     "is_save_updates": False,
@@ -69,7 +53,7 @@ default_processed_flags: ProcessedFlags = {
     "tags": None,
 }
 
-def process_flags(args) -> ProcessedFlags | int:
+def process_flags(args) -> CurrentRunSettings | int:
     """Process command line flags and return a dictionary of flag values."""
     cli_args_list = None
     tags = []
@@ -113,7 +97,7 @@ def process_flags(args) -> ProcessedFlags | int:
     # Parse the source bookmark for --use-preceding-bookmark if specified
 
     if is_use_preceding_bookmark:
-        cli_args_list = find_preceding_bookmark(args)
+        cli_args_list = find_preceding_bookmark_args(args)
 
     # Parse tags from command line
     if "--tags" in args or "-t" in args:

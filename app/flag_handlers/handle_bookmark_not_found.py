@@ -20,7 +20,7 @@ from app.bookmarks_meta import create_bookmark_meta
 from app.bookmarks_redis import (
     run_redis_command,
     copy_initial_redis_state,
-    copy_preceding_redis_state,
+    copy_preceding_bookmark_redis_state,
     copy_specific_bookmark_redis_state,
 )
 from redis_friendly_converter import convert_file as convert_redis_to_friendly
@@ -118,7 +118,7 @@ def handle_bookmark_not_found(
         # Handle --blank-slate flag for new bookmark
         print(
             f"🆕 Using initial blank slate Redis state for new bookmark '{bookmark_tail_name}'...")
-        if not copy_initial_redis_state(bookmark_tail_name, folder_dir):
+        if not copy_initial_redis_state(bookmark_dir_abs):
             print("❌ Failed to copy initial Redis state")
             return 1
     elif is_use_preceding_bookmark:
@@ -132,7 +132,7 @@ def handle_bookmark_not_found(
         else:
             print(
                 f"📋 Using preceding bookmark's Redis state for new bookmark '{bookmark_tail_name}'...")
-            if not copy_preceding_redis_state(bookmark_tail_name, folder_dir):
+            if not copy_preceding_bookmark_redis_state(bookmark_tail_name, folder_dir):
                 print("❌ Failed to copy preceding Redis state")
                 return 1
 

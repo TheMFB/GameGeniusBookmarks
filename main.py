@@ -8,40 +8,44 @@ from pprint import pprint
 # from networkx import to_dict_of_dicts
 
 from app.utils import print_color, convert_bookmark_path_to_dict
-from app.bookmarks_consts import IS_DEBUG, REDIS_DUMP_DIR, IS_PRINT_JUST_CURRENT_FOLDER_BOOKMARKS
+from app.bookmarks_consts import IS_DEBUG, IS_PRINT_JUST_CURRENT_FOLDER_BOOKMARKS
 from app.bookmark_dir_processes import parse_cli_bookmark_args
 from app.bookmarks import get_bookmark_info, save_last_used_bookmark, is_bookmark_path_in_live_bookmarks_strict
 from app.bookmarks_print import print_all_folders_and_bookmarks
-from app.flag_handlers import handle_matched_bookmark, handle_bookmark_not_found, handle_main_process, handle_redis_operations, process_flags, ProcessedFlags
-from app.bookmarks.navigation import process_navigation, navigation_commands
+from app.flag_handlers import handle_matched_bookmark, handle_bookmark_not_found, handle_main_process, handle_redis_operations, process_flags, CurrentRunSettings
 from app.types import MatchedBookmarkObj
+from bookmarks.navigation.process_navigation import process_navigation
 
 def main():
     matched_bookmark_obj: MatchedBookmarkObj | None = None
-    # bookmark_tail_name = None
 
     args = sys.argv[1:]
     args_for_run_bookmarks = args[0]
 
     # Process Flags
-    process_flags_obj: ProcessedFlags | int = process_flags(args)
-    if process_flags_obj == 0 or process_flags_obj == 1:
+    current_run_settings_obj: CurrentRunSettings | int = process_flags(args)
+    if current_run_settings_obj == 0 or current_run_settings_obj == 1:
         # See if the user sent a "routed flag" that terminates the program after use
-        return process_flags_obj
+        return current_run_settings_obj
 
     # Process CLI bookmark Input
     cli_bookmark_dir, bookmark_tail_name = parse_cli_bookmark_args(
         args_for_run_bookmarks)
-
-    # CLI Bookmark Object
-    cli_bookmark_obj = convert_bookmark_path_to_dict(cli_bookmark_dir, bookmark_tail_name)
-
 
     # Navigation
     matched_bookmark_obj = process_navigation(args_for_run_bookmarks)
     if matched_bookmark_obj == 0 or matched_bookmark_obj == 1:
         # If navigation failed, return the error code
         return matched_bookmark_obj
+
+    # CLI Bookmark Object
+    cli_bookmark_obj = convert_bookmark_path_to_dict(
+        cli_bookmark_dir, bookmark_tail_name)
+
+    # If not enough info to proceed, return an error
+    if not matched_bookmark_obj and (not cli_bookmark_obj["bookmark_dir_slash_abs"] or not cli_bookmark_obj["bookmark_tail_name"]):
+        print(f"❌ No bookmark name provided")
+        return 1
 
 
     # # TODO(MFB): Dafuq? - This will only look at the tail and then ask the user what to do...
@@ -53,7 +57,7 @@ def main():
 
 
     # Check for exact bookmark path match
-    if not matched_bookmark_obj and process_flags_obj["is_add_bookmark"] and cli_bookmark_obj["bookmark_path_colon_rel"]:
+    if not matched_bookmark_obj and current_run_settings_obj["is_add_bookmark"] and cli_bookmark_obj["bookmark_path_colon_rel"]:
         print_color('---- is_add_bookmark and cli_bookmark_dir ----', 'magenta')
 
         if is_bookmark_path_in_live_bookmarks_strict(
@@ -73,16 +77,16 @@ def main():
                     break
                 elif choice == "2":
                     matched_bookmark_obj = cli_bookmark_obj
-                    process_flags_obj["is_overwrite_redis_before"] = True
+                    current_run_settings_obj["is_overwrite_redis_before"] = True
                     break
                 elif choice == "3":
                     matched_bookmark_obj = cli_bookmark_obj
-                    process_flags_obj["is_overwrite_redis_after"] = True
+                    current_run_settings_obj["is_overwrite_redis_after"] = True
                     break
                 elif choice == "4":
                     matched_bookmark_obj = cli_bookmark_obj
-                    process_flags_obj["is_overwrite_redis_after"] = True
-                    process_flags_obj["is_overwrite_redis_before"] = True
+                    current_run_settings_obj["is_overwrite_redis_after"] = True
+                    current_run_settings_obj["is_overwrite_redis_before"] = True
                     break
                 elif choice == "5":
                     print("❌ Cancelled.")
@@ -95,48 +99,27 @@ def main():
         print_color('---- navigation/matched_bookmark_obj:', 'magenta')
         pprint(matched_bookmark_obj)
 
-        # TODO(MFB): create a matched_bookmark_obj, only pass that and the process_flags_obj into the function. Allow the function to unpack as necessary.
+        # TODO(MFB): create a matched_bookmark_obj, only pass that and the current_run_settings_obj into the function. Allow the function to unpack as necessary.
         result = handle_matched_bookmark(
             matched_bookmark_obj,
-            process_flags_obj["is_show_image"],
-            process_flags_obj["is_no_obs"],
-            process_flags_obj["is_super_dry_run"],
-            process_flags_obj["is_blank_slate"],
-            process_flags_obj["is_use_preceding_bookmark"],
-            process_flags_obj["is_save_updates"],
-            process_flags_obj["is_overwrite_redis_after"],
-            process_flags_obj["tags"],
-            process_flags_obj["cli_args_list"]
+            current_run_settings_obj
         )
         if isinstance(result, int):
             print("❌ Error in handle_matched_bookmark")
             return result  # an error code like 1 was returned
-        folder_dir, bookmark_name = result
-
-        print('+++++ handle_matched_bookmark folder_dir:')
-        pprint(folder_dir)
-
-        # ✅ Final confirmation for matched bookmarks
-        relative_path = os.path.relpath(os.path.join(
-            folder_dir, bookmark_name), folder_dir)
-        normalized_path = relative_path.replace('/', ':')
-        folder_name = os.path.basename(folder_dir)
-        print(f"✅ Match found: {folder_name}:{normalized_path}")
-
     else:
-        print_color('---- no matched_bookmark_obj ----', 'magenta')
-
+        print_color('==== no matched_bookmark_obj ====', 'magenta')
 
         # Bookmark does not exist, and user intends to create it
         folder_dir = handle_bookmark_not_found(
             cli_bookmark_obj,
-            process_flags_obj["is_super_dry_run"],
-            process_flags_obj["is_blank_slate"],
-            process_flags_obj["is_use_preceding_bookmark"],
-            process_flags_obj["is_save_updates"],
-            process_flags_obj["is_no_obs"],
-            process_flags_obj["tags"],
-            process_flags_obj["cli_args_list"]
+            current_run_settings_obj["is_super_dry_run"],
+            current_run_settings_obj["is_blank_slate"],
+            current_run_settings_obj["is_use_preceding_bookmark"],
+            current_run_settings_obj["is_save_updates"],
+            current_run_settings_obj["is_no_obs"],
+            current_run_settings_obj["tags"],
+            current_run_settings_obj["cli_args_list"]
         )
 
         print('+++++ handle_bookmark_not_found folder_dir:')
@@ -147,7 +130,7 @@ def main():
             return folder_dir
 
     # Run the main process (unless dry run modes)
-    if not process_flags_obj["is_dry_run"] and not process_flags_obj["is_super_dry_run"]:
+    if not current_run_settings_obj["is_dry_run"] and not current_run_settings_obj["is_super_dry_run"]:
         print("🚀 Running main process...")
         result = handle_main_process()
         if result != 0:
@@ -156,12 +139,12 @@ def main():
 
     # Check if redis_after.json already exists before saving final state (skip in dry run modes)
     should_save_redis_after = False
-    if not process_flags_obj["is_dry_run"] and not process_flags_obj["is_super_dry_run"]:
+    if not current_run_settings_obj["is_dry_run"] and not current_run_settings_obj["is_super_dry_run"]:
         should_save_redis_after = handle_redis_operations(
-            folder_dir, bookmark_tail_name, process_flags_obj["is_save_updates"]
+            folder_dir, bookmark_tail_name, current_run_settings_obj["is_save_updates"]
         )
     else:
-        if process_flags_obj["is_super_dry_run"]:
+        if current_run_settings_obj["is_super_dry_run"]:
             print(f"💾 Super dry run mode: Skipping final Redis state save")
         else:
             print(f"📖 Load-only mode: Skipping final Redis state save")
@@ -202,19 +185,19 @@ def main():
         folder_name = os.path.basename(folder_dir)
         print(f"📋 Skipping final folder metadata update for '{folder_name}'")
 
-    if process_flags_obj["is_super_dry_run"]:
+    if current_run_settings_obj["is_super_dry_run"]:
         print(f"✅ Super dry run workflow completed successfully!")
         if IS_DEBUG:
             print(f"   Bookmark: '{bookmark_name}'")
             print(f"   OBS bookmark loaded")
             print(f"   No Redis operations performed")
-    elif process_flags_obj["is_dry_run"]:
+    elif current_run_settings_obj["is_dry_run"]:
         print(f"✅ Load-only workflow completed successfully!")
         if IS_DEBUG:
             print(f"   Bookmark: '{bookmark_name}'")
             print(f"   OBS bookmark loaded")
             print(f"   Redis before: {bookmark_name}/redis_before.json")
-    elif process_flags_obj["is_no_obs"]:
+    elif current_run_settings_obj["is_no_obs"]:
         print(f"✅ No-OBS workflow completed successfully!")
         if IS_DEBUG:
             print(f"   Bookmark: '{bookmark_name}'")

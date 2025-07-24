@@ -1,6 +1,6 @@
 from app.bookmarks_consts import IS_DEBUG
 
-def find_preceding_bookmark(args):
+def find_preceding_bookmark_args(args):
     # Find the index of the use_preceding_bookmark flag
     cli_args_list = None
     preceding_flags = ["--use-preceding-bookmark", "-p"]

@@ -28,3 +28,17 @@ class BookmarkInfo(TypedDict):
 
 class MatchedBookmarkObj(BookmarkPathDictionary):
     bookmark_info: NotRequired[BookmarkInfo]
+
+class CurrentRunSettings(TypedDict):
+    is_overwrite_redis_after: bool
+    is_overwrite_redis_before: bool
+    is_save_updates: bool
+    is_use_preceding_bookmark: bool
+    is_blank_slate: bool
+    is_dry_run: bool
+    is_super_dry_run: bool
+    is_no_obs: bool
+    is_show_image: bool
+    is_add_bookmark: bool
+    cli_args_list: list[str] | None
+    tags: list[str] | None

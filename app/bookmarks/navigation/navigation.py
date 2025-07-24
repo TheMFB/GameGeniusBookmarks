@@ -9,10 +9,10 @@ IS_AGGREGATE_TAGS = False
 IS_PRINT_DEF_NAME = True
 
 
-def find_preceding_bookmark(bookmark_name, folder_dir):
+def find_preceding_bookmark_args(bookmark_name, folder_dir):
     # TODO(MFB): Look into me and see if this is the bookmark name or the whole bookmark (path+name)
     """Find the bookmark that comes alphabetically/numerically before the given bookmark"""
-    print_color('??? ---- find_preceding_bookmark bookmark_name:', 'red')
+    print_color('??? ---- find_preceding_bookmark_args bookmark_name:', 'red')
     pprint(bookmark_name)
 
     all_bookmark_objects = load_bookmarks_from_folder(folder_dir)
