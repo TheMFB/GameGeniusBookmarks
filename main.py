@@ -139,6 +139,7 @@ def main():
             matched_bookmark_obj, current_run_settings_obj
         )
     else:
+        # TODO(KERCH): If we are in just dry run mode, we need to be saving the redis state. If we are in super dry run mode, we should not save the redis state.
         if current_run_settings_obj["is_super_dry_run"]:
             print(f"💾 Super dry run mode: Skipping final Redis state save")
         else:

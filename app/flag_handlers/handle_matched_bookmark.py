@@ -58,6 +58,7 @@ def handle_matched_bookmark(
         print(f"🔍 Checking for existing Redis state at: {redis_before_path}")
 
     # Handle Redis state based on flags (skip if super dry run)
+    # TODO(KERCH): If we are in just dry run mode, we need to be saving the redis state. If we are in super dry run mode, we should not save the redis state.
     if current_run_settings_obj["is_super_dry_run"]:
         print(f"💾 Super dry run mode: Skipping all Redis operations")
     elif current_run_settings_obj["is_blank_slate"]:
@@ -97,6 +98,7 @@ def handle_matched_bookmark(
         redis_before_path = os.path.join(matched_bookmark_path_abs, "redis_before.json")
 
     # Load Redis state (skip if super dry run)
+    # TODO(KERCH): If we are in just dry run mode, we need to be saving the redis state. If we are in super dry run mode, we should not save the redis state.
     if not current_run_settings_obj["is_super_dry_run"] and os.path.exists(redis_before_path):
         if IS_DEBUG:
             print(f"📊 Loading Redis state from bookmark...")
@@ -120,6 +122,7 @@ def handle_matched_bookmark(
             os.remove(temp_redis_path)
             if IS_DEBUG:
                 print(f"🧹 Cleaned up temp file: {temp_redis_path}")
+    # TODO(KERCH): If we are in just dry run mode, we need to be saving the redis state. If we are in super dry run mode, we should not save the redis state.
     elif not current_run_settings_obj["is_super_dry_run"]:
         print(f"💾 No existing Redis state found - saving current state...")
         # Save current Redis state as redis_before.json

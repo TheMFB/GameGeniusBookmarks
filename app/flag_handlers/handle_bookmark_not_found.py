@@ -96,6 +96,7 @@ def handle_bookmark_not_found(
 
 
     # Handle Redis state based on flags (skip if super dry run)
+    # TODO(KERCH): If we are in just dry run mode, we need to be saving the redis state. If we are in super dry run mode, we should not save the redis state.
     if current_run_settings_obj["is_super_dry_run"]:
         print(f"💾 Super dry run mode: Skipping all Redis operations")
     elif current_run_settings_obj["is_blank_slate"]:
@@ -135,6 +136,7 @@ def handle_bookmark_not_found(
     # TODO(MFB): ++++++++ HERE ++++++++
 
     # Normal flow - save current Redis state (skip if super dry run)
+    # TODO(KERCH): If we are in just dry run mode, we need to be saving the redis state. If we are in super dry run mode, we should not save the redis state.
     if not current_run_settings_obj["is_super_dry_run"]:
         save_redis_and_friendly_json(cli_bookmark_tail_name, bookmark_dir)
 
