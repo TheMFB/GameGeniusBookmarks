@@ -89,6 +89,11 @@ def handle_bookmark_not_found(
 
     # TODO(KERCH): +++ Somewhere around this file, we need to be re-creating bookmark obj with any found/updated information. Creating it here with cli does not make sense.
 
+    print_color('---- cli_bookmark_dir:', 'cyan')
+    pprint(cli_bookmark_dir)
+    print_color('---- cli_bookmark_tail_name:', 'cyan')
+    pprint(cli_bookmark_tail_name)
+
     # Create bookmark directory
     cli_bookmark_obj = convert_exact_bookmark_path_to_dict(
         cli_bookmark_dir, cli_bookmark_tail_name)

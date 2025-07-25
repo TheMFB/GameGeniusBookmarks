@@ -1,14 +1,19 @@
 import os
+from pprint import pprint
 import shutil
 from app.bookmarks_consts import REDIS_DUMP_DIR, IS_DEBUG # type: ignore
 from app.bookmarks_redis import run_redis_command
 from redis_friendly_converter import convert_file as convert_redis_to_friendly
 from app.utils.decorators import print_def_name
+from app.utils.printing_utils import print_color
 
 IS_PRINT_DEF_NAME = True
 
 @print_def_name(IS_PRINT_DEF_NAME)
 def save_redis_and_friendly_json(bookmark_path_slash_abs: str):
+    print_color('---- bookmark_path_slash_abs:', 'magenta')
+    pprint(bookmark_path_slash_abs)
+
     if IS_DEBUG:
         print(f"💾 Saving current Redis state '{bookmark_path_slash_abs}'...")
 
