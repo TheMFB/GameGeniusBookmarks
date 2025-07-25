@@ -3,7 +3,7 @@ from .ls import *
 from .which import *
 from .preceding_bookmark import *
 from .open_video import *
-from .tags import *
+from .find_cli_tags import *
 from .handle_matched_bookmark import *
 from .handle_bookmark_not_found import *
 from .save_obs_screenshot import *

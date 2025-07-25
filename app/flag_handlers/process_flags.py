@@ -1,5 +1,5 @@
 from app.bookmarks_consts import IS_DEBUG, OPTIONS_HELP
-from app.flag_handlers import handle_help, handle_ls, handle_which, open_video, find_tags
+from app.flag_handlers import handle_help, handle_ls, handle_which, open_video, find_cli_tags
 from app.flag_handlers.preceding_bookmark import find_preceding_bookmark_args
 from app.types.bookmark_types import CurrentRunSettings
 from app.utils.decorators import print_def_name
@@ -104,7 +104,7 @@ def process_flags(args) -> CurrentRunSettings | int:
 
     # Parse tags from command line
     if "--tags" in args or "-t" in args:
-        tags = find_tags(args)
+        tags = find_cli_tags(args)
 
     if IS_DEBUG:
         print(f"🔍 Debug - is_overwrite_redis_after: {is_overwrite_redis_after}")

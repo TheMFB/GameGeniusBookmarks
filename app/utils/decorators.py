@@ -2,6 +2,7 @@ from pprint import pprint
 import os
 from functools import wraps
 from app.utils.printing_utils import get_embedded_file_link, get_embedded_bookmark_file_link
+import inspect
 
 IS_PRINT_FILE_LINK= True
 IS_ADJUST_TO_STACK = True
@@ -35,10 +36,12 @@ def print_def_name(should_print=True):
                 depth = max(1, len(inspect.stack()) - 9)
                 print('')
                 if IS_PRINT_FILE_LINK:
+                    real_func = inspect.unwrap(func)
                     print(
-                        f"{'_' * depth * 2} {get_embedded_file_link(func)} {'_' * depth * 2}")
+                        f"{'_' * depth * 2} {get_embedded_file_link(real_func)} {'_' * depth * 2}")
                 else:
-                    print(f"{'_' * depth * 2} {func.__name__} {'_' * depth * 2}")
+                    real_func = inspect.unwrap(func)
+                    print(f"{'_' * depth * 2} {real_func.__name__} {'_' * depth * 2}")
 
                 return func(*args, **kwargs)
             return wrapper

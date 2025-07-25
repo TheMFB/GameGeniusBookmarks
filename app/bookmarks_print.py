@@ -9,8 +9,8 @@ from app.utils import print_color, get_embedded_bookmark_file_link, abs_to_rel_p
 from app.utils.decorators import print_def_name
 
 IS_PRINT_VIDEO_FILE_NAMES = True
-IS_PULL_TAGS_WHEN_SINGLE_CHILD = True
-# IS_PULL_TAGS_WHEN_SINGLE_CHILD = False
+IS_HOIST_TAGS_WHEN_SINGLE_CHILD = True
+# IS_HOIST_TAGS_WHEN_SINGLE_CHILD = False
 
 IS_DEBUG = True
 IS_PRINT_DEF_NAME = True
@@ -21,7 +21,7 @@ def is_ancestor_path(candidate, target):
     return target == candidate or target.startswith(candidate + ":")
 
 
-@print_def_name(IS_PRINT_DEF_NAME)
+@print_def_name(False) # This is loaded for all bookmarks to create a tree of bookmarks and tags.
 def collect_all_bookmark_tags_recursive(node):
     """Recursively gather all tags from bookmarks inside a folder"""
     all_tags = []
@@ -99,11 +99,6 @@ def print_all_folders_and_bookmarks(
                 print_color(folder_line, 'green')
             else:
                 print(folder_line)
-
-
-
-
-
 
 
         # Recursively gather all tags in this folder

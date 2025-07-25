@@ -229,6 +229,7 @@ def is_bookmark_path_in_live_bookmarks_strict(cli_bookmark_path_rel):
     Used during creation to avoid fuzzy fallbacks.
     """
     all_bookmarks_object = get_all_valid_bookmarks_in_json_format()
+    print('++++ is_bookmark_path_in_live_bookmarks_strict all_bookmarks_object:')
     pprint(all_bookmarks_object)
 
     if not all_bookmarks_object:

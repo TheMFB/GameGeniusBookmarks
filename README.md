@@ -63,6 +63,7 @@ openobs() { bookmark "$@" -v; }
 - `bookmark_dir` -> the entire path except for the bookmark name
 - `bookmark_tail_name` -> the bookmark name that is found at the end of the path
 - `bookmark_path` -> the whole directory including the name
+- `hoist` -> siblings that all share the same tag will just be displayed in the parent as a "grouped tag".
 
 
 # Features

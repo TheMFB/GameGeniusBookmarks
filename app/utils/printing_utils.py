@@ -1,6 +1,8 @@
 from typing import Literal
 import base64
 import os
+import inspect
+from pprint import pprint
 
 from app.bookmarks_consts import ABS_OBS_BOOKMARKS_DIR
 
@@ -63,4 +65,29 @@ def print_image(image_path, width="auto", height="auto"):
     image_code = get_iterm_image_code(image_path, width, height)
     if image_code:
         print(image_code)
+
+
+def gg_print(var, color=None):
+    # Try to get the variable name from the caller's source code
+    frame = inspect.currentframe().f_back
+    try:
+        # Get the line of code that called gg_print
+        call_line = inspect.getframeinfo(frame).code_context[0]
+        # Find the argument inside gg_print(...)
+        import re
+        match = re.search(r'gg_print\(([^,)\n]+)', call_line)
+        var_name = match.group(1).strip() if match else "variable"
+    except Exception:
+        var_name = "variable"
+    finally:
+        del frame
+
+    # Print in your double-line style
+
+    if color:
+        print_color(f"-- {var_name}:", color)
+    else:
+        print(f"-- {var_name}:")
+    pprint(var)
+
 
