@@ -41,53 +41,8 @@ def main():
         print(f"❌ Error in find_best_bookmark_match")
         return matched_bookmark_obj
 
+    # TODO(MFB): +++ HERE +++ ?
 
-
-    # # If not enough info to proceed, return an error
-    # if not matched_bookmark_obj and (not cli_bookmark_obj["bookmark_dir_slash_abs"] or not cli_bookmark_obj["bookmark_tail_name"]):
-    #     print(f"❌ No bookmark name provided")
-    #     return 1
-
-
-    # # Check for exact bookmark path match
-    # if not matched_bookmark_obj and current_run_settings_obj["is_add_bookmark"] and cli_bookmark_obj["bookmark_path_colon_rel"]:
-    #     print_color('---- is_add_bookmark and cli_bookmark_dir ----', 'magenta')
-
-    #     # TODO(MFB): Pull this out.
-    #     if is_exact_bookmark_path_in_live_bookmarks(
-    #             cli_bookmark_obj):
-    #         # We have an exact match, prompt the user what to do with the Redis saves
-    #         print(
-    #             f"⚠️ Bookmark already exists: {cli_bookmark_obj["bookmark_dir_colon_rel"]}")
-    #         print("What would you like to do?")
-    #         print("  1. Load existing")
-    #         print("  2. Overwrite before redis")
-    #         print("  3. Overwrite after redis")
-    #         print("  4. Overwrite both")
-    #         print("  5. Cancel")
-    #         while True:
-    #             choice = input("Enter choice (1–5): ").strip()
-    #             if choice == "1":
-    #                 matched_bookmark_obj = get_bookmark_info(cli_bookmark_obj)
-    #                 break
-    #             elif choice == "2":
-    #                 matched_bookmark_obj = cli_bookmark_obj
-    #                 current_run_settings_obj["is_overwrite_redis_before"] = True
-    #                 break
-    #             elif choice == "3":
-    #                 matched_bookmark_obj = cli_bookmark_obj
-    #                 current_run_settings_obj["is_overwrite_redis_after"] = True
-    #                 break
-    #             elif choice == "4":
-    #                 matched_bookmark_obj = cli_bookmark_obj
-    #                 current_run_settings_obj["is_overwrite_redis_after"] = True
-    #                 current_run_settings_obj["is_overwrite_redis_before"] = True
-    #                 break
-    #             elif choice == "5":
-    #                 print("❌ Cancelled.")
-    #                 return 1
-    #             else:
-    #                 print("❌ Invalid choice. Please enter 1–5.")
 
     # Handle exact bookmark path match or navigation match
     if matched_bookmark_obj:

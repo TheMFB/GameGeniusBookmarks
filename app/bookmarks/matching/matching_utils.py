@@ -4,7 +4,7 @@ import re
 from app.bookmarks_consts import IS_DEBUG
 from app.bookmarks.bookmarks import load_bookmarks_from_folder, get_all_valid_bookmarks_in_json_format
 from app.utils.decorators import print_def_name, memoize
-from app.utils.bookmark_utils import split_path_into_array, does_path_exist_in_bookmarks
+from app.utils.bookmark_utils import split_path_into_array, does_path_exist_in_bookmarks, convert_exact_bookmark_path_to_dict
 
 IS_PRINT_DEF_NAME = True
 
@@ -227,20 +227,50 @@ def fuzzy_match_bookmark_tokens(query: str, include_tags_and_descriptions: bool 
     return top_matches
 
 # TODO(MFB): Not used.
+# @print_def_name(IS_PRINT_DEF_NAME)
+# def interactive_fuzzy_lookup(query: str, top_n: int = 5):
+#     """
+#     Perform fuzzy matching and ask user to choose a bookmark from the top N matches.
+#     Returns the selected bookmark path, or None if cancelled.
+#     """
+#     matches = fuzzy_match_bookmark_tokens(query, top_n=top_n)
+
+#     if not matches:
+#         print("❌ No matches found.")
+#         return None
+
+#     print(f"🤔 Fuzzy matches for '{query}':")
+#     for idx, match in enumerate(matches, 1):
+#         print(f"  {idx}. {match}")
+#     print("  0. Cancel")
+
+#     while True:
+#         try:
+#             choice = input(f"Enter your choice (1-{len(matches)} or 0 to cancel): ").strip()
+#             if choice == "0":
+#                 print("❌ Cancelled.")
+#                 return None
+#             choice_num = int(choice)
+#             if 1 <= choice_num <= len(matches):
+#                 selected = matches[choice_num - 1]
+#                 print(f"✅ Selected: {selected}")
+#                 return selected
+#             else:
+#                 print(f"❌ Invalid input. Choose between 0 and {len(matches)}.")
+#         except ValueError:
+#             print("❌ Please enter a number.")
+
+
 @print_def_name(IS_PRINT_DEF_NAME)
-def interactive_fuzzy_lookup(query: str, top_n: int = 5):
+def interactive_choose_bookmark(matched_bookmark_strings: list[str]):
     """
-    Perform fuzzy matching and ask user to choose a bookmark from the top N matches.
-    Returns the selected bookmark path, or None if cancelled.
+    
     """
-    matches = fuzzy_match_bookmark_tokens(query, top_n=top_n)
+    # TODO(MFB): +++ HERE +++
+    match_bookmark_objs = [convert_exact_bookmark_path_to_dict(match) for match in matched_bookmark_strings]
 
-    if not matches:
-        print("❌ No matches found.")
-        return None
-
-    print(f"🤔 Fuzzy matches for '{query}':")
-    for idx, match in enumerate(matches, 1):
+    print(f"🤔 Multiple results found '{query}':")
+    for idx, match in match_bookmark_objs:
         print(f"  {idx}. {match}")
     print("  0. Cancel")
 
@@ -259,6 +289,9 @@ def interactive_fuzzy_lookup(query: str, top_n: int = 5):
                 print(f"❌ Invalid input. Choose between 0 and {len(matches)}.")
         except ValueError:
             print("❌ Please enter a number.")
+
+
+
 
 
 def find_bookmarks_by_exact_trailing_path_parts(cli_bookmark_string, all_live_bookmark_path_slash_rels):
