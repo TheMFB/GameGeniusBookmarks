@@ -1,7 +1,11 @@
 from app.bookmarks_consts import IS_DEBUG, ASYNC_WAIT_TIME
 import subprocess
 import time
+from app.utils.decorators import print_def_name
 
+IS_PRINT_DEF_NAME = True
+
+@print_def_name(IS_PRINT_DEF_NAME)
 def handle_main_process():
     if IS_DEBUG:
         print(f"🚀 Running main process...")

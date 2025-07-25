@@ -41,6 +41,7 @@ def get_bookmark_info(cli_bookmark_obj: BookmarkPathDictionary) -> MatchedBookma
         return cli_bookmark_obj
 
 
+@print_def_name(IS_PRINT_DEF_NAME)
 def create_bookmark_symlinks(matched_bookmark_obj):
     """Create symlinks for the last used bookmark and its folder."""
     import os
@@ -130,6 +131,7 @@ def create_bookmark_symlinks(matched_bookmark_obj):
         print(f"⚠️  Could not create symlinks: {e}")
 
 
+@print_def_name(IS_PRINT_DEF_NAME)
 def token_match_bookmarks(query_string, folder_dir):
     """
     Returns a list of bookmark paths where all query tokens appear in the path.

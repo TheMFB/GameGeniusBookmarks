@@ -55,6 +55,7 @@ def handle_bookmark_not_found(
 
         # Check if specified folder exists
         # TODO(MFB): Failing:
+        print('++++ find_bookmark_dir_by_name')
         bookmark_dir = find_bookmark_dir_by_name(cli_bookmark_dir)
         print_color('---- 1 folder_dir found:', 'magenta')
         pprint(bookmark_dir)

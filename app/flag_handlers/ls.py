@@ -3,8 +3,11 @@ import json
 from app.bookmark_dir_processes import find_bookmark_dir_by_name
 from app.bookmarks_print import print_all_folders_and_bookmarks
 from app.bookmarks import token_match_bookmarks
+from app.utils.decorators import print_def_name
 
+IS_PRINT_DEF_NAME = True
 
+@print_def_name(IS_PRINT_DEF_NAME)
 def handle_ls(args):
     # Remove -ls so we can check what came before it
     args_copy = args.copy()

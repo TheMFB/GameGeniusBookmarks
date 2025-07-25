@@ -9,10 +9,14 @@ from app.bookmarks import get_last_used_bookmark
 from app.bookmarks.navigation import resolve_navigation_bookmark
 from app.types.bookmark_types import MatchedBookmarkObj
 from app.utils.utils import convert_exact_bookmark_path_to_dict
+from app.utils.decorators import print_def_name
+
+IS_PRINT_DEF_NAME = True
 
 navigation_commands = ["next", "previous", "first", "last"]
 
 
+@print_def_name(IS_PRINT_DEF_NAME)
 def process_navigation(args_for_run_bookmarks) -> MatchedBookmarkObj | int | None:
     # Handle navigation commands
 

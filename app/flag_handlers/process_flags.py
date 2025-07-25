@@ -2,7 +2,9 @@ from app.bookmarks_consts import IS_DEBUG, OPTIONS_HELP
 from app.flag_handlers import handle_help, handle_ls, handle_which, open_video, find_tags
 from app.flag_handlers.preceding_bookmark import find_preceding_bookmark_args
 from app.types.bookmark_types import CurrentRunSettings
+from app.utils.decorators import print_def_name
 
+IS_PRINT_DEF_NAME = True
 
 flag_routes = {
     "--help": handle_help,
@@ -53,6 +55,7 @@ default_processed_flags: CurrentRunSettings = {
     "tags": None,
 }
 
+@print_def_name(IS_PRINT_DEF_NAME)
 def process_flags(args) -> CurrentRunSettings | int:
     """Process command line flags and return a dictionary of flag values."""
     cli_args_list = None

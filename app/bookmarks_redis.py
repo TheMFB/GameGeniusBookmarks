@@ -5,8 +5,11 @@ from app.bookmarks_consts import IS_DEBUG, INITIAL_REDIS_STATE_DIR
 from app.bookmark_dir_processes import get_all_valid_root_dir_names, parse_cli_bookmark_args, find_bookmark_dir_by_name
 from app.bookmarks import find_matching_bookmarks
 from app.flag_handlers.preceding_bookmark import find_preceding_bookmark_args
+from app.utils.decorators import print_def_name
 
+IS_PRINT_DEF_NAME = True
 
+@print_def_name(IS_PRINT_DEF_NAME)
 def run_redis_command(command_args):
     """Run Redis management command"""
     try:
@@ -168,7 +171,7 @@ def run_redis_command(command_args):
 #             f"❌ Error copying Redis state from '{source_folder_name}:{source_bookmark_name}': {e}")
 #         return False
 
-
+@print_def_name(IS_PRINT_DEF_NAME)
 def copy_initial_redis_state(bookmark_path_slash_abs: str):
     """Copy initial Redis state files to the bookmark directory"""
     # Paths to initial state files

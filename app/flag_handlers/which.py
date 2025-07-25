@@ -2,7 +2,11 @@ import os
 import json
 from app.bookmarks import find_matching_bookmarks
 from app.bookmark_dir_processes import parse_cli_bookmark_args
+from app.utils.decorators import print_def_name
 
+IS_PRINT_DEF_NAME = True
+
+@print_def_name(IS_PRINT_DEF_NAME)
 def handle_which(args):
     which_flag = '--which' if '--which' in args else '-w'
     args_copy = args.copy()

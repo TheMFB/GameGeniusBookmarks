@@ -5,13 +5,15 @@ from datetime import datetime
 from app.utils import print_color
 from app.bookmarks_consts import IS_DEBUG, ABS_OBS_BOOKMARKS_DIR, EXCLUDED_DIRS
 from app.bookmarks_meta import load_folder_meta, create_folder_meta
-from app.utils.decorators import print_def_name
+from app.utils.decorators import print_def_name, memoize
 
 IS_PRINT_DEF_NAME = True
 
 @print_def_name(IS_PRINT_DEF_NAME)
+@memoize
 def get_all_valid_root_dir_names():
     """Collect all folder paths under ABS_OBS_BOOKMARKS_DIR that contain folder_meta.json (excluding archive)"""
+    print('++++ get_all_valid_root_dir_names')
     try:
         if IS_DEBUG:
             print(f"🔍 Scanning for folders inside: {ABS_OBS_BOOKMARKS_DIR}")
@@ -166,6 +168,8 @@ def find_bookmark_dir_by_name(bookmark_dir_arg: str):
     return bookmark_dir_arg
 
 # TODO(KERCH): How is this different from the one above? Any way to combine?
+
+@print_def_name(IS_PRINT_DEF_NAME)
 def create_dir_with_name(rel_folder_dir):
     """Create a new folder with the specified name"""
 

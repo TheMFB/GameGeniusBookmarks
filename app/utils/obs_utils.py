@@ -8,8 +8,11 @@ import base64
 from app.bookmarks_consts import IS_DEBUG
 from app.videos import construct_full_video_file_path
 from app.types import MatchedBookmarkObj
+from app.utils.decorators import print_def_name
 
+IS_PRINT_DEF_NAME = True
 
+@print_def_name(IS_PRINT_DEF_NAME)
 def open_video_in_obs(video_path: str, source_name: str = "Media Source"):
     """Open a video file in OBS with it paused"""
 
@@ -48,6 +51,7 @@ def open_video_in_obs(video_path: str, source_name: str = "Media Source"):
         return False
 
 
+@print_def_name(IS_PRINT_DEF_NAME)
 def get_media_source_info():
     """Get media source information from OBS."""
     try:
@@ -115,6 +119,7 @@ def get_media_source_info():
         raise e
 
 
+@print_def_name(IS_PRINT_DEF_NAME)
 def load_bookmark_into_obs(matched_bookmark_obj: MatchedBookmarkObj):
     # TODO(MFB): Look into me and see if this is the bookmark name or the whole bookmark (path+name)
     """Load OBS bookmark directly without using the bookmark manager script"""

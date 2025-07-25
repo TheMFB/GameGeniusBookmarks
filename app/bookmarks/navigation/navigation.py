@@ -4,11 +4,13 @@ from pprint import pprint
 from app.utils import print_color
 from app.bookmarks.finders import load_bookmarks_from_folder
 from app.bookmarks.last_used import get_last_used_bookmark
+from app.utils.decorators import print_def_name
 
 IS_AGGREGATE_TAGS = False
 IS_PRINT_DEF_NAME = True
 
 
+@print_def_name(IS_PRINT_DEF_NAME)
 def find_preceding_bookmark_args(bookmark_name, folder_dir):
     # TODO(MFB): Look into me and see if this is the bookmark name or the whole bookmark (path+name)
     """Find the bookmark that comes alphabetically/numerically before the given bookmark"""
@@ -36,7 +38,7 @@ def find_preceding_bookmark_args(bookmark_name, folder_dir):
     return None
 
 
-
+@print_def_name(IS_PRINT_DEF_NAME)
 def find_next_bookmark_in_folder(current_bookmark_name, bookmark_dir):
     """Find the next bookmark in the same directory as the current bookmark."""
     print_color(
@@ -89,6 +91,7 @@ def find_next_bookmark_in_folder(current_bookmark_name, bookmark_dir):
     return None
 
 
+@print_def_name(IS_PRINT_DEF_NAME)
 def find_previous_bookmark_in_folder(current_bookmark_name, folder_dir):
     """Find the previous bookmark in the same directory as the current bookmark."""
     print_color(
@@ -141,6 +144,7 @@ def find_previous_bookmark_in_folder(current_bookmark_name, folder_dir):
     return None
 
 
+@print_def_name(IS_PRINT_DEF_NAME)
 def find_first_bookmark_in_folder(current_bookmark_name, folder_dir):
     """Find the first bookmark in the same directory as the current bookmark."""
     print_color(
@@ -184,6 +188,7 @@ def find_first_bookmark_in_folder(current_bookmark_name, folder_dir):
         return f"{current_folder_path}/{first_bookmark_basename}"
 
 
+@print_def_name(IS_PRINT_DEF_NAME)
 def find_last_bookmark_in_folder(current_bookmark_name, folder_dir):
     """Find the last bookmark in the same directory as the current bookmark."""
     print_color(
@@ -227,6 +232,7 @@ def find_last_bookmark_in_folder(current_bookmark_name, folder_dir):
         return f"{current_folder_path}/{last_bookmark_basename}"
 
 
+@print_def_name(IS_PRINT_DEF_NAME)
 def resolve_navigation_bookmark(navigation_command, folder_dir):
     """Resolve navigation commands (next, previous, first, last) to actual bookmark names."""
     # Get the last used bookmark to determine the current position

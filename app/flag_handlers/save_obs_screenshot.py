@@ -4,7 +4,11 @@ import base64
 from PIL import Image
 import obsws_python as obs
 from app.bookmarks_consts import IS_DEBUG, SCREENSHOT_SAVE_SCALE
+from app.utils.decorators import print_def_name
 
+IS_PRINT_DEF_NAME = True
+
+@print_def_name(IS_PRINT_DEF_NAME)
 def save_obs_screenshot(bookmark_dir: str, bookmark_name: str):
     """Takes screenshot from OBS and saves it to screenshot.jpg in the bookmark directory."""
 

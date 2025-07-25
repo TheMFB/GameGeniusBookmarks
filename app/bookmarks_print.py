@@ -6,18 +6,22 @@ from app.bookmarks_meta import compute_hoistable_tags
 from app.bookmarks.last_used import get_last_used_bookmark
 from app.bookmarks.finders import get_all_bookmarks_in_json_format
 from app.utils import print_color, get_embedded_bookmark_file_link, abs_to_rel_path
+from app.utils.decorators import print_def_name
 
 IS_PRINT_VIDEO_FILE_NAMES = True
 IS_PULL_TAGS_WHEN_SINGLE_CHILD = True
 # IS_PULL_TAGS_WHEN_SINGLE_CHILD = False
 
 IS_DEBUG = True
+IS_PRINT_DEF_NAME = True
 
+@print_def_name(IS_PRINT_DEF_NAME)
 def is_ancestor_path(candidate, target):
     """Check if `candidate` is a parent or ancestor of `target` in colon-separated path format."""
     return target == candidate or target.startswith(candidate + ":")
 
 
+@print_def_name(IS_PRINT_DEF_NAME)
 def collect_all_bookmark_tags_recursive(node):
     """Recursively gather all tags from bookmarks inside a folder"""
     all_tags = []
@@ -32,6 +36,7 @@ def collect_all_bookmark_tags_recursive(node):
 
     return all_tags
 
+@print_def_name(IS_PRINT_DEF_NAME)
 def print_all_folders_and_bookmarks(
         bookmark_obj=None,
         is_print_just_current_folder_bookmarks=False
@@ -224,6 +229,7 @@ def print_all_folders_and_bookmarks(
     return
 
 
+@print_def_name(IS_PRINT_DEF_NAME)
 def print_bookmarks_in_folder(folder_path, indent=0, last_used_path=None, inherited_tags=None):
     if inherited_tags is None:
         inherited_tags = set()

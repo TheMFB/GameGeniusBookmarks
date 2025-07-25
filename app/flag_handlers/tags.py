@@ -1,5 +1,9 @@
 from app.bookmarks_consts import IS_DEBUG, OPTIONS_HELP
+from app.utils.decorators import print_def_name
 
+IS_PRINT_DEF_NAME = True
+
+@print_def_name(IS_PRINT_DEF_NAME)
 def find_tags(args):
     tags = []
 

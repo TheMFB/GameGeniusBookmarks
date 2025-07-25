@@ -8,7 +8,12 @@ from datetime import datetime
 
 from app.bookmarks_consts import IS_DEBUG, IS_DEBUG_FULL
 from app.videos import construct_full_video_file_path
+from app.utils.decorators import print_def_name
 
+IS_PRINT_DEF_NAME = True
+
+
+@print_def_name(IS_PRINT_DEF_NAME)
 def load_folder_meta(folder_path):
     """Load folder metadata from folder_meta.json"""
     folder_meta_file = os.path.join(folder_path, "folder_meta.json")
@@ -24,6 +29,7 @@ def load_folder_meta(folder_path):
     return {}
 
 # TODO(MFB): Do we have enough to make a tags folder?
+@print_def_name(IS_PRINT_DEF_NAME)
 def compute_hoistable_tags(list_of_tag_sets):
     """Given a list of tag sets (one per bookmark), return the set of tags shared by all -- in order to bring them up to the next parent folder"""
     if not list_of_tag_sets:
@@ -31,6 +37,7 @@ def compute_hoistable_tags(list_of_tag_sets):
     return set.intersection(*list_of_tag_sets)
 
 
+@print_def_name(IS_PRINT_DEF_NAME)
 def load_bookmark_meta_from_rel(bookmark_dir_rel):
     """Load bookmark metadata and construct full file path."""
     meta_file = os.path.join(bookmark_dir_rel, "bookmark_meta.json")
@@ -77,6 +84,7 @@ def load_bookmark_meta_from_rel(bookmark_dir_rel):
             return {}
     return {}
 
+@print_def_name(IS_PRINT_DEF_NAME)
 def load_bookmark_meta_from_abs(bookmark_path_abs):
     """Load bookmark metadata from bookmark_meta.json"""
     bookmark_meta_path = os.path.join(bookmark_path_abs, "bookmark_meta.json")
@@ -85,6 +93,7 @@ def load_bookmark_meta_from_abs(bookmark_path_abs):
             return json.load(f)
     return None
 
+@print_def_name(IS_PRINT_DEF_NAME)
 def create_folder_meta(abs_folder_dir, description="", tags=None):
     """Create or update folder_meta.json file"""
     folder_meta_file = os.path.join(abs_folder_dir, "folder_meta.json")
@@ -124,6 +133,7 @@ def create_folder_meta(abs_folder_dir, description="", tags=None):
         return False
 
 
+@print_def_name(IS_PRINT_DEF_NAME)
 def create_bookmark_meta(bookmark_dir, bookmark_name, media_info, tags=None):
     """Create bookmark metadata with optional tags."""
     meta_data = {

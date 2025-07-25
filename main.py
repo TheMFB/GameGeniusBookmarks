@@ -39,6 +39,11 @@ def main():
         # If navigation failed, return the error code
         return matched_bookmark_obj
 
+    print_color('---- cli_bookmark_dir:', 'cyan')
+    pprint(cli_bookmark_dir)
+    print_color('---- cli_bookmark_tail_name:', 'cyan')
+    pprint(cli_bookmark_tail_name)
+
     # CLI Bookmark Object
     cli_bookmark_obj = convert_exact_bookmark_path_to_dict(
         cli_bookmark_dir, cli_bookmark_tail_name)

@@ -1,5 +1,9 @@
 from app.bookmarks_consts import IS_DEBUG
+from app.utils.decorators import print_def_name
 
+IS_PRINT_DEF_NAME = True
+
+@print_def_name(IS_PRINT_DEF_NAME)
 def find_preceding_bookmark_args(args):
     # Find the index of the use_preceding_bookmark flag
     cli_args_list = None

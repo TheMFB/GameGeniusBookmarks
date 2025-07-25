@@ -41,6 +41,9 @@ def convert_exact_bookmark_path_to_dict(
     print(convert_exact_bookmark_path_to_dict("01", "mfb3/MFB/TEST", is_absolute_path=True, bookmark_dir=BOOKMARK_DIR))
     # ('/.../obs_bookmark_saves/mfb3/MFB/TEST', '01', '/.../obs_bookmark_saves/mfb3/MFB/TEST/01')
     """
+    print('++++ convert_exact_bookmark_path_to_dict')
+    print('++++ args:', args)
+
     # Parse input
     if len(args) == 2:
         # If both are the same, treat as a single full bookmark_dir+name

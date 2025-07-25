@@ -3,8 +3,11 @@ import shutil
 from app.bookmarks_consts import IS_DEBUG, REDIS_DUMP_DIR
 from redis_friendly_converter import convert_file as convert_redis_to_friendly
 from app.bookmarks_redis import run_redis_command
+from app.utils.decorators import print_def_name
 
+IS_PRINT_DEF_NAME = True
 
+@print_def_name(IS_PRINT_DEF_NAME)
 def handle_save_redis_after_json(matched_bookmark_obj, current_run_settings_obj):
     """
     Handles saving the final Redis state to redis_after.json

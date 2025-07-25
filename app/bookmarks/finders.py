@@ -9,7 +9,7 @@ from app.bookmarks_meta import load_bookmark_meta_from_rel, load_bookmark_meta_f
 IS_AGGREGATE_TAGS = False
 IS_PRINT_DEF_NAME = True
 
-
+@print_def_name(IS_PRINT_DEF_NAME)
 def stepwise_match(user_parts, all_saved_bookmark_paths):
     """Perform reverse stepwise matching of user_parts against bookmark paths."""
     # Preprocess all bookmarks into tokenized forms
@@ -220,6 +220,7 @@ def find_matching_bookmarks(bookmark_path_rel, root_dir_name):
     return [(None, None)]
 
 
+@print_def_name(IS_PRINT_DEF_NAME)
 def is_bookmark_path_in_live_bookmarks_strict(cli_bookmark_path_rel):
     """
     Return exact match path if the normalized bookmark path matches query.

@@ -1,5 +1,9 @@
 from app.bookmarks_consts import IS_DEBUG, OPTIONS_HELP
+from app.utils.decorators import print_def_name
 
+IS_PRINT_DEF_NAME = True
+
+@print_def_name(IS_PRINT_DEF_NAME)
 def open_video(args):
     # Find the index of the open_video flag
     video_flags = ["--open-video", "-v"]
