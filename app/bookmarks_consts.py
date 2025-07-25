@@ -18,8 +18,9 @@ HIDDEN_COLOR = "\033[38;2;13;42;52m"
 RESET_COLOR = "\033[0m"
 
 # EXCLUDED_DIRS = {"archive", "archive_temp", "temp"}
-
 EXCLUDED_DIRS = {"archive", "archive_temp", "temp", "videos"} # # TODO(MFB): DELETE AFTER TESTING
+
+NAVIGATION_COMMANDS = ["next", "previous", "first", "last"]
 
 # Base directory is now the current repo root
 import os
@@ -39,6 +40,8 @@ REDIS_DUMP_DIR = os.path.join(GAME_GENIUS_DIR, "game-genius/services/session_man
 INITIAL_REDIS_STATE_DIR = os.path.join(REPO_ROOT, "app")
 
 IS_PRINT_JUST_CURRENT_FOLDER_BOOKMARKS = True
+
+# TODO(MFB): Move these to a print-help constants file.
 
 USAGE_HELP = """
 Usage: main.py <bookmark_string> [--save-updates] [-s] [--use-preceding-bookmark <folder:bookmark>] [-p <folder:bookmark>] [--blank-slate] [-b] [-v <video_path>] [--open-video <video_path>] [--tags <tag1> <tag2> ...]

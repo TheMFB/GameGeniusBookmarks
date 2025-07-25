@@ -5,8 +5,9 @@ from app.bookmarks_consts import IS_DEBUG, HIDDEN_COLOR, RESET_COLOR, ABS_OBS_BO
 from app.bookmarks_meta import compute_hoistable_tags
 from app.bookmarks.last_used import get_last_used_bookmark
 from app.bookmarks.bookmarks import get_all_valid_bookmarks_in_json_format
-from app.utils import print_color, get_embedded_bookmark_file_link, abs_to_rel_path
-from app.utils.decorators import print_def_name
+from app.utils.printing_utils import print_color
+from app.utils.utils import abs_to_rel_path
+from app.utils.decorators import print_def_name, get_embedded_bookmark_file_link
 
 IS_PRINT_VIDEO_FILE_NAMES = True
 IS_HOIST_TAGS_WHEN_SINGLE_CHILD = True

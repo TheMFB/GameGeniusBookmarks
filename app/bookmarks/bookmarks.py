@@ -9,7 +9,8 @@ from app.bookmark_dir_processes import get_all_valid_root_dir_names
 from app.bookmarks_consts import IS_DEBUG, IS_DEBUG_PRINT_ALL_BOOKMARKS_JSON
 from app.bookmarks_meta import load_bookmark_meta_from_rel, load_bookmark_meta_from_abs, load_folder_meta
 from app.types import MatchedBookmarkObj, BookmarkPathDictionary
-from app.utils import print_color, print_def_name, memoize
+from app.utils.printing_utils import print_color
+from app.utils.decorators import print_def_name, memoize
 
 IS_AGGREGATE_TAGS = False
 IS_PRINT_DEF_NAME = True
@@ -280,13 +281,15 @@ def create_bookmark_symlinks(matched_bookmark_obj):
 
 
 # TODO(MFB): Bugfix
-def get_all_bookmark_paths(valid_root_dir_names):
+@print_def_name(IS_PRINT_DEF_NAME)
+@memoize
+def get_all_live_bookmark_path_slash_rels():
     """
     Return a flat list of all bookmark paths from all live folders.
     """
     bookmark_paths = []
 
-    for folder in valid_root_dir_names:
+    for folder in get_all_valid_root_dir_names():
         all_bookmark_objects = load_bookmarks_from_folder(folder)
         bookmark_paths.extend(all_bookmark_objects.keys())
 

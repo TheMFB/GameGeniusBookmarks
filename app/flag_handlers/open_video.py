@@ -26,7 +26,7 @@ def open_video(args):
     print(f"🎬 Opening video in OBS: {video_path}")
 
     # Import the open_video_in_obs function
-    from app.utils import open_video_in_obs
+    from app.utils.obs_utils import open_video_in_obs
 
     if open_video_in_obs(video_path):
         print(f"✅ Video opened successfully!")

@@ -44,9 +44,7 @@ def handle_ls(args):
         return 0
     else:
         # Fall back to which-style logic
-        from app.bookmarks import find_matching_bookmarks
         from app.bookmark_dir_processes import get_all_valid_root_dir_names
-        from app.utils import print_color
 
         all_folders = get_all_valid_root_dir_names()
         all_matches = []
@@ -72,7 +70,7 @@ def handle_ls(args):
                 print(f"  • {all_matches[0]}")
 
                 if show_image:
-                    from app.utils import print_image
+                    from app.utils.printing_utils import print_image
                     folder_name, path = all_matches[0].split(":", 1)
                     bookmark_dir = os.path.join("obs_bookmark_saves", folder_name, *path.split(":"))
                     for ext in ['jpg', 'png']:
@@ -84,7 +82,7 @@ def handle_ls(args):
                 return 0
 
             print(f"⚠️  Multiple bookmarks matched '{folder_arg}':")
-            from app.utils import print_image
+            from app.utils.printing_utils import print_image
 
             for m in all_matches:
                 print(f"  • {m}")

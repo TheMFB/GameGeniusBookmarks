@@ -1,13 +1,10 @@
-from pprint import pprint
 import os
 import re
 
-from app.bookmarks_consts import IS_DEBUG, IS_DEBUG_PRINT_ALL_BOOKMARKS_JSON
+from app.bookmarks_consts import IS_DEBUG
 from app.bookmarks.bookmarks import load_bookmarks_from_folder, get_all_valid_bookmarks_in_json_format
-from app.bookmark_dir_processes import get_all_valid_root_dir_names
-from app.utils import print_color, split_path_into_array, print_def_name, memoize, does_path_exist_in_bookmarks
-from app.bookmarks_meta import load_bookmark_meta_from_rel, load_bookmark_meta_from_abs, load_folder_meta
-from app.utils.printing_utils import gg_print
+from app.utils.decorators import print_def_name, memoize
+from app.utils.utils import split_path_into_array, does_path_exist_in_bookmarks
 
 IS_PRINT_DEF_NAME = True
 
@@ -262,3 +259,21 @@ def interactive_fuzzy_lookup(query: str, top_n: int = 5):
                 print(f"❌ Invalid input. Choose between 0 and {len(matches)}.")
         except ValueError:
             print("❌ Please enter a number.")
+
+
+def find_bookmarks_by_exact_trailing_path_parts(cli_bookmark_string, all_live_bookmark_path_slash_rels):
+    """
+    Find all bookmarks where the last N path parts match the input, in order.
+    Example:
+      cli_bookmark_string: "PARENT:BOOKMARK"
+      all_live_bookmark_path_slash_rels: ["GRANDPARENT/PARENT/BOOKMARK", "OTHER/PARENT/BOOKMARK", "PARENT/BOOKMARK", "GRANDPARENT/BOOKMARK"]
+      Returns: ["GRANDPARENT/PARENT/BOOKMARK", "OTHER/PARENT/BOOKMARK", "PARENT/BOOKMARK"]
+    """
+    # Convert input to list of parts
+    input_parts = cli_bookmark_string.replace(":", "/").split("/")
+    matches = []
+    for path in all_live_bookmark_path_slash_rels:
+        path_parts = path.split("/")
+        if len(path_parts) >= len(input_parts) and path_parts[-len(input_parts):] == input_parts:
+            matches.append(path)
+    return matches

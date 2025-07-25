@@ -2,7 +2,8 @@ import os
 from pathlib import Path
 from app.bookmarks_consts import ABS_OBS_BOOKMARKS_DIR
 from app.utils.decorators import print_def_name, memoize
-from app.types.bookmark_types import BookmarkPathDictionary
+from app.types.bookmark_types import MatchedBookmarkObj
+from app.bookmarks.bookmarks import get_bookmark_info
 
 IS_PRINT_DEF_NAME = True
 
@@ -16,7 +17,7 @@ def abs_to_rel_path(abs_path, base_dir):
 @memoize
 def convert_exact_bookmark_path_to_dict(
     *args
-) -> BookmarkPathDictionary:
+) -> MatchedBookmarkObj:
     """
     Flexible conversion utility for bookmark paths.
 
@@ -44,6 +45,9 @@ def convert_exact_bookmark_path_to_dict(
     # TODO(MFB): We may want this to be even more flexible - if both args are a single string, then we may want to look for bookmark names/dir names before we even convert.
     print('++++ convert_exact_bookmark_path_to_dict')
     print('++++ args:', args)
+
+    bookmark_dir = None
+    bookmark_tail_name = None
 
     # Parse input
     if len(args) == 2:
@@ -75,14 +79,17 @@ def convert_exact_bookmark_path_to_dict(
     elif len(args) == 1:
         # (bookmark_path was provided)
         value = args[0]
+        print('++++ value:', value)
         if ':' in value:
             parts = value.split(':')
-        elif '/' in value or (bookmark_dir and value.startswith(bookmark_dir)):
+        elif '/' in value:
             parts = Path(value).parts
         else:
             parts = [value]
     else:
         raise ValueError("Must provide either (bookmark_tail_name, bookmark_dir) or (full_path)")
+
+    print('++++ parts:', parts)
 
     if not parts:
         raise ValueError("Could not parse bookmark bookmark_dir.")
@@ -107,7 +114,7 @@ def convert_exact_bookmark_path_to_dict(
         bookmark_path_slash_abs = str(
             Path(ABS_OBS_BOOKMARKS_DIR) / bookmark_path_slash_rel)
 
-    return {
+    bookmark_path_dict = {
         "bookmark_tail_name": bookmark_tail_name,
         "bookmark_dir_colon_rel": bookmark_dir_colon_rel,
         "bookmark_path_colon_rel": bookmark_path_colon_rel,
@@ -115,7 +122,16 @@ def convert_exact_bookmark_path_to_dict(
         "bookmark_dir_slash_rel": bookmark_dir_slash_rel,
         "bookmark_path_slash_abs": bookmark_path_slash_abs,
         "bookmark_path_slash_rel": bookmark_path_slash_rel,
+        "bookmark_info": {},
+
     }
+
+    bookmark_info = get_bookmark_info(bookmark_path_dict)
+
+    if not bookmark_info:
+        return bookmark_path_dict
+
+    return bookmark_path_dict
 
 
 def split_path_into_array(path):

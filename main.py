@@ -7,21 +7,17 @@ import subprocess
 from pprint import pprint
 # from networkx import to_dict_of_dicts
 
-from app.utils import print_color, convert_exact_bookmark_path_to_dict
+from app.utils.printing_utils import print_color
 from app.bookmarks_consts import IS_DEBUG, IS_PRINT_JUST_CURRENT_FOLDER_BOOKMARKS
-from app.bookmark_dir_processes import parse_cli_bookmark_args
-from app.bookmarks import get_bookmark_info, save_last_used_bookmark, is_exact_bookmark_path_in_live_bookmarks
 from app.bookmarks_print import print_all_folders_and_bookmarks
 from app.flag_handlers import handle_matched_bookmark, handle_bookmark_not_found, handle_main_process, handle_save_redis_after_json, process_flags, CurrentRunSettings
 from app.types import MatchedBookmarkObj
-from app.bookmarks.navigation.process_navigation import process_navigation
-
+from app.bookmark_matching import find_best_bookmark_match
 
 def main():
     matched_bookmark_obj: MatchedBookmarkObj | None = None
 
     args = sys.argv[1:]
-    args_for_run_bookmarks = args[0]
 
     # Process Flags
     current_run_settings_obj: CurrentRunSettings | int = process_flags(args)
@@ -29,76 +25,68 @@ def main():
         # See if the user sent a "routed flag" that terminates the program after use
         return current_run_settings_obj
 
-    # Process CLI bookmark Input
-    cli_bookmark_dir, cli_bookmark_tail_name = parse_cli_bookmark_args(
-        args_for_run_bookmarks)
+    # # Process CLI bookmark Input
+    # cli_bookmark_dir, cli_bookmark_tail_name = parse_cli_bookmark_args(
+    #     args_for_run_bookmarks)
 
-    # Navigation
-    matched_bookmark_obj = process_navigation(args_for_run_bookmarks)
-    if matched_bookmark_obj == 0 or matched_bookmark_obj == 1:
-        # If navigation failed, return the error code
+    # Pull out the first string of the CLI args (the bookmark or reserved command string)
+    cli_bookmark_string = args[0]
+    matched_bookmark_obj = find_best_bookmark_match(cli_bookmark_string)
+
+    print_color('===== matched_bookmark_obj:', 'green')
+    pprint(matched_bookmark_obj)
+
+    if matched_bookmark_obj == 1 or matched_bookmark_obj == 0:
+        print(f"❌ Error in find_best_bookmark_match")
         return matched_bookmark_obj
 
-    print_color('---- cli_bookmark_dir:', 'cyan')
-    pprint(cli_bookmark_dir)
-    print_color('---- cli_bookmark_tail_name:', 'cyan')
-    pprint(cli_bookmark_tail_name)
 
-    # CLI Bookmark Object
-    cli_bookmark_obj = convert_exact_bookmark_path_to_dict(
-        cli_bookmark_dir, cli_bookmark_tail_name)
 
-    # If not enough info to proceed, return an error
-    if not matched_bookmark_obj and (not cli_bookmark_obj["bookmark_dir_slash_abs"] or not cli_bookmark_obj["bookmark_tail_name"]):
-        print(f"❌ No bookmark name provided")
-        return 1
+    # # If not enough info to proceed, return an error
+    # if not matched_bookmark_obj and (not cli_bookmark_obj["bookmark_dir_slash_abs"] or not cli_bookmark_obj["bookmark_tail_name"]):
+    #     print(f"❌ No bookmark name provided")
+    #     return 1
 
-    # # TODO(MFB): Dafuq? - This will only look at the tail and then ask the user what to do...
-    # # Normal bookmark lookup
-    # matched_bookmark_path_rel, bookmark_info = get_bookmark_info(
-    #     cli_bookmark_tail_name)
-    # print('+++++ get_bookmark_info matched_bookmark_path_rel:')
-    # pprint(matched_bookmark_path_rel)
 
-    # Check for exact bookmark path match
-    if not matched_bookmark_obj and current_run_settings_obj["is_add_bookmark"] and cli_bookmark_obj["bookmark_path_colon_rel"]:
-        print_color('---- is_add_bookmark and cli_bookmark_dir ----', 'magenta')
+    # # Check for exact bookmark path match
+    # if not matched_bookmark_obj and current_run_settings_obj["is_add_bookmark"] and cli_bookmark_obj["bookmark_path_colon_rel"]:
+    #     print_color('---- is_add_bookmark and cli_bookmark_dir ----', 'magenta')
 
-        # TODO(MFB): Pull this out.
-        if is_exact_bookmark_path_in_live_bookmarks(
-                cli_bookmark_obj):
-            # We have an exact match, prompt the user what to do with the Redis saves
-            print(
-                f"⚠️ Bookmark already exists: {cli_bookmark_obj["bookmark_dir_colon_rel"]}")
-            print("What would you like to do?")
-            print("  1. Load existing")
-            print("  2. Overwrite before redis")
-            print("  3. Overwrite after redis")
-            print("  4. Overwrite both")
-            print("  5. Cancel")
-            while True:
-                choice = input("Enter choice (1–5): ").strip()
-                if choice == "1":
-                    matched_bookmark_obj = get_bookmark_info(cli_bookmark_obj)
-                    break
-                elif choice == "2":
-                    matched_bookmark_obj = cli_bookmark_obj
-                    current_run_settings_obj["is_overwrite_redis_before"] = True
-                    break
-                elif choice == "3":
-                    matched_bookmark_obj = cli_bookmark_obj
-                    current_run_settings_obj["is_overwrite_redis_after"] = True
-                    break
-                elif choice == "4":
-                    matched_bookmark_obj = cli_bookmark_obj
-                    current_run_settings_obj["is_overwrite_redis_after"] = True
-                    current_run_settings_obj["is_overwrite_redis_before"] = True
-                    break
-                elif choice == "5":
-                    print("❌ Cancelled.")
-                    return 1
-                else:
-                    print("❌ Invalid choice. Please enter 1–5.")
+    #     # TODO(MFB): Pull this out.
+    #     if is_exact_bookmark_path_in_live_bookmarks(
+    #             cli_bookmark_obj):
+    #         # We have an exact match, prompt the user what to do with the Redis saves
+    #         print(
+    #             f"⚠️ Bookmark already exists: {cli_bookmark_obj["bookmark_dir_colon_rel"]}")
+    #         print("What would you like to do?")
+    #         print("  1. Load existing")
+    #         print("  2. Overwrite before redis")
+    #         print("  3. Overwrite after redis")
+    #         print("  4. Overwrite both")
+    #         print("  5. Cancel")
+    #         while True:
+    #             choice = input("Enter choice (1–5): ").strip()
+    #             if choice == "1":
+    #                 matched_bookmark_obj = get_bookmark_info(cli_bookmark_obj)
+    #                 break
+    #             elif choice == "2":
+    #                 matched_bookmark_obj = cli_bookmark_obj
+    #                 current_run_settings_obj["is_overwrite_redis_before"] = True
+    #                 break
+    #             elif choice == "3":
+    #                 matched_bookmark_obj = cli_bookmark_obj
+    #                 current_run_settings_obj["is_overwrite_redis_after"] = True
+    #                 break
+    #             elif choice == "4":
+    #                 matched_bookmark_obj = cli_bookmark_obj
+    #                 current_run_settings_obj["is_overwrite_redis_after"] = True
+    #                 current_run_settings_obj["is_overwrite_redis_before"] = True
+    #                 break
+    #             elif choice == "5":
+    #                 print("❌ Cancelled.")
+    #                 return 1
+    #             else:
+    #                 print("❌ Invalid choice. Please enter 1–5.")
 
     # Handle exact bookmark path match or navigation match
     if matched_bookmark_obj:

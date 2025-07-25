@@ -1,8 +1,6 @@
 import os
-import json
-from datetime import datetime
 
-from app.utils import print_color
+from app.utils.printing_utils import print_color
 from app.bookmarks_consts import IS_DEBUG, ABS_OBS_BOOKMARKS_DIR, EXCLUDED_DIRS
 from app.bookmarks_meta import load_folder_meta, create_folder_meta
 from app.utils.decorators import print_def_name, memoize

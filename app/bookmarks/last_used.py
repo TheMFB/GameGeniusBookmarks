@@ -6,7 +6,8 @@ from pprint import pprint
 import json
 from datetime import datetime
 
-from app.utils import print_color, print_def_name, memoize
+from app.utils.printing_utils import print_color
+from app.utils.decorators import print_def_name, memoize
 from app.bookmarks.bookmarks import create_bookmark_symlinks
 
 IS_AGGREGATE_TAGS = False
