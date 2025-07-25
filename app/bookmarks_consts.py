@@ -37,7 +37,14 @@ ABS_OBS_BOOKMARKS_DIR = os.path.join(REPO_ROOT, "obs_bookmark_saves")
 
 # Redis dump directory - use the GameGenius directory from environment variable
 GAME_GENIUS_DIR = os.environ.get('GAME_GENIUS_DIRECTORY', '')
-REDIS_DUMP_DIR = os.path.join(GAME_GENIUS_DIR, "game-genius/services/session_manager/utils/standalone/redis_dump")
+
+if IS_LOCAL_REDIS_DEV:
+    REDIS_DUMP_DIR = os.path.join(REPO_ROOT, "standalone_utils", "redis", "redis_dump")
+
+else:
+    REDIS_DUMP_DIR = os.path.join(GAME_GENIUS_DIR, "game-genius/services/session_manager/utils/standalone/redis_dump")
+
+
 INITIAL_REDIS_STATE_DIR = os.path.join(REPO_ROOT, "app")
 
 IS_PRINT_JUST_CURRENT_FOLDER_BOOKMARKS = True
