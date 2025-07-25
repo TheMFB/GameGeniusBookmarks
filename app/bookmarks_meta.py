@@ -13,7 +13,7 @@ from app.utils.decorators import print_def_name
 IS_PRINT_DEF_NAME = True
 
 
-@print_def_name(IS_PRINT_DEF_NAME)
+@print_def_name(False) # This is loaded for all bookmarks to create a tree of bookmarks and tags.
 def load_folder_meta(folder_path):
     """Load folder metadata from folder_meta.json"""
     folder_meta_file = os.path.join(folder_path, "folder_meta.json")
@@ -84,7 +84,7 @@ def load_bookmark_meta_from_rel(bookmark_dir_rel):
             return {}
     return {}
 
-@print_def_name(IS_PRINT_DEF_NAME)
+@print_def_name(False) # This is loaded for all bookmarks to create a tree of bookmarks and tags.
 def load_bookmark_meta_from_abs(bookmark_path_abs):
     """Load bookmark metadata from bookmark_meta.json"""
     bookmark_meta_path = os.path.join(bookmark_path_abs, "bookmark_meta.json")

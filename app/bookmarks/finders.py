@@ -89,8 +89,10 @@ def load_bookmarks_from_folder(folder_dir_abs):
 
 @print_def_name(IS_PRINT_DEF_NAME)
 @memoize
-def get_all_bookmarks_in_json_format():
+def get_all_valid_bookmarks_in_json_format():
     """Recursively scan all live folders and build a nested JSON structure with folder and bookmark tags/descriptions, including aggregated tags as 'tags'."""
+    # TODO(MFB): Look into this, as this is likely a (relatively) VERY heavy operation.
+
     def scan_folder(folder_path):
         node = {}
         # Add folder meta if present
@@ -226,7 +228,7 @@ def is_bookmark_path_in_live_bookmarks_strict(cli_bookmark_path_rel):
     Return exact match path if the normalized bookmark path matches query.
     Used during creation to avoid fuzzy fallbacks.
     """
-    all_bookmarks_object = get_all_bookmarks_in_json_format()
+    all_bookmarks_object = get_all_valid_bookmarks_in_json_format()
     pprint(all_bookmarks_object)
 
     if not all_bookmarks_object:
