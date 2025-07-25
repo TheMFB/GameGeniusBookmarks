@@ -122,7 +122,7 @@ def main():
     # Run the main process (unless dry run modes)
     if not current_run_settings_obj["is_dry_run"] and not current_run_settings_obj["is_super_dry_run"]:
         print("🚀 Running main process...")
-        result = handle_main_process()
+        result = handle_main_process(current_run_settings=current_run_settings_obj)
         if result != 0:
             print("❌ Main process failed")
             return result

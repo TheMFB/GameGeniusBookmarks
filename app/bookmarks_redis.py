@@ -1,7 +1,7 @@
 import subprocess
 import os
 
-from app.bookmarks_consts import IS_DEBUG, INITIAL_REDIS_STATE_DIR
+from app.bookmarks_consts import IS_DEBUG, INITIAL_REDIS_STATE_DIR, IS_LOCAL_REDIS_DEV, REPO_ROOT
 from app.bookmark_dir_processes import get_all_valid_root_dir_names, parse_cli_bookmark_args, find_bookmark_dir_by_name
 from app.bookmarks import find_matching_bookmarks
 from app.flag_handlers.preceding_bookmark import find_preceding_bookmark_args
@@ -12,24 +12,47 @@ IS_PRINT_DEF_NAME = True
 @print_def_name(IS_PRINT_DEF_NAME)
 def run_redis_command(command_args):
     """Run Redis management command"""
+    redis_command = command_args[0]
     try:
-        cmd = f"docker exec -it session_manager python -m utils.standalone.redis_{command_args[0]} {' '.join(command_args[1:])}"
+        if IS_LOCAL_REDIS_DEV:
+            if redis_command is "export":
+                from standalone_utils.redis.redis_export import redis_export
+                return redis_export()
+            elif redis_command is "load":
+                from standalone_utils.redis.redis_load import redis_load
+                return redis_load()
+            else:
+                print(f"❌ Unsupported Redis command: {redis_command}")
+                return False
+            # Local mode: call redis_export.py or redis_load.py directly
+            # script_path = os.path.join(REPO_ROOT, "standalone_utils", "redis", f"redis_{command_args[0]}.py")
+            # cmd = f"python {script_path} {' '.join(command_args[1:])}"
+        else:
+            # Docker mode (default)
+            cmd = f"docker exec -it session_manager python -m utils.standalone.redis_{command_args[0]} {' '.join(command_args[1:])}"
+
         if IS_DEBUG:
             print(f"🔧 Running Redis command: {' '.join(command_args)}")
+            print(f"📦 Full shell command: {cmd}")
+
         result = subprocess.run(
             cmd, shell=True, capture_output=True, text=True)
+
         if result.returncode != 0:
             print(f"❌ Redis command failed: {' '.join(command_args)}")
             print(f"   Error: {result.stderr}")
             print(f"   Output: {result.stdout}")
             return False
+
         if IS_DEBUG:
             print(f"✅ Redis command succeeded: {' '.join(command_args)}")
         return True
+
     except Exception as e:
         print(f"❌ Error running Redis command: {' '.join(command_args)}")
         print(f"   Exception: {e}")
         return False
+
 
 
 # def copy_preceding_bookmark_redis_state(matched_bookmark_obj: MatchedBookmarkObj):
