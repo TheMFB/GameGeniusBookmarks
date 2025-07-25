@@ -46,7 +46,7 @@ def get_all_valid_root_dir_names():
 @print_def_name(IS_PRINT_DEF_NAME)
 def select_dir_for_new_bookmark(bookmark_name):
     """Let user select which folder to create a new bookmark in"""
-    print_color('---- 0 bookmark_name select_dir_for_new_bookmark:', 'green')
+    print_color('???? 0 bookmark_string select_dir_for_new_bookmark:', 'red')
     print(bookmark_name)
 
     live_folders = get_all_valid_root_dir_names()
@@ -205,27 +205,27 @@ def create_dir_with_name(rel_folder_dir):
 def parse_cli_bookmark_args(args_for_run_bookmarks):
     """
     Parses a bookmark path in the format 'folder:bookmark' or 'folder:subfolder:bookmark'
-    and returns (folder_name, bookmark_name).
+    and returns (dir_colon_rel, bookmark_tail_name).
 
     - Example: 'kerch:comp:m01:01-np' becomes:
-        folder_name: 'kerch:comp:m01'
-        bookmark_name: '01-np'
+        dir_colon_rel: 'kerch:comp:m01'
+        bookmark_tail_name: '01-np'
     - Example: 'respawn-allies:ra-00-main-screen' becomes:
-        folder_name: 'respawn-allies'
-        bookmark_name: 'ra-00-main-screen'
+        dir_colon_rel: 'respawn-allies'
+        bookmark_tail_name: 'ra-00-main-screen'
     """
     if not args_for_run_bookmarks or ':' not in args_for_run_bookmarks:
         return None, args_for_run_bookmarks  # no folder path
 
     parts = args_for_run_bookmarks.split(':')
     # Take the last entry as the bookmark name and the rest as the folder name
-    folder_name = ':'.join(parts[:-1])
-    bookmark_name = parts[-1]
+    dir_colon_rel = ':'.join(parts[:-1])
+    bookmark_tail_name = parts[-1]
 
     print(
-        f"🎯 Specified folder: '{folder_name}', bookmark path: '{bookmark_name}'")
+        f"🎯 Specified folder: '{dir_colon_rel}', bookmark path: '{bookmark_tail_name}'")
 
-    return folder_name, bookmark_name
+    return dir_colon_rel, bookmark_tail_name
 
 
 # TODO(KERCH): This is for a local-last saved bookmark. For now, we're not using it.

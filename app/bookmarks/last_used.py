@@ -51,15 +51,15 @@ def get_last_used_bookmark_display():
     last_used = get_last_used_bookmark()
     if last_used:
         folder_name = last_used.get("folder_name", "unknown")
-        bookmark_name = last_used.get("bookmark_name", "unknown")
+        bookmark_tail_name = last_used.get("bookmark_tail_name", "unknown")
         timestamp = last_used.get("timestamp", "")
 
         print_color(
             '??? ---- get_last_used_bookmark_display folder_name:', 'red')
         pprint(folder_name)
         print_color(
-            '??? ---- get_last_used_bookmark_display bookmark_name:', 'red')
-        pprint(bookmark_name)
+            '??? ---- get_last_used_bookmark_display bookmark_tail_name:', 'red')
+        pprint(bookmark_tail_name)
 
         # Format timestamp for display
         try:
@@ -68,5 +68,5 @@ def get_last_used_bookmark_display():
         except:
             formatted_time = timestamp
 
-        return f"{folder_name}:{bookmark_name} (last used: {formatted_time})"
+        return f"{folder_name}:{bookmark_tail_name} (last used: {formatted_time})"
     return None

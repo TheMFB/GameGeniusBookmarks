@@ -46,7 +46,7 @@ def print_all_folders_and_bookmarks(
 ):
     """Print all folders and their bookmarks, highlighting the current one"""
 
-    current_bookmark_name = None
+    current_bookmark_tail_name = None
     current_folder_abs_path = None
     current_folder_rel_path = None
 
@@ -58,18 +58,18 @@ def print_all_folders_and_bookmarks(
             print('++++ Make sure these match the deconstruction!')
             print('---- last_used_info:')
             pprint(last_used_info)
-            current_bookmark_name = last_used_info.get('bookmark_name', '')
+            current_bookmark_tail_name = last_used_info.get('bookmark_tail_name', '')
             current_folder_abs_path = last_used_info.get('rel_bookmark_dir', '')
             current_folder_rel_path = abs_to_rel_path(current_folder_abs_path, ABS_OBS_BOOKMARKS_DIR)
     else:
-        current_bookmark_name = bookmark_obj["bookmark_tail_name"]
+        current_bookmark_tail_name = bookmark_obj["bookmark_tail_name"]
         current_folder_abs_path = bookmark_obj["bookmark_dir_slash_abs"]
         current_folder_rel_path = bookmark_obj["bookmark_dir_slash_rel"]
 
 
     if IS_DEBUG:
-        print_color('---- current_bookmark_name after:', 'magenta')
-        pprint(current_bookmark_name)
+        print_color('---- current_bookmark_tail_name after:', 'magenta')
+        pprint(current_bookmark_tail_name)
         print_color('---- current_folder_rel_path after:', 'magenta')
         pprint(current_folder_rel_path)
 
@@ -85,7 +85,7 @@ def print_all_folders_and_bookmarks(
         folder_name=None,
         indent_level=0,
         parent_path="",
-        current_bookmark_name=None,
+        current_bookmark_tail_name=None,
         current_folder_abs_path=None,
         inherited_tags=None
     ):
@@ -96,7 +96,7 @@ def print_all_folders_and_bookmarks(
         if folder_name is not None:
             # Compute the full colon path of this folder
             full_folder_path = parent_path  # this folder's colon-style path (already passed in)
-            full_last_used_path = f"{current_folder_abs_path}:{current_bookmark_name}" if current_folder_abs_path and current_bookmark_name else ""
+            full_last_used_path = f"{current_folder_abs_path}:{current_bookmark_tail_name}" if current_folder_abs_path and current_bookmark_tail_name else ""
 
             # Should we highlight this folder?
             should_highlight = full_last_used_path == full_folder_path or full_last_used_path.startswith(full_folder_path + ":")
@@ -137,26 +137,26 @@ def print_all_folders_and_bookmarks(
                     subfolders.append((key, value))
 
         # Print bookmarks at this level (do NOT treat as folders)
-        for bookmark_name, bookmark_info in sorted(bookmarks):
+        for bookmark_tail_name, bookmark_info in sorted(bookmarks):
             bookmark_tags = set(bookmark_info.get('tags', [])) - effective_inherited_tags
             timestamp = bookmark_info.get('timestamp', 'unknown time')
             if len(timestamp) < 5:
                 timestamp = '0' + timestamp
-            full_rel_path = f"{parent_path}:{bookmark_name}" if parent_path else bookmark_name
+            full_rel_path = f"{parent_path}:{bookmark_tail_name}" if parent_path else bookmark_tail_name
 
 
-            # print('---- current_bookmark_name:')
-            # pprint(current_bookmark_name)
+            # print('---- current_bookmark_tail_name:')
+            # pprint(current_bookmark_tail_name)
 
 
 
-            full_found_rel_bookmark = f"{full_rel_path}:{bookmark_name}"
-            full_current_bookmark = f"{current_folder_rel_path}:{current_bookmark_name}"
+            full_found_rel_bookmark = f"{full_rel_path}:{bookmark_tail_name}"
+            full_current_bookmark = f"{current_folder_rel_path}:{current_bookmark_tail_name}"
 
             # print('+++++ full_found_rel_bookmark:', full_found_rel_bookmark)
             # print('+++++ full_current_bookmark:', full_current_bookmark)
 
-            is_current = current_bookmark_name and full_found_rel_bookmark == full_current_bookmark
+            is_current = current_bookmark_tail_name and full_found_rel_bookmark == full_current_bookmark
 
             if is_current:
                 print('')
@@ -179,13 +179,13 @@ def print_all_folders_and_bookmarks(
             hidden_ref_text = f" {HIDDEN_COLOR} {full_rel_path}{RESET_COLOR}"
             if is_current:
                 print(
-                    f"\033[32m{indent}   • {timestamp} {get_embedded_bookmark_file_link(full_rel_path, '📖')} {bookmark_name} (current)\033[0m" + hidden_ref_text)
-            elif full_rel_path == f"{current_folder_abs_path}:{current_bookmark_name}":
+                    f"\033[32m{indent}   • {timestamp} {get_embedded_bookmark_file_link(full_rel_path, '📖')} {bookmark_tail_name} (current)\033[0m" + hidden_ref_text)
+            elif full_rel_path == f"{current_folder_abs_path}:{current_bookmark_tail_name}":
                 print(
-                    f"{indent}   • {timestamp} {get_embedded_bookmark_file_link(full_rel_path, '📖')} \033[32m{bookmark_name} (current)\033[0m" + hidden_ref_text)
+                    f"{indent}   • {timestamp} {get_embedded_bookmark_file_link(full_rel_path, '📖')} \033[32m{bookmark_tail_name} (current)\033[0m" + hidden_ref_text)
             else:
                 print(
-                    f"{indent}   • {timestamp} {get_embedded_bookmark_file_link(full_rel_path, '📖')} {bookmark_name} {hidden_ref_text}")
+                    f"{indent}   • {timestamp} {get_embedded_bookmark_file_link(full_rel_path, '📖')} {bookmark_tail_name} {hidden_ref_text}")
 
             bookmark_description = bookmark_info.get('description', '')
             if bookmark_description:
@@ -201,7 +201,7 @@ def print_all_folders_and_bookmarks(
                 subfolder_name,
                 indent_level + 1,
                 next_path,
-                current_bookmark_name=current_bookmark_name,
+                current_bookmark_tail_name=current_bookmark_tail_name,
                 current_folder_abs_path=current_folder_abs_path,
                 inherited_tags=effective_inherited_tags
             )
@@ -214,7 +214,7 @@ def print_all_folders_and_bookmarks(
             folder_name=folder_name,
             indent_level=0,
             parent_path=folder_name,
-            current_bookmark_name=current_bookmark_name,
+            current_bookmark_tail_name=current_bookmark_tail_name,
             current_folder_abs_path=current_folder_abs_path
         )
 
@@ -222,8 +222,8 @@ def print_all_folders_and_bookmarks(
     print('')
     print("=" * 50)
 
-    if current_bookmark_name and current_folder_abs_path:
-        current_bookmark = current_folder_abs_path + ":" + current_bookmark_name
+    if current_bookmark_tail_name and current_folder_abs_path:
+        current_bookmark = current_folder_abs_path + ":" + current_bookmark_tail_name
         rel_current_bookmark = abs_to_rel_path(current_bookmark, ABS_OBS_BOOKMARKS_DIR)
         rel_current_bookmark = rel_current_bookmark.replace('/', ':')
     else:
@@ -269,12 +269,12 @@ def print_bookmarks_in_folder(folder_path, indent=0, last_used_path=None, inheri
     # Print each bookmark, omitting inherited or folder-level tags
     for entry_path, meta in child_bookmarks:
         bookmark_dir = os.path.dirname(entry_path)
-        bookmark_name = os.path.basename(bookmark_dir)
+        bookmark_tail_name = os.path.basename(bookmark_dir)
         tags = set(meta.get("tags", []))
         visible_tags = tags - folder_tags - inherited_tags
         time_str = meta.get("timestamp_formatted", "--:--")
         tag_str = " ".join([f"•{tag}" for tag in sorted(visible_tags)])
-        display_line = f"{time_str} 📖 {bookmark_name}"
+        display_line = f"{time_str} 📖 {bookmark_tail_name}"
         if bookmark_dir == last_used_path:
             display_line += " ← last used"
         print(" " * (indent + 3) + f"• {display_line}")
@@ -290,6 +290,6 @@ def print_bookmarks_in_folder(folder_path, indent=0, last_used_path=None, inheri
 
     # print_all_folders_and_bookmarks(
     #     current_folder_abs_path=full_folder_path,
-    #     current_bookmark_name=None,
+    #     current_bookmark_tail_name=None,
     #     is_print_just_current_folder_bookmarks=True
     # )

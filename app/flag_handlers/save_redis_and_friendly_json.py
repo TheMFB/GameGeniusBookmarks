@@ -8,8 +8,9 @@ from app.utils.decorators import print_def_name
 IS_PRINT_DEF_NAME = True
 
 @print_def_name(IS_PRINT_DEF_NAME)
-def save_redis_and_friendly_json(bookmark_name: str, bookmark_dir: str):
-    print(f"💾 Saving current Redis state for new bookmark '{bookmark_name}'...")
+def save_redis_and_friendly_json(bookmark_path_slash_abs: str):
+    if IS_DEBUG:
+        print(f"💾 Saving current Redis state '{bookmark_path_slash_abs}'...")
 
     if not run_redis_command(['export', 'bookmark_temp']):
         print("⚠️ Failed to export current Redis state — continuing anyway for debug purposes")
@@ -26,11 +27,11 @@ def save_redis_and_friendly_json(bookmark_name: str, bookmark_dir: str):
             print(f"🔍 Files in Redis dump directory: {files}")
         return
 
-    if not os.path.exists(bookmark_dir):
-        print(f"❌ Bookmark directory does not exist: {bookmark_dir}")
+    if not os.path.exists(bookmark_path_slash_abs):
+        print(f"❌ Bookmark directory does not exist: {bookmark_path_slash_abs}")
         return
 
-    final_path = os.path.join(bookmark_dir, "redis_before.json")
+    final_path = os.path.join(bookmark_path_slash_abs, "redis_before.json")
     shutil.move(temp_redis_path, final_path)
     print(f"💾 Saved Redis state to: {final_path}")
 

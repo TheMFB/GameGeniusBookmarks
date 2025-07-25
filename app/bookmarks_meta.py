@@ -134,11 +134,11 @@ def create_folder_meta(abs_folder_dir, description="", tags=None):
 
 
 @print_def_name(IS_PRINT_DEF_NAME)
-def create_bookmark_meta(bookmark_dir, bookmark_name, media_info, tags=None):
+def create_bookmark_meta(bookmark_dir, bookmark_tail_name, media_info, tags=None):
     """Create bookmark metadata with optional tags."""
     meta_data = {
         "created_at": datetime.now().isoformat(),
-        "bookmark_name": bookmark_name,
+        "bookmark_tail_name": bookmark_tail_name,
         "video_filename": media_info.get('video_filename', ''),  # Store just the filename
         "timestamp": media_info.get('timestamp', 0),
         "timestamp_formatted": media_info.get('timestamp_formatted', ''),

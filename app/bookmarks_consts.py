@@ -32,7 +32,7 @@ INITIAL_REDIS_STATE_DIR = os.path.join(REPO_ROOT, "app")
 IS_PRINT_JUST_CURRENT_FOLDER_BOOKMARKS = True
 
 USAGE_HELP = """
-Usage: main.py <bookmark_name> [--save-updates] [-s] [--use-preceding-bookmark <folder:bookmark>] [-p <folder:bookmark>] [--blank-slate] [-b] [-v <video_path>] [--open-video <video_path>] [--tags <tag1> <tag2> ...]
+Usage: main.py <bookmark_string> [--save-updates] [-s] [--use-preceding-bookmark <folder:bookmark>] [-p <folder:bookmark>] [--blank-slate] [-b] [-v <video_path>] [--open-video <video_path>] [--tags <tag1> <tag2> ...]
 
 Navigation commands:
   next, previous, first, last    Navigate to adjacent bookmarks in the same directory

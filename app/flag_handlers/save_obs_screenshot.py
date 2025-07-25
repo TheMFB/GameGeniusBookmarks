@@ -9,17 +9,17 @@ from app.utils.decorators import print_def_name
 IS_PRINT_DEF_NAME = True
 
 @print_def_name(IS_PRINT_DEF_NAME)
-def save_obs_screenshot(bookmark_dir: str, bookmark_name: str):
+def save_obs_screenshot(bookmark_path_slash_abs: str):
     """Takes screenshot from OBS and saves it to screenshot.jpg in the bookmark directory."""
 
-    screenshot_path = os.path.join(bookmark_dir, "screenshot.jpg")
+    screenshot_path = os.path.join(bookmark_path_slash_abs, "screenshot.jpg")
 
     try:
         cl = obs.ReqClient(host="localhost", port=4455, password="", timeout=3)
         # Always request PNG from OBS for compatibility and lossless quality.
         # We'll convert to JPEG afterward to reduce file size and standardize format.
         response = cl.send("GetSourceScreenshot", {
-            "sourceName": "Media Source",  # TODO: Make configurable
+            "sourceName": "Media Source",
             "imageFormat": "png"
         })
         image_data = response.image_data
@@ -46,7 +46,7 @@ def save_obs_screenshot(bookmark_dir: str, bookmark_name: str):
 
         if IS_DEBUG:
             print(f"📋 Screenshot saved to: {screenshot_path}")
-        print(f"📸 Screenshot saved to: {bookmark_name}/screenshot.jpg")
+        print(f"📸 Screenshot saved to screenshot.jpg")
 
     except Exception as e:
         print(f"⚠️  2 Could not take screenshot: {e}")

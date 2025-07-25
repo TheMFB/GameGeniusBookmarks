@@ -87,11 +87,14 @@ def handle_bookmark_not_found(
             print("❌ No folder selected, cancelling")
             return 1
 
+    # TODO(KERCH): +++ Somewhere around this file, we need to be re-creating bookmark obj with any found/updated information. Creating it here with cli does not make sense.
+
     # Create bookmark directory
     cli_bookmark_obj = convert_exact_bookmark_path_to_dict(
         cli_bookmark_dir, cli_bookmark_tail_name)
 
     bookmark_dir_abs = cli_bookmark_obj["bookmark_dir_slash_abs"]
+    bookmark_path_slash_abs = cli_bookmark_obj["bookmark_path_slash_abs"]
 
     os.makedirs(bookmark_dir_abs, exist_ok=True)
 
@@ -139,15 +142,8 @@ def handle_bookmark_not_found(
     # Normal flow - save current Redis state (skip if super dry run)
     # TODO(KERCH): If we are in just dry run mode, we need to be saving the redis state. If we are in super dry run mode, we should not save the redis state.
     if not current_run_settings_obj["is_super_dry_run"]:
-        save_redis_and_friendly_json(cli_bookmark_tail_name, bookmark_dir)
+        save_redis_and_friendly_json(bookmark_path_slash_abs)
 
-
-    # Take screenshot directly using existing function (skip if no-obs mode)
-    if current_run_settings_obj["is_no_obs"]:
-        print(f"📷 No-OBS mode: Skipping screenshot capture")
-
-    else:
-        save_obs_screenshot(bookmark_dir, cli_bookmark_tail_name)
 
     # Get media source info and create bookmark metadata
     if current_run_settings_obj["is_no_obs"]:
@@ -160,11 +156,16 @@ def handle_bookmark_not_found(
         }
         create_bookmark_meta(bookmark_dir, cli_bookmark_tail_name, minimal_media_info, current_run_settings_obj["tags"])
         print(f"📋 Created minimal bookmark metadata (no OBS info) with tags: {current_run_settings_obj["tags"]}")
+        print(f"📷 No-OBS mode: Skipping screenshot capture")
+
     else:
         media_info = get_media_source_info()
         if media_info:
             if os.path.exists(bookmark_dir):
                 create_bookmark_meta(bookmark_dir, cli_bookmark_tail_name, media_info, current_run_settings_obj["tags"])
+                # TODO(MFB): Need to check if the screenshot exists and if it does, don't save it again unless we have the update/save flag on.
+                save_obs_screenshot(bookmark_path_slash_abs)
+
                 print(f"📋 Created bookmark metadata with tags: {current_run_settings_obj["tags"]}")
 
                 # ✅ Final confirmation message
