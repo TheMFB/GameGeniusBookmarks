@@ -92,6 +92,9 @@ Example: `GRANDPARENT:PARENT:BOOKMARK -t comp domination`
 -- tag searching (Searches through all names, directories, and tags and does not take order into consideration)
 `comp:domination:boo`
 
+-- all of the above, but fuzzy matching
+`GPARENT:DARENT:BOKKMARK`
+
 If there is a single hit on any of these, we stop. If there is none, we go to the next step. If there are multiple, we list the options and prompt the user for action.
 
 
