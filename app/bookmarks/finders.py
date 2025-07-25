@@ -12,6 +12,7 @@ IS_PRINT_DEF_NAME = True
 # Add this at the top-level of the file
 HAS_PRINTED_ALL_BOOKMARKS_JSON = False
 
+
 @print_def_name(IS_PRINT_DEF_NAME)
 def stepwise_match(user_parts, all_saved_bookmark_paths):
     """Perform reverse stepwise matching of user_parts against bookmark paths."""
@@ -40,7 +41,6 @@ def stepwise_match(user_parts, all_saved_bookmark_paths):
         # More than one match, keep going deeper
         tokenized_bookmarks = matching
         depth += 1
-
 
 
 @print_def_name(IS_PRINT_DEF_NAME)
