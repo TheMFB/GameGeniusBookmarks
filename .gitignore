@@ -30,3 +30,6 @@ last_bookmark_state.json
 shortcuts/
 
 obs_bookmark_saves/
+
+standalone_utils/redis/redis_dump/*
+!standalone_utils/redis/redis_dump/.gitkeep

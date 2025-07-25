@@ -2,3 +2,6 @@ obsws-python
 Pillow
 python-dotenv
 codename
+redis
+# pickle
+
