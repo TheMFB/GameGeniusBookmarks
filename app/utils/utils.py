@@ -1,9 +1,11 @@
+from pprint import pprint
 import os
 from pathlib import Path
 from app.bookmarks_consts import ABS_OBS_BOOKMARKS_DIR
 from app.utils.decorators import print_def_name, memoize
 from app.types.bookmark_types import MatchedBookmarkObj
 from app.bookmarks.bookmarks import get_bookmark_info
+from app.utils.printing_utils import print_color
 
 IS_PRINT_DEF_NAME = True
 
@@ -105,14 +107,14 @@ def convert_exact_bookmark_path_to_dict(
     bookmark_path_slash_rel = '/'.join(parts)
 
     # Absolute
-    if not bookmark_dir:
-        bookmark_dir_slash_abs = None
-        bookmark_path_slash_abs = None
-    else:
-        bookmark_dir_slash_abs = str(
-            Path(ABS_OBS_BOOKMARKS_DIR) / bookmark_dir_slash_rel)
-        bookmark_path_slash_abs = str(
-            Path(ABS_OBS_BOOKMARKS_DIR) / bookmark_path_slash_rel)
+    # if not bookmark_dir:
+    #     bookmark_dir_slash_abs = None
+    #     bookmark_path_slash_abs = None
+    # else:
+    bookmark_dir_slash_abs = str(
+        Path(ABS_OBS_BOOKMARKS_DIR) / bookmark_dir_slash_rel)
+    bookmark_path_slash_abs = str(
+        Path(ABS_OBS_BOOKMARKS_DIR) / bookmark_path_slash_rel)
 
     bookmark_path_dict = {
         "bookmark_tail_name": bookmark_tail_name,
@@ -128,10 +130,11 @@ def convert_exact_bookmark_path_to_dict(
 
     bookmark_info = get_bookmark_info(bookmark_path_dict)
 
+
     if not bookmark_info:
         return bookmark_path_dict
 
-    return bookmark_path_dict
+    return bookmark_info
 
 
 def split_path_into_array(path):

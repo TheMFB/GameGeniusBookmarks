@@ -169,14 +169,13 @@ def get_bookmark_info(cli_bookmark_obj: BookmarkPathDictionary) -> MatchedBookma
     """
     Get the information file from the bookmark 
     """
-    print_color('---- valid_root_dir_names ----', 'magenta')
 
     bookmark_path_slash_abs = cli_bookmark_obj["bookmark_path_slash_abs"]
     meta_file = os.path.join(bookmark_path_slash_abs, "bookmark_meta.json")
 
     if not os.path.exists(meta_file):
         print(f"❌ Bookmark metadata file not found: {meta_file}")
-        return None
+        return cli_bookmark_obj
 
     try:
         with open(meta_file, 'r') as f:
