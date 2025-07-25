@@ -1,13 +1,16 @@
 from pprint import pprint
 import os
 
-from app.bookmarks_consts import IS_DEBUG
+from app.bookmarks_consts import IS_DEBUG, IS_DEBUG_PRINT_ALL_BOOKMARKS_JSON
 from app.bookmark_dir_processes import get_all_valid_root_dir_names
 from app.utils import print_color, split_path_into_array, print_def_name, memoize
 from app.bookmarks_meta import load_bookmark_meta_from_rel, load_bookmark_meta_from_abs, load_folder_meta
 
 IS_AGGREGATE_TAGS = True
 IS_PRINT_DEF_NAME = True
+
+# Add this at the top-level of the file
+HAS_PRINTED_ALL_BOOKMARKS_JSON = False
 
 @print_def_name(IS_PRINT_DEF_NAME)
 def stepwise_match(user_parts, all_saved_bookmark_paths):
@@ -166,6 +169,15 @@ def get_all_valid_bookmarks_in_json_format():
     for folder_path in get_all_valid_root_dir_names():
         folder_name = os.path.basename(folder_path)
         all_bookmarks[folder_name] = scan_folder(folder_path)
+
+    if IS_DEBUG_PRINT_ALL_BOOKMARKS_JSON:
+        global HAS_PRINTED_ALL_BOOKMARKS_JSON
+        if not HAS_PRINTED_ALL_BOOKMARKS_JSON:
+            print('++++ all_bookmarks json:')
+            pprint(all_bookmarks)
+            print('')
+            HAS_PRINTED_ALL_BOOKMARKS_JSON = True
+
     return all_bookmarks
 
 

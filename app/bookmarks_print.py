@@ -14,8 +14,6 @@ IS_HOIST_TAGS_WHEN_SINGLE_CHILD = True
 
 IS_DEBUG = True
 IS_PRINT_DEF_NAME = True
-IS_DEBUG_PRINT_ALL_BOOKMARKS_JSON = False
-
 
 @print_def_name(IS_PRINT_DEF_NAME)
 def is_ancestor_path(candidate, target):
@@ -75,10 +73,6 @@ def print_all_folders_and_bookmarks(
 
     all_bookmarks = get_all_valid_bookmarks_in_json_format()
 
-    if IS_DEBUG_PRINT_ALL_BOOKMARKS_JSON:
-        print('++++ all_bookmarks json:')
-        pprint(all_bookmarks)
-        print('')
 
     def print_tree_recursive(
         node,
