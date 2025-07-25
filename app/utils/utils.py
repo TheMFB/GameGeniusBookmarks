@@ -122,3 +122,17 @@ def split_path_into_array(path):
     # Replace both ':' and '/' with a single consistent delimiter (e.g., '/')
     path = path.replace(':', '/')
     return [part.lower() for part in path.strip('/').split('/')]
+
+def does_path_exist_in_bookmarks(all_bookmarks_obj, path, separator=':'):
+    """
+    Given a colon-separated path (e.g., 'grand-parent:parent:bm1'), 
+    return True if that path exists in the nested bookmarks object.
+    """
+    parts = path.split(separator)
+    node = all_bookmarks_obj
+    for part in parts:
+        if isinstance(node, dict) and part in node:
+            node = node[part]
+        else:
+            return False
+    return True

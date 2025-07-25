@@ -10,7 +10,7 @@ from pprint import pprint
 from app.utils import print_color, convert_exact_bookmark_path_to_dict
 from app.bookmarks_consts import IS_DEBUG, IS_PRINT_JUST_CURRENT_FOLDER_BOOKMARKS
 from app.bookmark_dir_processes import parse_cli_bookmark_args
-from app.bookmarks import get_bookmark_info, save_last_used_bookmark, is_bookmark_path_in_live_bookmarks_strict
+from app.bookmarks import get_bookmark_info, save_last_used_bookmark, is_exact_bookmark_path_in_live_bookmarks
 from app.bookmarks_print import print_all_folders_and_bookmarks
 from app.flag_handlers import handle_matched_bookmark, handle_bookmark_not_found, handle_main_process, handle_save_redis_after_json, process_flags, CurrentRunSettings
 from app.types import MatchedBookmarkObj
@@ -65,7 +65,7 @@ def main():
         print_color('---- is_add_bookmark and cli_bookmark_dir ----', 'magenta')
 
         # TODO(MFB): Pull this out.
-        if is_bookmark_path_in_live_bookmarks_strict(
+        if is_exact_bookmark_path_in_live_bookmarks(
                 cli_bookmark_obj):
             # We have an exact match, prompt the user what to do with the Redis saves
             print(
