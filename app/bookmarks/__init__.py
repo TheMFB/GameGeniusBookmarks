@@ -1,3 +1,3 @@
 from .bookmarks import *
-from .finders import *
+from .finder_utils import *
 from .last_used import *

@@ -2,7 +2,7 @@ import os
 from pprint import pprint
 
 from app.utils import print_color
-from app.bookmarks.finders import load_bookmarks_from_folder
+from app.bookmarks.bookmarks import load_bookmarks_from_folder
 from app.bookmarks.last_used import get_last_used_bookmark
 from app.utils.decorators import print_def_name
 

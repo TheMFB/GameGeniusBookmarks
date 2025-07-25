@@ -2,17 +2,165 @@
 Integration script that coordinates OBS bookmarks with Redis state management
 """
 import os
-import re
 from pprint import pprint
 import json
 
 from app.bookmark_dir_processes import get_all_valid_root_dir_names
-from app.utils import print_color, print_def_name
-from app.bookmarks.finders import find_matching_bookmarks, load_bookmarks_from_folder
+from app.bookmarks_consts import IS_DEBUG, IS_DEBUG_PRINT_ALL_BOOKMARKS_JSON
+from app.bookmarks_meta import load_bookmark_meta_from_rel, load_bookmark_meta_from_abs, load_folder_meta
 from app.types import MatchedBookmarkObj, BookmarkPathDictionary
+from app.utils import print_color, print_def_name, memoize
 
 IS_AGGREGATE_TAGS = False
 IS_PRINT_DEF_NAME = True
+
+# Global
+has_printed_all_bookmarks_json = False
+
+
+@print_def_name(IS_PRINT_DEF_NAME)
+@memoize
+def load_bookmarks_from_folder(folder_dir_abs):
+    matched_bookmarks = {}
+    print_color('Loading bookmarks from folder: ' + folder_dir_abs, 'cyan')
+
+    if not os.path.exists(folder_dir_abs):
+        return matched_bookmarks
+
+    root_name = os.path.basename(folder_dir_abs)
+
+    def scan_for_bookmarks(dir, current_path=""):
+        """Recursively scan dir for bookmark_meta.json files"""
+        for item in os.listdir(dir):
+            item_path = os.path.join(dir, item)
+            if os.path.isdir(item_path):
+                # Check if this dir contains a bookmark_meta.json
+                meta_file = os.path.join(item_path, "bookmark_meta.json")
+                if os.path.exists(meta_file):
+                    # This is a bookmark dir
+                    # Use forward slashes for consistency across platforms
+                    if current_path:
+                        bookmark_key = f"{root_name}/{current_path}/{item}"
+                    else:
+                        bookmark_key = f"{root_name}/{item}"
+
+                    # Use the new load_bookmark_meta function
+                    bookmark_meta = load_bookmark_meta_from_rel(item_path)
+                    if bookmark_meta:
+                        matched_bookmarks[bookmark_key] = bookmark_meta
+                    else:
+                        if IS_DEBUG:
+                            print(
+                                f"⚠️  Could not load bookmark metadata from {item_path}")
+                else:
+                    # This is a regular dir, scan recursively
+                    # Use forward slashes for consistency across platforms
+                    if current_path:
+                        new_path = f"{current_path}/{item}"
+                    else:
+                        new_path = item
+                    scan_for_bookmarks(item_path, new_path)
+
+    scan_for_bookmarks(folder_dir_abs)
+    return matched_bookmarks
+
+
+@print_def_name(IS_PRINT_DEF_NAME)
+@memoize
+def get_all_valid_bookmarks_in_json_format():
+    """Recursively scan all live folders and build a nested JSON structure with folder and bookmark tags/descriptions, including aggregated tags as 'tags'."""
+    # TODO(MFB): Look into this, as this is likely a (relatively) VERY heavy operation.
+
+    def scan_folder(folder_path):
+        node = {}
+        # Add folder meta if present
+        folder_meta = load_folder_meta(folder_path)
+        folder_tags = set()
+        if folder_meta:
+            folder_tags = set(folder_meta.get('tags', []))
+            node['description'] = folder_meta.get('description', '')
+            node['video_filename'] = folder_meta.get('video_filename', '')
+
+        # List all items in this folder
+        try:
+            items = os.listdir(folder_path)
+        except Exception:
+            return node
+
+        sub_dirs = {}
+
+        for item in items:
+            item_path = os.path.join(folder_path, item)
+            if os.path.isdir(item_path):
+                # Recurse into subfolder
+                sub_dirs[item] = scan_folder(item_path)
+            elif item == "bookmark_meta.json":
+                # This folder is a bookmark (leaf)
+                bookmark_meta = load_bookmark_meta_from_abs(folder_path)
+                node.update({
+                    'tags': bookmark_meta.get('tags', []),
+                    'description': bookmark_meta.get('description', ''),
+                    'timestamp': bookmark_meta.get('timestamp_formatted', ''),
+                    'video_filename': bookmark_meta.get('video_filename', ''),
+                    'type': 'bookmark'
+                })
+                return node  # Do not process further, this is a bookmark
+
+        # Attach sub_dirs to node
+        for sub_dir_name, sub_dir_node in sub_dirs.items():
+            node[sub_dir_name] = sub_dir_node
+
+        if IS_AGGREGATE_TAGS:
+            # --- Tag aggregation logic ---
+            # Gather tags from all children (sub_dirs and bookmarks)
+            child_tag_sets = []
+            for sub_dir_node in sub_dirs.values():
+                child_tags = set(sub_dir_node.get('tags', []))
+                if child_tags:
+                    child_tag_sets.append(child_tags)
+
+            # Only hoist if there are children
+            if child_tag_sets:
+                grouped_tags = set.intersection(
+                    *child_tag_sets) if child_tag_sets else set()
+            else:
+                grouped_tags = set()
+
+            # Remove grouped_tags from all children
+            for sub_dir_node in sub_dirs.values():
+                if 'tags' in sub_dir_node:
+                    sub_dir_node['tags'] = list(
+                        set(sub_dir_node['tags']) - grouped_tags)
+
+            # Combine folder's own tags and grouped tags, and uniquify
+            all_tags = folder_tags.union(grouped_tags)
+            if all_tags:
+                node['tags'] = list(sorted(all_tags))
+            elif 'tags' in node:
+                # Remove empty tags list if present
+                del node['tags']
+
+        return node
+
+    all_bookmarks = {}
+    for folder_path in get_all_valid_root_dir_names():
+        folder_name = os.path.basename(folder_path)
+        all_bookmarks[folder_name] = scan_folder(folder_path)
+
+    if IS_DEBUG_PRINT_ALL_BOOKMARKS_JSON:
+        global has_printed_all_bookmarks_json
+        if not has_printed_all_bookmarks_json:
+            print('')
+            print('')
+            print_color('++++ all_bookmarks json:', 'cyan')
+            pprint(all_bookmarks)
+            print('')
+            print('')
+            has_printed_all_bookmarks_json = True
+
+    return all_bookmarks
+
+
 
 
 @print_def_name(IS_PRINT_DEF_NAME)
@@ -131,159 +279,17 @@ def create_bookmark_symlinks(matched_bookmark_obj):
         print(f"⚠️  Could not create symlinks: {e}")
 
 
-@print_def_name(IS_PRINT_DEF_NAME)
-def token_match_bookmarks(query_string, folder_dir):
+# TODO(MFB): Bugfix
+def get_all_bookmark_paths(valid_root_dir_names):
     """
-    Returns a list of bookmark paths where all query tokens appear in the path.
+    Return a flat list of all bookmark paths from all live folders.
     """
-    all_bookmark_objects = load_bookmarks_from_folder(folder_dir)
-    if not all_bookmark_objects:
-        return []
+    bookmark_paths = []
 
-    query_tokens = set(query_string.lower().replace(
-        ":", " ").replace("/", " ").split())
-    matches = []
+    for folder in valid_root_dir_names:
+        all_bookmark_objects = load_bookmarks_from_folder(folder)
+        bookmark_paths.extend(all_bookmark_objects.keys())
 
-    for path in all_bookmark_objects.keys():
-        path_tokens = set(re.split(r"[-_/]", path.lower()))
-        if query_tokens.issubset(path_tokens):
-            matches.append(path)
+    return bookmark_paths
 
-    return matches
-
-
-# def get_all_bookmark_paths(valid_root_dir_names):
-#     """
-#     Return a flat list of all bookmark paths from all live folders.
-#     """
-#     bookmark_paths = []
-
-#     for folder in valid_root_dir_names:
-#         all_bookmark_objects = load_bookmarks_from_folder(folder)
-#         bookmark_paths.extend(all_bookmark_objects.keys())
-
-#     return bookmark_paths
-
-
-# def build_bookmark_token_map(include_tags_and_descriptions=True):
-#     """
-#     Return a dict mapping each bookmark path to a token set for matching.
-#     """
-#     from app.bookmark_dir_processes import get_all_valid_root_dir_names
-#     from app.bookmarks_meta import load_bookmark_meta_from_rel, load_folder_meta
-
-#     bookmark_token_map = {}
-#     valid_root_dir_names = get_all_valid_root_dir_names()
-
-#     for folder_path in valid_root_dir_names:
-#         folder_name = os.path.basename(folder_path)
-
-#         # Load folder-level metadata
-#         folder_meta = load_folder_meta(folder_path)
-#         folder_tags = folder_meta.get("tags", []) if include_tags_and_descriptions else []
-#         folder_description = folder_meta.get("description", "") if include_tags_and_descriptions else ""
-
-#         # Load bookmarks
-#         all_bookmark_objects = load_bookmarks_from_folder(folder_path)
-
-#         for bookmark_path, bookmark_data in all_bookmark_objects.items():
-#             full_key = f"{folder_name}:{bookmark_path}".replace("/", ":")  # normalized key
-
-#             tokens = set()
-
-#             # Split bookmark path into parts
-#             parts = bookmark_path.split('/')
-#             for part in parts:
-#                 tokens.update(part.lower().split('-'))  # split kebab-case parts
-
-#             tokens.add(folder_name.lower())
-
-#             if include_tags_and_descriptions:
-#                 # Add bookmark-level meta
-#                 full_path = os.path.join(folder_path, bookmark_path)
-#                 # TODO(MFB): I'm not sure this is rel...
-#                 meta = load_bookmark_meta_from_rel(full_path)
-
-#                 tokens.update([tag.lower() for tag in meta.get("tags", [])])
-
-#                 if desc := meta.get("description"):
-#                     if folder_description:
-#                         tokens.update(folder_description.lower().split())
-
-
-#                 # Also add folder-level tags/descriptions
-#                 tokens.update([tag.lower() for tag in folder_tags])
-#                 if folder_description:
-#                     tokens.update(folder_description.lower().split())
-
-
-#             bookmark_token_map[full_key] = {
-#                 "tokens": tokens,
-#                 "bookmark_name": os.path.basename(bookmark_path),
-#                 "folder_name": folder_name,
-#             }
-
-#     return bookmark_token_map
-
-
-# def fuzzy_match_bookmark_tokens(query: str, include_tags_and_descriptions: bool = True, top_n: int = 5):
-#     token_map = build_bookmark_token_map(include_tags_and_descriptions)
-#     query_tokens = set(query.lower().split())
-
-#     scored_matches = []
-
-#     for key, data in token_map.items():
-#         overlap = data["tokens"].intersection(query_tokens)
-#         score = len(overlap)
-#         query_lower = query.lower()
-
-#     # Boost if bookmark name starts with query
-#     if data["bookmark_name"].lower().startswith(query_lower):
-#         score += 10  # strong boost
-
-#     # Boost if folder name starts with query
-#     if data["folder_name"].lower().startswith(query_lower):
-#         score += 5  # moderate boost
-
-#     if score > 0:
-#         print(f"{key} -> match score: {score}, overlap: {overlap}")
-#         scored_matches.append((score, key))
-
-#     # Sort by score descending, then alphabetically by key
-#     scored_matches.sort(key=lambda x: (-x[0], x[1]))
-
-#     top_matches = [match[1] for match in scored_matches[:top_n]]
-#     return top_matches
-
-# def interlive_fuzzy_lookup(query: str, top_n: int = 5):
-#     """
-#     Perform fuzzy matching and ask user to choose a bookmark from the top N matches.
-#     Returns the selected bookmark path, or None if cancelled.
-#     """
-#     matches = fuzzy_match_bookmark_tokens(query, top_n=top_n)
-
-#     if not matches:
-#         print("❌ No matches found.")
-#         return None
-
-#     print(f"🤔 Fuzzy matches for '{query}':")
-#     for idx, match in enumerate(matches, 1):
-#         print(f"  {idx}. {match}")
-#     print("  0. Cancel")
-
-#     while True:
-#         try:
-#             choice = input(f"Enter your choice (1-{len(matches)} or 0 to cancel): ").strip()
-#             if choice == "0":
-#                 print("❌ Cancelled.")
-#                 return None
-#             choice_num = int(choice)
-#             if 1 <= choice_num <= len(matches):
-#                 selected = matches[choice_num - 1]
-#                 print(f"✅ Selected: {selected}")
-#                 return selected
-#             else:
-#                 print(f"❌ Invalid input. Choose between 0 and {len(matches)}.")
-#         except ValueError:
-#             print("❌ Please enter a number.")
 
