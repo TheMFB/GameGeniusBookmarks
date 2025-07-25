@@ -121,8 +121,15 @@ Will list out the current bookmark tree as we do with a blank ls and also show t
 
 - will be followed by a video-name or the absolute video path. This will load this video into OBS and will not do anything else.
 
+### navigation
+
+When a bookmark name is expected, but instead any of the reserved words are used -- first, last, previous, next.
+- if the cli bookmark is not given, but rather one of the above, we will find the respective sibling for the last-selected-bookmark.
+- if a cli bookmark is given, and one of these reserved words are used, these words will be with respect to the cli-bookmark (and not the last-selected-bookmark) e.g. `bm test:TEST:03 -p first` will use the first bookmark of `test:TEST` as a base for the selected bookmark's redis-before.
+
 ### Add
 
+(Is this used? - I think this is to default to creating a new bookmark with what is given to the terminal. Maybe an exact match.)
 
 ### Use Preceding
 
@@ -142,27 +149,32 @@ Runs everything except for Docker (gg-engine) and Redis ()
 
 ### No OBS
 
-### Save last redis
+Does not interact with OBS - Does not load video, seek to position, nor does it access the screenshot. Often used with dry-run to just do tagging.
+
+### Save last redis (save redis after)
+
+Updates the save-redis-after after running the process. Default is to keep the original.
+
+### Save Redis before
+
+Updates the redis-before. This is akin to just re-creating the bookmark, but does not update the redis-after if it exists.
 
 ### Save Updates
 
-### Tags
+Does both the save before and after updates -- basically recreates the bookmark from scratch ( -- should it overwrite the image too?)
 
 ### Show Image
 
+Option to show the thumbnail screenshot of the bookmarks when displaying. Might need tweaks to when we display them, as displaying ALL of them might take a ton of terminal display.
+
+### Tags
+
+* We will have different levels of tags, but at the moment it is just the bottom level (--tags / -t)
+
+When defined, it will add that tag to the selected bookmark when run.
 
 
 
-
-
-
-
-
-
-- 📁 test
-   📁 testt
-      • 13:27 📖 testtt3   test:testt:testtt3
-📁 mfb3:MFB:TEST
 📁 videos
    📁 0001_green_dog
       Marvel Rivals_20250103230835-disconnect but no startup copy
@@ -175,4 +187,3 @@ Runs everything except for Docker (gg-engine) and Redis ()
             • 10:49 📖 02-css   videos:0001_green_dog:g01:m01:02-css
             • 11:11 📖 03-in-spawn   videos:0001_green_dog:g01:m01:03-in-spawn
             • 11:39 📖 04-about-to-leave-spawn   videos:0001_green_dog:g01:m01:04-about-to-leave-spawn
-            • 11:46 📖 05-dom-like-s
