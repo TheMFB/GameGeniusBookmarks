@@ -12,7 +12,7 @@ from app.bookmarks_consts import IS_DEBUG, IS_PRINT_JUST_CURRENT_FOLDER_BOOKMARK
 from app.bookmarks_print import print_all_folders_and_bookmarks
 from app.flag_handlers import handle_matched_bookmark, handle_bookmark_not_found, handle_main_process, handle_save_redis_after_json, process_flags, CurrentRunSettings
 from app.types import MatchedBookmarkObj
-from app.bookmark_matching import find_best_bookmark_match
+from bookmarks.matching.bookmark_matching import find_best_bookmark_match
 from app.bookmarks.last_used import save_last_used_bookmark
 
 def main():

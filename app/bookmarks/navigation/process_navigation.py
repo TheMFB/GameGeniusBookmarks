@@ -8,7 +8,7 @@ from app.bookmark_dir_processes import get_all_valid_root_dir_names
 from app.bookmarks import get_last_used_bookmark
 from app.bookmarks.navigation import resolve_navigation_bookmark
 from app.types.bookmark_types import MatchedBookmarkObj
-from app.utils.utils import convert_exact_bookmark_path_to_dict
+from app.utils.bookmark_utils import convert_exact_bookmark_path_to_dict
 from app.utils.decorators import print_def_name
 
 IS_PRINT_DEF_NAME = True

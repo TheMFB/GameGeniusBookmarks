@@ -18,7 +18,7 @@ from app.bookmarks_redis import copy_initial_redis_state
 from app.bookmarks_consts import IS_DEBUG
 from app.utils.printing_utils import print_color
 from app.utils.decorators import print_def_name
-from app.utils.utils import convert_exact_bookmark_path_to_dict
+from app.utils.bookmark_utils import convert_exact_bookmark_path_to_dict
 from app.utils.obs_utils import get_media_source_info
 from app.flag_handlers.save_obs_screenshot import save_obs_screenshot
 from app.flag_handlers.save_redis_and_friendly_json import save_redis_and_friendly_json

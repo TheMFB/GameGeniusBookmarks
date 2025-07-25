@@ -4,7 +4,7 @@ import re
 from app.bookmarks_consts import IS_DEBUG
 from app.bookmarks.bookmarks import load_bookmarks_from_folder, get_all_valid_bookmarks_in_json_format
 from app.utils.decorators import print_def_name, memoize
-from app.utils.utils import split_path_into_array, does_path_exist_in_bookmarks
+from app.utils.bookmark_utils import split_path_into_array, does_path_exist_in_bookmarks
 
 IS_PRINT_DEF_NAME = True
 

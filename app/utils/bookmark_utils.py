@@ -1,11 +1,9 @@
-from pprint import pprint
 import os
 from pathlib import Path
 from app.bookmarks_consts import ABS_OBS_BOOKMARKS_DIR
 from app.utils.decorators import print_def_name, memoize
 from app.types.bookmark_types import MatchedBookmarkObj
 from app.bookmarks.bookmarks import get_bookmark_info
-from app.utils.printing_utils import print_color
 
 IS_PRINT_DEF_NAME = True
 

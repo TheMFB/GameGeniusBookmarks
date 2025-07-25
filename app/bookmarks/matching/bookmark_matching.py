@@ -1,11 +1,11 @@
 from pprint import pprint
-from app.bookmarks.finder_utils import token_match_bookmarks, fuzzy_match_bookmark_tokens, find_bookmarks_by_exact_trailing_path_parts
+from bookmarks.matching.matching_utils import token_match_bookmarks, fuzzy_match_bookmark_tokens, find_bookmarks_by_exact_trailing_path_parts
 from app.bookmarks_consts import NAVIGATION_COMMANDS
 from app.bookmarks.navigation.process_navigation import process_main_cli_arg_navigation
 from app.types.bookmark_types import MatchedBookmarkObj
 from app.utils.printing_utils import print_color
 from app.utils.decorators import print_def_name
-from app.utils.utils import convert_exact_bookmark_path_to_dict
+from app.utils.bookmark_utils import convert_exact_bookmark_path_to_dict
 from app.bookmarks.bookmarks import get_all_live_bookmark_path_slash_rels
 
 
@@ -60,6 +60,8 @@ def find_best_bookmark_match(cli_bookmark_string) -> MatchedBookmarkObj | int | 
         # TODO(MFB): convert to bookmark object
         return convert_exact_bookmark_path_to_dict(
             cli_bookmark_string)
+
+    # TODO(MFB): DONE UP TO HERE
 
     print('---- find_best_bookmark_match - 2 : Exact Match (without some parents) ----')
     # 2. Exact match (without some parents)

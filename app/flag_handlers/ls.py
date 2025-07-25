@@ -2,7 +2,7 @@ import os
 import json
 from app.bookmark_dir_processes import find_bookmark_dir_by_name
 from app.bookmarks_print import print_all_folders_and_bookmarks
-from app.bookmarks.finder_utils import token_match_bookmarks
+from bookmarks.matching.matching_utils import token_match_bookmarks
 from app.utils.decorators import print_def_name
 
 IS_PRINT_DEF_NAME = True
