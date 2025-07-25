@@ -20,7 +20,7 @@ def run_redis_command(command_args):
                 return redis_export()
             elif redis_command is "load":
                 from standalone_utils.redis.redis_load import redis_load
-                return redis_load()
+                return redis_load("obs_bookmark_saves/test/game_01/redis_after.json")
             else:
                 print(f"❌ Unsupported Redis command: {redis_command}")
                 return False

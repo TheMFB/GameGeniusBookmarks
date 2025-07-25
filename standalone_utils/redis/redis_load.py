@@ -13,7 +13,7 @@ def redis_load(filename="redis_backup"):
     if filename == "redis_backup":
         json_filepath = os.path.join(REPO_ROOT, "app/initial_redis_before.json")
     else:
-        filename = sys.argv[1] if len(sys.argv) > 1 else "redis_backup"
+        json_filepath = os.path.join(REPO_ROOT, filename)
 
     r = redis.Redis(host=LOCAL_REDIS_SESSIONS_HOST,
                     port=LOCAL_REDIS_SESSIONS_PORT, db=LOCAL_REDIS_SESSIONS_DB)
