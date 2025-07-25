@@ -89,10 +89,10 @@ Example: `GRANDPARENT:PARENT:BOOKMARK -t comp domination`
 -- substring matching (but with parent directories removed)
 `PAR:MARK`
 
--- tag searching (Searches through all names, directories, and tags and does not take order into consideration)
+-- tag searching (Searches through all names, directories, tags and descriptions -- and does not take order into consideration)
 `comp:domination:boo`
 
--- all of the above, but fuzzy matching
+-- all of the above, but with fuzzy matching across names, directories, tags and descriptions.
 `GPARENT:DARENT:BOKKMARK`
 
 If there is a single hit on any of these, we stop. If there is none, we go to the next step. If there are multiple, we list the options and prompt the user for action.
