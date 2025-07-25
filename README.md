@@ -175,6 +175,9 @@ Option to show the thumbnail screenshot of the bookmarks when displaying. Might 
 When defined, it will add that tag to the selected bookmark when run.
 
 
+## Tag Logic
+
+During the get_all_valid_bookmarks_in_json_format() step, we hoist all grouped tags so that they appear to belong to the top-most applicable parent (where all descendants share that tag). Note that this will only go up to the root level - if ALL bookmarks in the system has a bookmark, it will be displayed in each root folder.
 
 📁 videos
    📁 0001_green_dog

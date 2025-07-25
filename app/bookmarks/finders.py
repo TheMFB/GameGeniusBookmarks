@@ -6,7 +6,7 @@ from app.bookmark_dir_processes import get_all_valid_root_dir_names
 from app.utils import print_color, split_path_into_array, print_def_name, memoize
 from app.bookmarks_meta import load_bookmark_meta_from_rel, load_bookmark_meta_from_abs, load_folder_meta
 
-IS_AGGREGATE_TAGS = False
+IS_AGGREGATE_TAGS = True
 IS_PRINT_DEF_NAME = True
 
 @print_def_name(IS_PRINT_DEF_NAME)
@@ -51,15 +51,15 @@ def load_bookmarks_from_folder(folder_dir_abs):
 
     root_name = os.path.basename(folder_dir_abs)
 
-    def scan_for_bookmarks(directory, current_path=""):
-        """Recursively scan directory for bookmark_meta.json files"""
-        for item in os.listdir(directory):
-            item_path = os.path.join(directory, item)
+    def scan_for_bookmarks(dir, current_path=""):
+        """Recursively scan dir for bookmark_meta.json files"""
+        for item in os.listdir(dir):
+            item_path = os.path.join(dir, item)
             if os.path.isdir(item_path):
-                # Check if this directory contains a bookmark_meta.json
+                # Check if this dir contains a bookmark_meta.json
                 meta_file = os.path.join(item_path, "bookmark_meta.json")
                 if os.path.exists(meta_file):
-                    # This is a bookmark directory
+                    # This is a bookmark dir
                     # Use forward slashes for consistency across platforms
                     if current_path:
                         bookmark_key = f"{root_name}/{current_path}/{item}"
@@ -75,7 +75,7 @@ def load_bookmarks_from_folder(folder_dir_abs):
                             print(
                                 f"⚠️  Could not load bookmark metadata from {item_path}")
                 else:
-                    # This is a regular directory, scan recursively
+                    # This is a regular dir, scan recursively
                     # Use forward slashes for consistency across platforms
                     if current_path:
                         new_path = f"{current_path}/{item}"
@@ -109,13 +109,13 @@ def get_all_valid_bookmarks_in_json_format():
         except Exception:
             return node
 
-        subfolders = {}
+        sub_dirs = {}
 
         for item in items:
             item_path = os.path.join(folder_path, item)
             if os.path.isdir(item_path):
                 # Recurse into subfolder
-                subfolders[item] = scan_folder(item_path)
+                sub_dirs[item] = scan_folder(item_path)
             elif item == "bookmark_meta.json":
                 # This folder is a bookmark (leaf)
                 bookmark_meta = load_bookmark_meta_from_abs(folder_path)
@@ -128,36 +128,37 @@ def get_all_valid_bookmarks_in_json_format():
                 })
                 return node  # Do not process further, this is a bookmark
 
-        # Attach subfolders to node
-        for subfolder_name, subfolder_node in subfolders.items():
-            node[subfolder_name] = subfolder_node
-
-        # print('subfolders:')
-        # pprint(subfolders)
-        # print("")
+        # Attach sub_dirs to node
+        for sub_dir_name, sub_dir_node in sub_dirs.items():
+            node[sub_dir_name] = sub_dir_node
 
         if IS_AGGREGATE_TAGS:
             # --- Tag aggregation logic ---
-            # Collect all descendant bookmark tags
-            all_descendant_tags = []
-            for subfolder_node in subfolders.values():
-                child_tags = set(subfolder_node.get('tags', []))
+            # Gather tags from all children (sub_dirs and bookmarks)
+            child_tag_sets = []
+            for sub_dir_node in sub_dirs.values():
+                child_tags = set(sub_dir_node.get('tags', []))
                 if child_tags:
-                    all_descendant_tags.append(child_tags)
+                    child_tag_sets.append(child_tags)
 
-            # Compute intersection for grouped tags
-            grouped_tags = set.intersection(
-                *all_descendant_tags) if all_descendant_tags else set()
+            # Only hoist if there are children
+            if child_tag_sets:
+                grouped_tags = set.intersection(*child_tag_sets) if child_tag_sets else set()
+            else:
+                grouped_tags = set()
 
-            # Remove grouped_tags from children (so they are not repeated)
-            for subfolder_node in subfolders.values():
-                if 'tags' in subfolder_node:
-                    subfolder_node['tags'] = list(
-                        set(subfolder_node['tags']) - grouped_tags)
+            # Remove grouped_tags from all children
+            for sub_dir_node in sub_dirs.values():
+                if 'tags' in sub_dir_node:
+                    sub_dir_node['tags'] = list(set(sub_dir_node['tags']) - grouped_tags)
 
             # Combine folder's own tags and grouped tags, and uniquify
             all_tags = folder_tags.union(grouped_tags)
-            node['tags'] = list(sorted(all_tags))
+            if all_tags:
+                node['tags'] = list(sorted(all_tags))
+            elif 'tags' in node:
+                # Remove empty tags list if present
+                del node['tags']
 
         return node
 

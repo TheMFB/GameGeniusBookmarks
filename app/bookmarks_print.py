@@ -14,6 +14,8 @@ IS_HOIST_TAGS_WHEN_SINGLE_CHILD = True
 
 IS_DEBUG = True
 IS_PRINT_DEF_NAME = True
+IS_DEBUG_PRINT_ALL_BOOKMARKS_JSON = False
+
 
 @print_def_name(IS_PRINT_DEF_NAME)
 def is_ancestor_path(candidate, target):
@@ -73,6 +75,11 @@ def print_all_folders_and_bookmarks(
 
     all_bookmarks = get_all_valid_bookmarks_in_json_format()
 
+    if IS_DEBUG_PRINT_ALL_BOOKMARKS_JSON:
+        print('++++ all_bookmarks json:')
+        pprint(all_bookmarks)
+        print('')
+
     def print_tree_recursive(
         node,
         folder_name=None,
@@ -102,8 +109,12 @@ def print_all_folders_and_bookmarks(
 
 
         # Recursively gather all tags in this folder
-        all_tags = collect_all_bookmark_tags_recursive(node)
-        folder_tags = set.intersection(*all_tags) if all_tags else set()
+        # Prefer node's own tags if present, else compute from children
+        if 'tags' in node and node['tags']:
+            folder_tags = set(node['tags'])
+        else:
+            all_tags = collect_all_bookmark_tags_recursive(node)
+            folder_tags = set.intersection(*all_tags) if all_tags else set()
 
         if folder_tags:
             print_color(f"{indent}🏷️ {' '.join(f'•{tag}' for tag in sorted(folder_tags))}", 'cyan')
