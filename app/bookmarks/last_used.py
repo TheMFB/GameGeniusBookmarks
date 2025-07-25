@@ -8,6 +8,7 @@ from datetime import datetime
 
 from app.utils.printing_utils import print_color
 from app.utils.decorators import print_def_name, memoize
+from app.bookmarks_consts import ABS_OBS_BOOKMARKS_DIR
 from app.bookmarks.bookmarks import create_bookmark_symlinks
 
 IS_AGGREGATE_TAGS = False
@@ -19,8 +20,7 @@ IS_PRINT_DEF_NAME = True
 def save_last_used_bookmark(matched_bookmark_obj):
     """Save the last used bookmark to a global state file."""
     print('Saving last used bookmark:')
-    state_file = os.path.join(os.path.dirname(
-        __file__), "../obs_bookmark_saves", "last_bookmark_state.json")
+    state_file = os.path.join(ABS_OBS_BOOKMARKS_DIR, "last_bookmark_state.json")
 
     with open(state_file, 'w') as f:
         json.dump(matched_bookmark_obj, f, indent=2)
