@@ -43,7 +43,7 @@ def handle_save_redis_after_json(matched_bookmark_obj, current_run_settings_obj)
                 else:
                     print(f"💾 Saving final Redis state...")
 
-            if not run_redis_command(['export', 'bookmark_temp_after']):
+            if not run_redis_command('export', 'bookmark_temp_after'):
                 print("❌ Failed to export final Redis state")
                 return False
 

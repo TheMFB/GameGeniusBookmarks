@@ -17,7 +17,7 @@ def save_redis_and_friendly_json(bookmark_path_slash_abs: str):
     if IS_DEBUG:
         print(f"💾 Saving current Redis state '{bookmark_path_slash_abs}'...")
 
-    if not run_redis_command(['export', 'bookmark_temp']):
+    if not run_redis_command('export', 'bookmark_temp'):
         print("⚠️ Failed to export current Redis state — continuing anyway for debug purposes")
         return
 

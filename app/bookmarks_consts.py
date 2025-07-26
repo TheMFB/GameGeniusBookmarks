@@ -1,3 +1,4 @@
+# TODO(KERCH): Organize.
 ## DEV CONSTANTS ##
 
 # IS_DEBUG = True
@@ -6,7 +7,6 @@ IS_DEBUG = False
 IS_DEBUG_FULL = False
 IS_DEBUG_PRINT_ALL_BOOKMARKS_JSON = True
 
-IS_LOCAL_REDIS_DEV = True
 LOCAL_REDIS_SESSIONS_HOST = "localhost"
 LOCAL_REDIS_SESSIONS_PORT = 6379
 LOCAL_REDIS_SESSIONS_DB = 0
@@ -37,6 +37,7 @@ ABS_OBS_BOOKMARKS_DIR = os.path.join(REPO_ROOT, "obs_bookmark_saves")
 
 # Redis dump directory - use the GameGenius directory from environment variable
 GAME_GENIUS_DIR = os.environ.get('GAME_GENIUS_DIRECTORY', '')
+IS_LOCAL_REDIS_DEV = os.environ.get('IS_LOCAL_REDIS_DEV', False)
 
 if IS_LOCAL_REDIS_DEV:
     REDIS_DUMP_DIR = os.path.join(REPO_ROOT, "standalone_utils", "redis", "redis_dump")

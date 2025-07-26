@@ -108,7 +108,7 @@ def handle_matched_bookmark(
         if IS_DEBUG:
             print(f"📋 Copied Redis state to: {temp_redis_path}")
 
-        if not run_redis_command(['load', 'bookmark_temp']):
+        if not run_redis_command('load', 'bookmark_temp'):
             print("❌ Failed to load Redis state")
             # Debug: Check what keys exist after load
             print("🔍 Checking Redis keys after failed load...")
@@ -125,7 +125,7 @@ def handle_matched_bookmark(
     elif not current_run_settings_obj["is_super_dry_run"]:
         print(f"💾 No existing Redis state found - saving current state...")
         # Save current Redis state as redis_before.json
-        if not run_redis_command(['export', 'bookmark_temp']):
+        if not run_redis_command('export', 'bookmark_temp'):
             print("❌ Failed to export current Redis state")
             return 1
 
