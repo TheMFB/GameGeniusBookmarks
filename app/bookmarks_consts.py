@@ -1,4 +1,12 @@
+# Base directory is now the current repo root
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
+
 # TODO(KERCH): Organize.
+
 ## DEV CONSTANTS ##
 
 # IS_DEBUG = True
@@ -6,6 +14,10 @@ IS_DEBUG = False
 # IS_DEBUG_FULL = True
 IS_DEBUG_FULL = False
 IS_DEBUG_PRINT_ALL_BOOKMARKS_JSON = True
+IS_PRINT_JUST_CURRENT_FOLDER_BOOKMARKS = True
+
+# LOCAL REDIS DEV
+IS_LOCAL_REDIS_DEV = os.environ.get('IS_LOCAL_REDIS_DEV', False)
 
 LOCAL_REDIS_SESSIONS_HOST = "localhost"
 LOCAL_REDIS_SESSIONS_PORT = 6379
@@ -17,38 +29,27 @@ ASYNC_WAIT_TIME = 1
 SHOW_HIDDEN_COPY_LINE = True
 HIDDEN_COLOR = "\033[38;2;13;42;52m"
 RESET_COLOR = "\033[0m"
+SCREENSHOT_SAVE_SCALE = 0.5
 
 # EXCLUDED_DIRS = {"archive", "archive_temp", "temp"}
 EXCLUDED_DIRS = {"archive", "archive_temp", "temp", "videos"} # # TODO(MFB): DELETE AFTER TESTING
 
 NAVIGATION_COMMANDS = ["next", "previous", "first", "last"]
 
-# Base directory is now the current repo root
-import os
-from dotenv import load_dotenv
-
-# Load environment variables from .env file
-load_dotenv()
+## ABS PATHS ##
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
 # Bookmarks directory is now in the repo root
 ABS_OBS_BOOKMARKS_DIR = os.path.join(REPO_ROOT, "obs_bookmark_saves")
-
 # Redis dump directory - use the GameGenius directory from environment variable
 GAME_GENIUS_DIR = os.environ.get('GAME_GENIUS_DIRECTORY', '')
-IS_LOCAL_REDIS_DEV = os.environ.get('IS_LOCAL_REDIS_DEV', False)
 
+INITIAL_REDIS_STATE_DIR = os.path.join(REPO_ROOT, "app")
 if IS_LOCAL_REDIS_DEV:
     REDIS_DUMP_DIR = os.path.join(REPO_ROOT, "standalone_utils", "redis", "redis_dump")
-
 else:
     REDIS_DUMP_DIR = os.path.join(GAME_GENIUS_DIR, "game-genius/services/session_manager/utils/standalone/redis_dump")
 
-
-INITIAL_REDIS_STATE_DIR = os.path.join(REPO_ROOT, "app")
-
-IS_PRINT_JUST_CURRENT_FOLDER_BOOKMARKS = True
 
 # TODO(MFB): Move these to a print-help constants file.
 
@@ -96,5 +97,4 @@ Examples:
   main.py my-bookmark --no-obs -t important highlight
 """
 
-SCREENSHOT_SAVE_SCALE = 0.5
 
