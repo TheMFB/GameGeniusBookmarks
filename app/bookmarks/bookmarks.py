@@ -28,15 +28,15 @@ def load_bookmarks_from_folder(folder_dir_abs):
 
     root_name = os.path.basename(folder_dir_abs)
 
-    def scan_for_bookmarks(dir, current_path=""):
-        """Recursively scan dir for bookmark_meta.json files"""
-        for item in os.listdir(dir):
-            item_path = os.path.join(dir, item)
+    def scan_for_bookmarks(bm_dir, current_path=""):
+        """Recursively scan bm_dir for bookmark_meta.json files"""
+        for item in os.listdir(bm_dir):
+            item_path = os.path.join(bm_dir, item)
             if os.path.isdir(item_path):
-                # Check if this dir contains a bookmark_meta.json
+                # Check if this bm_dir contains a bookmark_meta.json
                 meta_file = os.path.join(item_path, "bookmark_meta.json")
                 if os.path.exists(meta_file):
-                    # This is a bookmark dir
+                    # This is a bookmark bm_dir
                     # Use forward slashes for consistency across platforms
                     if current_path:
                         bookmark_key = f"{root_name}/{current_path}/{item}"
@@ -52,7 +52,7 @@ def load_bookmarks_from_folder(folder_dir_abs):
                             print(
                                 f"⚠️  Could not load bookmark metadata from {item_path}")
                 else:
-                    # This is a regular dir, scan recursively
+                    # This is a regular bm_dir, scan recursively
                     # Use forward slashes for consistency across platforms
                     if current_path:
                         new_path = f"{current_path}/{item}"
