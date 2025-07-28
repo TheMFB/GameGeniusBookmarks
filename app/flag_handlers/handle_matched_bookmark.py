@@ -15,7 +15,7 @@ from redis_friendly_converter import convert_file as convert_redis_to_friendly
 from app.bookmark_dir_processes import get_all_valid_root_dir_names
 from app.bookmarks_redis import run_redis_command, copy_initial_redis_state
 # copy_preceding_bookmark_redis_state, copy_specific_bookmark_redis_state
-from app.bookmarks_consts import IS_DEBUG, REDIS_DUMP_DIR, SCREENSHOT_SAVE_SCALE
+from app.bookmarks_consts import IS_DEBUG, IS_LOCAL_REDIS_DEV, REDIS_DUMP_DIR, SCREENSHOT_SAVE_SCALE
 from app.types.bookmark_types import MatchedBookmarkObj, CurrentRunSettings
 from app.utils.printing_utils import *
 
@@ -108,12 +108,15 @@ def handle_matched_bookmark(
         if IS_DEBUG:
             print(f"📋 Copied Redis state to: {temp_redis_path}")
 
-        if not run_redis_command('load', 'bookmark_temp'):
+        run_redis_results = run_redis_command('load', 'bookmark_temp')
+
+        if not run_redis_results:
             print("❌ Failed to load Redis state")
             # Debug: Check what keys exist after load
-            print("🔍 Checking Redis keys after failed load...")
-            debug_cmd = 'docker exec -it session_manager redis-cli keys "*" | head -20'
-            subprocess.run(debug_cmd, shell=True)
+            if not IS_LOCAL_REDIS_DEV:
+                print("🔍 Checking Redis keys after failed load...")
+                debug_cmd = 'docker exec -it session_manager redis-cli keys "*" | head -20'
+                subprocess.run(debug_cmd, shell=True)
             return 1
 
         # Clean up temp file

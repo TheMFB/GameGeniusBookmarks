@@ -4,16 +4,16 @@ import sys
 import os
 import redis
 from pprint import pprint
-
-from app.bookmarks_consts import LOCAL_REDIS_SESSIONS_HOST, LOCAL_REDIS_SESSIONS_PORT, LOCAL_REDIS_SESSIONS_DB, REPO_ROOT
-
+from typing import Literal
 
 
-def redis_load(filename="redis_backup"):
-    if filename == "redis_backup":
-        json_filepath = os.path.join(REPO_ROOT, "app/initial_redis_before.json")
-    else:
-        json_filepath = os.path.join(REPO_ROOT, filename)
+from app.bookmarks_consts import LOCAL_REDIS_SESSIONS_HOST, LOCAL_REDIS_SESSIONS_PORT, LOCAL_REDIS_SESSIONS_DB, REPO_ROOT, REDIS_DUMP_DIR
+
+
+
+def load_into_redis(filename:Literal["bookmark_temp", "bookmark_temp_after"]):
+
+    json_filepath = f"{REDIS_DUMP_DIR}/{filename}.json"
 
     r = redis.Redis(host=LOCAL_REDIS_SESSIONS_HOST,
                     port=LOCAL_REDIS_SESSIONS_PORT, db=LOCAL_REDIS_SESSIONS_DB)

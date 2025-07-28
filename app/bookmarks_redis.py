@@ -5,6 +5,10 @@ from typing import Literal
 from app.bookmarks_consts import IS_DEBUG, INITIAL_REDIS_STATE_DIR, IS_LOCAL_REDIS_DEV
 from app.utils.decorators import print_def_name
 from app.utils.printing_utils import *
+from standalone_utils.redis.export_from_redis import export_from_redis
+from standalone_utils.redis.load_into_redis import load_into_redis
+
+
 
 IS_PRINT_DEF_NAME = True
 
@@ -17,13 +21,11 @@ def run_redis_command(
     """Run Redis management command"""
     try:
         if IS_LOCAL_REDIS_DEV:
-            # Local mode: call redis_export.py or redis_load.py directly
+            # Local mode: call export_from_redis.py or load_into_redis.py directly
             if load_or_export is "export":
-                from standalone_utils.redis.redis_export import redis_export
-                return redis_export()
+                return export_from_redis()
             elif load_or_export is "load":
-                from standalone_utils.redis.redis_load import redis_load
-                return redis_load("obs_bookmark_saves/test/game_01/redis_after.json")
+                return load_into_redis("obs_bookmark_saves/test/game_01/redis_after.json")
             else:
                 print(f"❌ Unsupported Redis command: {load_or_export}")
                 return False
@@ -34,23 +36,19 @@ def run_redis_command(
             print_dev('---- cmd:', 'magenta')
             print_dev(cmd)
             print('')
+            result = subprocess.run(
+                cmd, shell=True, capture_output=True, text=True)
 
-        if IS_DEBUG:
-            print(f"🔧 Running Redis command: {load_or_export} {location}")
-            print(f"📦 Full shell command: {cmd}")
+            if result.returncode != 0:
+                print(f"❌ Redis command failed: {load_or_export} {location}")
+                print(f"   Error: {result.stderr}")
+                print(f"   Output: {result.stdout}")
+                return False
 
-        result = subprocess.run(
-            cmd, shell=True, capture_output=True, text=True)
 
-        if result.returncode != 0:
-            print(f"❌ Redis command failed: {load_or_export} {location}")
-            print(f"   Error: {result.stderr}")
-            print(f"   Output: {result.stdout}")
-            return False
-
-        if IS_DEBUG:
-            print(f"✅ Redis command succeeded: {load_or_export} {location}")
-        return True
+            if IS_DEBUG:
+                print(f"✅ Redis command succeeded: {load_or_export} {location}")
+            return True
 
     except Exception as e:
         print(f"❌ Error running Redis command: {load_or_export} {location}")
