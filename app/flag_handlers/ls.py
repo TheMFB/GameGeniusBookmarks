@@ -1,5 +1,6 @@
 import os
 import json
+from app.bookmarks_consts import IS_PRINT_JUST_CURRENT_DIRECTORY_BOOKMARKS_ON_LS
 from app.bookmark_dir_processes import find_bookmark_dir_by_name
 from app.bookmarks_print import print_all_live_directories_and_bookmarks
 from app.bookmarks.matching.matching_utils import token_match_bookmarks
@@ -29,7 +30,9 @@ def handle_ls(args):
 
     # If no folder path is provided: list everything
     if not args_copy:
-        print_all_live_directories_and_bookmarks()
+        print_all_live_directories_and_bookmarks(
+            is_print_just_current_directory_bookmarks=IS_PRINT_JUST_CURRENT_DIRECTORY_BOOKMARKS_ON_LS
+        )
         return 0
 
     # If a folder path is provided, list only that folder

@@ -1,5 +1,4 @@
-
-from app.bookmarks_consts import OPTIONS_HELP
+from app.bookmarks_consts import OPTIONS_HELP, IS_PRINT_JUST_CURRENT_DIRECTORY_BOOKMARKS_ON_LS
 from app.bookmarks import get_last_used_bookmark_display
 from app.bookmarks_print import print_all_live_directories_and_bookmarks
 from app.utils.decorators import print_def_name
@@ -18,4 +17,6 @@ def handle_help(args=None):  # ← allow optional args
     if last_used_display:
         print(f"\n Last used bookmark: {last_used_display}")
 
-    print_all_live_directories_and_bookmarks()
+    print_all_live_directories_and_bookmarks(
+        is_print_just_current_directory_bookmarks=IS_PRINT_JUST_CURRENT_DIRECTORY_BOOKMARKS_ON_LS
+    )

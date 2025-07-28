@@ -15,7 +15,10 @@ IS_DEBUG = False
 IS_DEBUG_FULL = False
 IS_DEBUG_PRINT_ALL_BOOKMARKS_JSON = True
 IS_PRINT_DEV = True
-IS_PRINT_JUST_CURRENT_DIRECTORY_BOOKMARKS = True
+# IS_PRINT_JUST_CURRENT_DIRECTORY_BOOKMARKS = True
+IS_PRINT_JUST_CURRENT_DIRECTORY_BOOKMARKS = False
+# IS_PRINT_JUST_CURRENT_DIRECTORY_BOOKMARKS_ON_LS = True
+IS_PRINT_JUST_CURRENT_DIRECTORY_BOOKMARKS_ON_LS = False
 
 # LOCAL REDIS DEV
 IS_LOCAL_REDIS_DEV = os.environ.get('IS_LOCAL_REDIS_DEV', False)
@@ -33,8 +36,8 @@ RESET_COLOR = "\033[0m"
 SCREENSHOT_SAVE_SCALE = 0.5
 
 # EXCLUDED_DIRS = {"archive", "archive_temp", "temp"}
-# EXCLUDED_DIRS = {"archive", "archive_temp", "temp", "videos"} # # TODO(MFB): DELETE AFTER TESTING
-EXCLUDED_DIRS = {"archive", "archive_temp", "temp", "videos", "grand-parent", "grand-parent-2"}
+EXCLUDED_DIRS = {"archive", "archive_temp", "temp", "videos"} # # TODO(MFB): DELETE AFTER TESTING
+# EXCLUDED_DIRS = {"archive", "archive_temp", "temp", "videos", "grand-parent", "grand-parent-2"}
 
 NAVIGATION_COMMANDS = ["next", "previous", "first", "last"]
 

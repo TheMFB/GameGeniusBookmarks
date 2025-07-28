@@ -1,7 +1,7 @@
 from app.utils.printing_utils import *
 import os
 import json
-from app.bookmarks_consts import IS_DEBUG, HIDDEN_COLOR, RESET_COLOR, ABS_OBS_BOOKMARKS_DIR, NON_NAME_BOOKMARK_KEYS
+from app.bookmarks_consts import IS_DEBUG, HIDDEN_COLOR, RESET_COLOR, ABS_OBS_BOOKMARKS_DIR, NON_NAME_BOOKMARK_KEYS, IS_PRINT_JUST_CURRENT_DIRECTORY_BOOKMARKS
 from app.bookmarks_meta import compute_hoistable_tags
 from app.bookmarks.last_used import get_last_used_bookmark
 from app.bookmarks.bookmarks import get_all_valid_bookmarks_in_json_format
@@ -36,10 +36,12 @@ def collect_all_bookmark_tags_recursive(node):
 
     return all_tags
 
+# TODO(MFB): Tags are not being hoisted.
+
 @print_def_name(IS_PRINT_DEF_NAME)
 def print_all_live_directories_and_bookmarks(
         bookmark_obj=None,
-        is_print_just_current_directory_bookmarks=False
+        is_print_just_current_directory_bookmarks=IS_PRINT_JUST_CURRENT_DIRECTORY_BOOKMARKS
         # TODO(KERCH): We no longer have this being used? Re-implement it.
 ):
     """Print all folders and their bookmarks, highlighting the current one"""
@@ -93,18 +95,19 @@ def print_all_live_directories_and_bookmarks(
         if inherited_tags is None:
             inherited_tags = set()
         indent = "   " * indent_level
+        is_parent_dir_current = False
 
         if parent_bm_dir_name is not None:
             # Is this the current directory/bookmark?
-            should_highlight = current_bm_path_colon_rel and parent_bm_dir_col_rel and current_bm_path_colon_rel.startswith(
+            is_parent_dir_current = current_bm_path_colon_rel and parent_bm_dir_col_rel and current_bm_path_colon_rel.startswith(
                 parent_bm_dir_col_rel)
             parent_bm_path_slash_abs = os.path.join(
                 ABS_OBS_BOOKMARKS_DIR, parent_bm_dir_col_rel.replace(':', '/'))
 
             parent_bm_dir_name_print_string = f"{indent}{get_embedded_bookmark_file_link(parent_bm_path_slash_abs, '📁')} {parent_bm_dir_name}"
-            if should_highlight:
+            if is_parent_dir_current:
                 print_color(parent_bm_dir_name_print_string, 'green')
-            else:
+            elif not is_print_just_current_directory_bookmarks:
                 print(parent_bm_dir_name_print_string)
 
 
@@ -154,6 +157,8 @@ def print_all_live_directories_and_bookmarks(
             is_current = parent_bm_dir_col_rel and current_bm_path_colon_rel.startswith(
                 tree_bm_path_col_rel)
 
+            if is_print_just_current_directory_bookmarks and not is_parent_dir_current:
+                continue
 
             hidden_ref_text = f" {HIDDEN_COLOR} {tree_bm_path_col_rel}{RESET_COLOR}"
             if is_current:
