@@ -8,11 +8,11 @@ from pprint import pprint
 # from networkx import to_dict_of_dicts
 
 from app.utils.printing_utils import print_color
-from app.bookmarks_consts import IS_DEBUG, IS_PRINT_JUST_CURRENT_FOLDER_BOOKMARKS
-from app.bookmarks_print import print_all_folders_and_bookmarks
+from app.bookmarks_consts import IS_DEBUG, IS_PRINT_JUST_CURRENT_DIRECTORY_BOOKMARKS
+from app.bookmarks_print import print_all_live_directories_and_bookmarks
 from app.flag_handlers import handle_matched_bookmark, handle_bookmark_not_found, handle_main_process, handle_save_redis_after_json, process_flags, CurrentRunSettings
 from app.types import MatchedBookmarkObj
-from bookmarks.matching.bookmark_matching import find_best_bookmark_match
+from app.bookmarks.matching.bookmark_matching import find_best_bookmark_match
 from app.bookmarks.last_used import save_last_used_bookmark
 
 def main():
@@ -132,9 +132,9 @@ def main():
 
     # Print all folders and bookmarks with current one highlighted
     if matched_bookmark_obj["bookmark_dir_slash_abs"]:
-        print_all_folders_and_bookmarks(
+        print_all_live_directories_and_bookmarks(
             bookmark_obj=matched_bookmark_obj,
-            is_print_just_current_folder_bookmarks=IS_PRINT_JUST_CURRENT_FOLDER_BOOKMARKS
+            is_print_just_current_directory_bookmarks=IS_PRINT_JUST_CURRENT_DIRECTORY_BOOKMARKS
         )
 
     return 0

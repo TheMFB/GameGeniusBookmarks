@@ -1,8 +1,8 @@
 import os
 import json
 from app.bookmark_dir_processes import find_bookmark_dir_by_name
-from app.bookmarks_print import print_all_folders_and_bookmarks
-from bookmarks.matching.matching_utils import token_match_bookmarks
+from app.bookmarks_print import print_all_live_directories_and_bookmarks
+from app.bookmarks.matching.matching_utils import token_match_bookmarks
 from app.utils.decorators import print_def_name
 
 IS_PRINT_DEF_NAME = True
@@ -29,7 +29,7 @@ def handle_ls(args):
 
     # If no folder path is provided: list everything
     if not args_copy:
-        print_all_folders_and_bookmarks()
+        print_all_live_directories_and_bookmarks()
         return 0
 
     # If a folder path is provided, list only that folder
@@ -39,8 +39,8 @@ def handle_ls(args):
     folder_path = find_bookmark_dir_by_name(folder_arg)
 
     if folder_path:
-        from app.bookmarks_print import print_bookmarks_in_folder
-        print_bookmarks_in_folder(folder_path)
+        from app.bookmarks_print import print_bookmarks_in_directory
+        print_bookmarks_in_directory(folder_path)
         return 0
     else:
         # Fall back to which-style logic

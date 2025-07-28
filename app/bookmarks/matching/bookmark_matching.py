@@ -1,9 +1,8 @@
-from pprint import pprint
-from bookmarks.matching.matching_utils import token_match_bookmarks, fuzzy_match_bookmark_tokens, find_bookmarks_by_exact_trailing_path_parts
+from app.utils.printing_utils import *
+from app.bookmarks.matching.matching_utils import token_match_bookmarks, fuzzy_match_bookmark_tokens, find_bookmarks_by_exact_trailing_path_parts
 from app.bookmarks_consts import NAVIGATION_COMMANDS
 from app.bookmarks.navigation.process_navigation import process_main_cli_arg_navigation
 from app.types.bookmark_types import MatchedBookmarkObj
-from app.utils.printing_utils import print_color
 from app.utils.decorators import print_def_name
 from app.utils.bookmark_utils import convert_exact_bookmark_path_to_dict
 from app.bookmarks.bookmarks import get_all_live_bookmark_path_slash_rels
@@ -33,8 +32,8 @@ def find_best_bookmark_match(cli_bookmark_string) -> MatchedBookmarkObj | int | 
 
     # Print the CLI bookmark string and all valid bookmark paths
     print('')
-    print('---- cli_bookmark_string_slash:')
-    pprint(cli_bookmark_string_slash)
+    print_dev('---- cli_bookmark_string_slash:')
+    pprint_dev(cli_bookmark_string_slash)
     print('')
     print('')
     print('')
@@ -42,8 +41,8 @@ def find_best_bookmark_match(cli_bookmark_string) -> MatchedBookmarkObj | int | 
     print('')
     print('')
 
-    print_color('---- all_live_bookmark_path_slash_rels:', 'cyan')
-    pprint(all_live_bookmark_path_slash_rels)
+    print_dev('---- all_live_bookmark_path_slash_rels:', 'cyan')
+    pprint_dev(all_live_bookmark_path_slash_rels)
     print('')
     print('')
     print('')
@@ -68,8 +67,8 @@ def find_best_bookmark_match(cli_bookmark_string) -> MatchedBookmarkObj | int | 
     # 2. Exact match (without some parents)
     # Match: `PARENT:BOOKMARK`
     trailing_matches = find_bookmarks_by_exact_trailing_path_parts(cli_bookmark_string, all_live_bookmark_path_slash_rels)
-    print_color('---- trailing_matches:', 'cyan')
-    pprint(trailing_matches)
+    print_dev('---- trailing_matches:', 'cyan')
+    pprint_dev(trailing_matches)
     if trailing_matches:
         return trailing_matches
 

@@ -1,13 +1,12 @@
-from pprint import pprint
+from app.utils.printing_utils import *
 import os
 import json
-from app.bookmarks_consts import IS_DEBUG, HIDDEN_COLOR, RESET_COLOR, ABS_OBS_BOOKMARKS_DIR
+from app.bookmarks_consts import IS_DEBUG, HIDDEN_COLOR, RESET_COLOR, ABS_OBS_BOOKMARKS_DIR, NON_NAME_BOOKMARK_KEYS
 from app.bookmarks_meta import compute_hoistable_tags
 from app.bookmarks.last_used import get_last_used_bookmark
 from app.bookmarks.bookmarks import get_all_valid_bookmarks_in_json_format
-from app.utils.printing_utils import print_color
 from app.utils.bookmark_utils import abs_to_rel_path
-from app.utils.decorators import print_def_name, get_embedded_bookmark_file_link
+from app.utils.decorators import print_def_name
 
 IS_PRINT_VIDEO_FILE_NAMES = True
 IS_HOIST_TAGS_WHEN_SINGLE_CHILD = True
@@ -32,193 +31,169 @@ def collect_all_bookmark_tags_recursive(node):
             if value.get('type') == 'bookmark':
                 all_tags.append(set(value.get('tags', [])))
             else:
-                # Recurse into subfolder
+                # Recurse into sub_dir
                 all_tags.extend(collect_all_bookmark_tags_recursive(value))
 
     return all_tags
 
 @print_def_name(IS_PRINT_DEF_NAME)
-def print_all_folders_and_bookmarks(
+def print_all_live_directories_and_bookmarks(
         bookmark_obj=None,
-        is_print_just_current_folder_bookmarks=False
+        is_print_just_current_directory_bookmarks=False
         # TODO(KERCH): We no longer have this being used? Re-implement it.
 ):
     """Print all folders and their bookmarks, highlighting the current one"""
 
-    current_bookmark_tail_name = None
-    current_folder_abs_path = None
-    current_folder_rel_path = None
+    current_bm_tail_name = None
+    current_bm_dir_slash_abs = None
+    current_bm_path_colon_rel = None
+    current_bm_dir_slash_rel = None
 
-    # Get last used bookmark for highlighting if not provided
+    # Get last used bookmark for highlighting if not provided with the current bookmark object.
     if not bookmark_obj:
         last_used_info = get_last_used_bookmark()
         if last_used_info:
-            # TODO(MFB):
-            print('++++ Make sure these match the deconstruction!')
-            print('---- last_used_info:')
-            pprint(last_used_info)
-            current_bookmark_tail_name = last_used_info.get('bookmark_tail_name', '')
-            current_folder_abs_path = last_used_info.get('rel_bookmark_dir', '')
-            current_folder_rel_path = abs_to_rel_path(current_folder_abs_path, ABS_OBS_BOOKMARKS_DIR)
+            current_bm_tail_name = last_used_info.get('bookmark_tail_name', '')
+            current_bm_dir_slash_abs = last_used_info.get('bookmark_dir_slash_abs', '')
+            current_bm_path_colon_rel = last_used_info.get('bookmark_path_colon_rel', '')
+            current_bm_dir_slash_rel = abs_to_rel_path(current_bm_dir_slash_abs, ABS_OBS_BOOKMARKS_DIR)
+
     else:
-        current_bookmark_tail_name = bookmark_obj["bookmark_tail_name"]
-        current_folder_abs_path = bookmark_obj["bookmark_dir_slash_abs"]
-        current_folder_rel_path = bookmark_obj["bookmark_dir_slash_rel"]
+        current_bm_tail_name = bookmark_obj["bookmark_tail_name"]
+        current_bm_dir_slash_abs = bookmark_obj["bookmark_dir_slash_abs"]
+        current_bm_path_colon_rel = bookmark_obj["bookmark_path_colon_rel"]
+        current_bm_dir_slash_rel = bookmark_obj["bookmark_dir_slash_rel"]
 
 
     if IS_DEBUG:
-        print_color('---- current_bookmark_tail_name after:', 'magenta')
-        pprint(current_bookmark_tail_name)
-        print_color('---- current_folder_rel_path after:', 'magenta')
-        pprint(current_folder_rel_path)
+        print_color('---- current_bm_tail_name after:', 'magenta')
+        pprint(current_bm_tail_name)
+        print_color('---- current_bm_dir_slash_rel after:', 'magenta')
+        pprint(current_bm_dir_slash_rel)
 
     all_bookmarks = get_all_valid_bookmarks_in_json_format()
 
-
     def print_tree_recursive(
-        node,
-        folder_name=None,
-        indent_level=0,
-        parent_path="",
-        current_bookmark_tail_name=None,
-        current_folder_abs_path=None,
+        indent_level,
+        parent_bm_dir_name,
+        parent_bm_dir_col_rel,
+        bookmark_dir_json_without_parent,
         inherited_tags=None
     ):
+        """
+        bookmark_dir_json_without_parent: The JSON object for the current directory, without the parent directory.
+        parent_bm_dir_name: The name of the parent directory.
+        indent_level: The level of indentation for the current directory.
+        parent_bm_dir_col_rel: The relative colon path of the parent directory.
+        current_bm_tail_name: The name of the current bookmark.
+        current_bm_dir_slash_abs: The absolute path of the current directory.
+        inherited_tags: The tags that are inherited from the parent directory.
+        """
+
         if inherited_tags is None:
             inherited_tags = set()
         indent = "   " * indent_level
 
-        if folder_name is not None:
-            # Compute the full colon path of this folder
-            full_folder_path = parent_path  # this folder's colon-style path (already passed in)
-            full_last_used_path = f"{current_folder_abs_path}:{current_bookmark_tail_name}" if current_folder_abs_path and current_bookmark_tail_name else ""
+        if parent_bm_dir_name is not None:
+            # Is this the current directory/bookmark?
+            should_highlight = current_bm_path_colon_rel and parent_bm_dir_col_rel and current_bm_path_colon_rel.startswith(
+                parent_bm_dir_col_rel)
+            parent_bm_path_slash_abs = os.path.join(
+                ABS_OBS_BOOKMARKS_DIR, parent_bm_dir_col_rel.replace(':', '/'))
 
-            # Should we highlight this folder?
-            should_highlight = full_last_used_path == full_folder_path or full_last_used_path.startswith(full_folder_path + ":")
-
-            folder_line = f"{indent}{get_embedded_bookmark_file_link(full_folder_path, '📁')} {folder_name}"
+            parent_bm_dir_name_print_string = f"{indent}{get_embedded_bookmark_file_link(parent_bm_path_slash_abs, '📁')} {parent_bm_dir_name}"
             if should_highlight:
-                print_color(folder_line, 'green')
+                print_color(parent_bm_dir_name_print_string, 'green')
             else:
-                print(folder_line)
+                print(parent_bm_dir_name_print_string)
 
 
         # Recursively gather all tags in this folder
-        # Prefer node's own tags if present, else compute from children
-        if 'tags' in node and node['tags']:
-            folder_tags = set(node['tags'])
-        else:
-            all_tags = collect_all_bookmark_tags_recursive(node)
-            folder_tags = set.intersection(*all_tags) if all_tags else set()
+        bm_sub_dir_tags = set()
+        if 'tags' in bookmark_dir_json_without_parent and bookmark_dir_json_without_parent['tags']:
+            bm_sub_dir_tags = set(bookmark_dir_json_without_parent['tags'])
+        # else:
+        #     # Prefer node's own tags if present, else compute from children
+        #     all_tags = collect_all_bookmark_tags_recursive(bookmark_dir_json_without_parent)
+        #     bm_sub_dir_tags = set.intersection(*all_tags) if all_tags else set()
 
-        if folder_tags:
-            print_color(f"{indent}🏷️ {' '.join(f'•{tag}' for tag in sorted(folder_tags))}", 'cyan')
+        if bm_sub_dir_tags:
+            print_color(f"{indent}🏷️ {' '.join(f'•{tag}' for tag in sorted(bm_sub_dir_tags))}", 'cyan')
 
-        effective_inherited_tags = inherited_tags | folder_tags
+        # effective_inherited_tags = inherited_tags | bm_sub_dir_tags
 
         # Print folder description
-        if 'description' in node and node['description']:
-            print_color(f"{indent}   {node['description']}", 'cyan')
+        if 'description' in bookmark_dir_json_without_parent and bookmark_dir_json_without_parent['description']:
+            print_color(f"{indent}   {bookmark_dir_json_without_parent['description']}", 'cyan')
 
-        # Gather bookmarks and subfolders
-        bookmarks = []
-        subfolders = []
+        # Gather bookmarks and sub_dirs
+        bookmarks_in_tree = []
+        sub_dirs_in_tree = []
 
-        for key, value in node.items():
-            if isinstance(value, dict):
-                if value.get('type') == 'bookmark':
-                    bookmarks.append((key, value))
-                elif key not in ['tags', 'description', 'video_filename', 'timestamp', 'type']:
-                    subfolders.append((key, value))
+        for sub_parent_bm_dir_name, sub_dir_json_without_parent in bookmark_dir_json_without_parent.items():
+            if isinstance(sub_dir_json_without_parent, dict):
+                # Sub Dir is a bookmark
+                if sub_dir_json_without_parent.get('type') == 'bookmark':
+                    bookmarks_in_tree.append((sub_parent_bm_dir_name, sub_dir_json_without_parent))
+                # Sub Dir is a directory
+                elif sub_parent_bm_dir_name not in NON_NAME_BOOKMARK_KEYS:
+                    sub_dirs_in_tree.append((sub_parent_bm_dir_name, sub_dir_json_without_parent))
 
-        # Print bookmarks at this level (do NOT treat as folders)
-        for bookmark_tail_name, bookmark_info in sorted(bookmarks):
-            bookmark_tags = set(bookmark_info.get('tags', [])) - effective_inherited_tags
-            timestamp = bookmark_info.get('timestamp', 'unknown time')
+        # Print bookmarks_in_tree at this level (do NOT treat as folders)
+        for tree_bookmark_tail_name, tree_bookmark_json in sorted(bookmarks_in_tree):
+            # bookmark_tags = set(bookmark_info.get('tags', [])) - effective_inherited_tags
+            bookmark_tags = set(tree_bookmark_json.get('tags', []))
+            timestamp = tree_bookmark_json.get('timestamp', 'unknown time')
             if len(timestamp) < 5:
                 timestamp = '0' + timestamp
-            full_rel_path = f"{parent_path}:{bookmark_tail_name}" if parent_path else bookmark_tail_name
+
+            tree_bm_path_col_rel = f"{parent_bm_dir_col_rel}:{tree_bookmark_tail_name}" if parent_bm_dir_col_rel else tree_bookmark_tail_name
+            tree_bm_path_slash_rel = tree_bm_path_col_rel.replace(':', '/')
+            tree_bm_path_slash_abs = os.path.join(ABS_OBS_BOOKMARKS_DIR, tree_bm_path_slash_rel)
+
+            is_current = parent_bm_dir_col_rel and current_bm_path_colon_rel.startswith(
+                tree_bm_path_col_rel)
 
 
-            # print('---- current_bookmark_tail_name:')
-            # pprint(current_bookmark_tail_name)
-
-
-
-            full_found_rel_bookmark = f"{full_rel_path}:{bookmark_tail_name}"
-            full_current_bookmark = f"{current_folder_rel_path}:{current_bookmark_tail_name}"
-
-            # print('+++++ full_found_rel_bookmark:', full_found_rel_bookmark)
-            # print('+++++ full_current_bookmark:', full_current_bookmark)
-
-            is_current = current_bookmark_tail_name and full_found_rel_bookmark == full_current_bookmark
-
-            if is_current:
-                print('')
-                print('')
-                print('')
-                print('')
-                print('')
-                print('')
-
-                print('+++++ is_current !!!!!:')
-                print('')
-                print('')
-                print('')
-                print('')
-                print('')
-                print('')
-
-
-
-            hidden_ref_text = f" {HIDDEN_COLOR} {full_rel_path}{RESET_COLOR}"
+            hidden_ref_text = f" {HIDDEN_COLOR} {tree_bm_path_col_rel}{RESET_COLOR}"
             if is_current:
                 print(
-                    f"\033[32m{indent}   • {timestamp} {get_embedded_bookmark_file_link(full_rel_path, '📖')} {bookmark_tail_name} (current)\033[0m" + hidden_ref_text)
-            elif full_rel_path == f"{current_folder_abs_path}:{current_bookmark_tail_name}":
-                print(
-                    f"{indent}   • {timestamp} {get_embedded_bookmark_file_link(full_rel_path, '📖')} \033[32m{bookmark_tail_name} (current)\033[0m" + hidden_ref_text)
+                    f"\033[32m{indent}   • {timestamp} {get_embedded_bookmark_file_link(tree_bm_path_slash_abs, '📖')} {tree_bookmark_tail_name} (current)\033[0m" + hidden_ref_text)
             else:
                 print(
-                    f"{indent}   • {timestamp} {get_embedded_bookmark_file_link(full_rel_path, '📖')} {bookmark_tail_name} {hidden_ref_text}")
+                    f"{indent}   • {timestamp} {get_embedded_bookmark_file_link(tree_bm_path_slash_abs, '📖')} {tree_bookmark_tail_name} {hidden_ref_text}")
 
-            bookmark_description = bookmark_info.get('description', '')
+            bookmark_description = tree_bookmark_json.get('description', '')
             if bookmark_description:
                 print_color(f"{indent}      {bookmark_description}", 'cyan')
             if bookmark_tags:
                 print_color(f"{indent}      🏷️ {' '.join(f'•{tag}' for tag in sorted(bookmark_tags))}", 'cyan')
 
-        # Recurse into subfolders
-        for subfolder_name, subfolder_node in sorted(subfolders):
-            next_path = f"{parent_path}:{subfolder_name}" if parent_path else subfolder_name
+        # Recurse into sub_dirs_in_tree
+        for sub_dir_name, sub_dir_node in sorted(sub_dirs_in_tree):
+            next_path = f"{parent_bm_dir_col_rel}:{sub_dir_name}" if parent_bm_dir_col_rel else sub_dir_name
             print_tree_recursive(
-                subfolder_node,
-                subfolder_name,
-                indent_level + 1,
-                next_path,
-                current_bookmark_tail_name=current_bookmark_tail_name,
-                current_folder_abs_path=current_folder_abs_path,
-                inherited_tags=effective_inherited_tags
+                indent_level=indent_level + 1,
+                parent_bm_dir_name=sub_dir_name,
+                parent_bm_dir_col_rel=next_path,
+                bookmark_dir_json_without_parent=sub_dir_node,
+                # inherited_tags=effective_inherited_tags
             )
 
-
     # Start printing from the root level
-    for folder_name, folder_node in all_bookmarks.items():
+    for parent_bm_dir_name, sub_dir_json_without_parent in all_bookmarks.items():
         print_tree_recursive(
-            node=all_bookmarks[folder_name],
-            folder_name=folder_name,
             indent_level=0,
-            parent_path=folder_name,
-            current_bookmark_tail_name=current_bookmark_tail_name,
-            current_folder_abs_path=current_folder_abs_path
+            parent_bm_dir_name=parent_bm_dir_name,
+            parent_bm_dir_col_rel=parent_bm_dir_name,
+            bookmark_dir_json_without_parent=sub_dir_json_without_parent,
         )
-
 
     print('')
     print("=" * 50)
 
-    if current_bookmark_tail_name and current_folder_abs_path:
-        current_bookmark = current_folder_abs_path + ":" + current_bookmark_tail_name
+    if current_bm_tail_name and current_bm_dir_slash_abs:
+        current_bookmark = current_bm_dir_slash_abs + ":" + current_bm_tail_name
         rel_current_bookmark = abs_to_rel_path(current_bookmark, ABS_OBS_BOOKMARKS_DIR)
         rel_current_bookmark = rel_current_bookmark.replace('/', ':')
     else:
@@ -231,7 +206,7 @@ def print_all_folders_and_bookmarks(
 
 
 @print_def_name(IS_PRINT_DEF_NAME)
-def print_bookmarks_in_folder(folder_path, indent=0, last_used_path=None, inherited_tags=None):
+def print_bookmarks_in_directory(folder_path, indent=0, last_used_path=None, inherited_tags=None):
     if inherited_tags is None:
         inherited_tags = set()
 
@@ -240,12 +215,12 @@ def print_bookmarks_in_folder(folder_path, indent=0, last_used_path=None, inheri
 
     bookmark_tags_list = []
     child_bookmarks = []
-    subfolders = []
+    sub_dirs = []
 
     for entry in sorted(os.listdir(folder_path)):
         entry_path = os.path.join(folder_path, entry)
         if os.path.isdir(entry_path):
-            subfolders.append(entry_path)
+            sub_dirs.append(entry_path)
         elif entry == "bookmark_meta.json":
             with open(entry_path) as f:
                 meta = json.load(f)
@@ -253,10 +228,10 @@ def print_bookmarks_in_folder(folder_path, indent=0, last_used_path=None, inheri
                 bookmark_tags_list.append(tags)
                 child_bookmarks.append((entry_path, meta))
 
-    folder_tags = compute_hoistable_tags(bookmark_tags_list)
+    bm_sub_dir_tags = compute_hoistable_tags(bookmark_tags_list)
 
     # Print folder-level tags (only if not already inherited)
-    printable_tags = folder_tags - inherited_tags
+    printable_tags = bm_sub_dir_tags - inherited_tags
     if printable_tags:
         tag_str = " ".join([f"•{tag}" for tag in sorted(printable_tags)])
         print(" " * (indent + 3) + f"🏷️ {tag_str}")
@@ -266,7 +241,7 @@ def print_bookmarks_in_folder(folder_path, indent=0, last_used_path=None, inheri
         bookmark_dir = os.path.dirname(entry_path)
         bookmark_tail_name = os.path.basename(bookmark_dir)
         tags = set(meta.get("tags", []))
-        visible_tags = tags - folder_tags - inherited_tags
+        visible_tags = tags - bm_sub_dir_tags - inherited_tags
         time_str = meta.get("timestamp_formatted", "--:--")
         tag_str = " ".join([f"•{tag}" for tag in sorted(visible_tags)])
         display_line = f"{time_str} 📖 {bookmark_tail_name}"
@@ -276,15 +251,15 @@ def print_bookmarks_in_folder(folder_path, indent=0, last_used_path=None, inheri
         if tag_str:
             print(" " * (indent + 6) + f"🏷️ {tag_str}")
 
-    # Recurse into subfolders
-    for subfolder in subfolders:
-        print_bookmarks_in_folder(subfolder, indent + 3, last_used_path, inherited_tags | folder_tags)
+    # Recurse into sub_dirs
+    for sub_dir in sub_dirs:
+        print_bookmarks_in_directory(sub_dir, indent + 3, last_used_path, inherited_tags | bm_sub_dir_tags)
 
     # print_color('---- 2 full_folder_path:', 'magenta')
     # pprint(full_folder_path)
 
-    # print_all_folders_and_bookmarks(
-    #     current_folder_abs_path=full_folder_path,
-    #     current_bookmark_tail_name=None,
-    #     is_print_just_current_folder_bookmarks=True
+    # print_all_live_directories_and_bookmarks(
+    #     current_bm_dir_slash_abs=full_folder_path,
+    #     current_bm_tail_name=None,
+    #     is_print_just_current_directory_bookmarks=True
     # )

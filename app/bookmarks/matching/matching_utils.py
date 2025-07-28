@@ -97,6 +97,8 @@ def is_exact_bookmark_path_in_live_bookmarks(bookmark_obj):
     """
     Return exact match path if the normalized bookmark path matches query.
     Used during creation to avoid fuzzy fallbacks.
+
+    "active" -> "live"
     """
     cli_bookmark_path_rel = bookmark_obj["bookmark_dir_colon_rel"]
     all_bookmarks_object = get_all_valid_bookmarks_in_json_format()

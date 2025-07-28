@@ -34,8 +34,7 @@ def save_last_used_bookmark(matched_bookmark_obj):
 @memoize
 def get_last_used_bookmark():
     """Get the last used bookmark from the global state file."""
-    state_file = os.path.join(os.path.dirname(
-        __file__), "../obs_bookmark_saves", "last_bookmark_state.json")
+    state_file = os.path.join(ABS_OBS_BOOKMARKS_DIR, "last_bookmark_state.json")
 
     if os.path.exists(state_file):
         try:

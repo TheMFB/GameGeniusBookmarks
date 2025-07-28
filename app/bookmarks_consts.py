@@ -14,7 +14,8 @@ IS_DEBUG = False
 # IS_DEBUG_FULL = True
 IS_DEBUG_FULL = False
 IS_DEBUG_PRINT_ALL_BOOKMARKS_JSON = True
-IS_PRINT_JUST_CURRENT_FOLDER_BOOKMARKS = True
+IS_PRINT_DEV = True
+IS_PRINT_JUST_CURRENT_DIRECTORY_BOOKMARKS = True
 
 # LOCAL REDIS DEV
 IS_LOCAL_REDIS_DEV = os.environ.get('IS_LOCAL_REDIS_DEV', False)
@@ -32,9 +33,16 @@ RESET_COLOR = "\033[0m"
 SCREENSHOT_SAVE_SCALE = 0.5
 
 # EXCLUDED_DIRS = {"archive", "archive_temp", "temp"}
-EXCLUDED_DIRS = {"archive", "archive_temp", "temp", "videos"} # # TODO(MFB): DELETE AFTER TESTING
+# EXCLUDED_DIRS = {"archive", "archive_temp", "temp", "videos"} # # TODO(MFB): DELETE AFTER TESTING
+EXCLUDED_DIRS = {"archive", "archive_temp", "temp", "videos", "grand-parent", "grand-parent-2"}
 
 NAVIGATION_COMMANDS = ["next", "previous", "first", "last"]
+
+NON_NAME_BOOKMARK_KEYS = ["tags", "description", "video_filename", "timestamp", "type"]
+# TODO(KERCH): On creation, we should not allow these to be used as directory names. If they exist, we should raise an error.
+# TODO(KERCH): Create this list from the NAVIGATION_COMMANDS and NON_NAME_DIR_KEYS, instead of hardcoding it.
+RESERVED_DIR_KEYS = ["tags", "description", "video_filename", "timestamp", "type", "previous", "next", "first", "last"]
+
 
 ## ABS PATHS ##
 

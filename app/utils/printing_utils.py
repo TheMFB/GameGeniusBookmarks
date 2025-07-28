@@ -1,27 +1,16 @@
 from typing import Literal
 import base64
 import os
-import inspect
 from pprint import pprint
 
-from app.bookmarks_consts import ABS_OBS_BOOKMARKS_DIR
+from app.bookmarks_consts import IS_PRINT_DEV
 
-
-def get_embedded_file_link(func):
-    file_path = os.path.abspath(func.__code__.co_filename)
-
-    # Ensure three slashes after file:
-    uri = f"file://{file_path}" if file_path.startswith(
-        '/') else f"file:///{file_path}"
-    return f"\033]8;;{uri}\033\\{func.__name__}\033]8;;\033\\"
-
-
-def get_embedded_bookmark_file_link(colon_separated_path, text):
-    slash_separated_path = colon_separated_path.replace(':', '/')
+# TODO(): Pull out the dev log printing into a separate file, so that we don't have to import everything when we *.
+def get_embedded_bookmark_file_link(dir_abs_slash_path, text):
     if text == "📁":
-        file_path = ABS_OBS_BOOKMARKS_DIR + '/' + slash_separated_path + "/folder_meta.json"
+        file_path = os.path.join(dir_abs_slash_path, "folder_meta.json")
     else:
-        file_path = ABS_OBS_BOOKMARKS_DIR + '/' + slash_separated_path + "/bookmark_meta.json"
+        file_path = os.path.join(dir_abs_slash_path, "bookmark_meta.json")
 
     # Ensure three slashes after file:
     uri = f"file://{file_path}" if file_path.startswith(
@@ -33,7 +22,10 @@ ColorTypes = Literal['black', 'red', 'green',
                      'yellow', 'blue', 'magenta', 'cyan', 'white']
 
 
-def print_color(text: str, color: ColorTypes):
+def print_color(text: str, color: ColorTypes | None = None):
+    if not color:
+        return print(text)
+
     color_codes = {
         'black': 30,
         'red': 31,
@@ -47,6 +39,27 @@ def print_color(text: str, color: ColorTypes):
 
     print(f"\033[{color_codes[color]}m{text}\033[0m")
 
+def print_dev(
+    text: str,
+    color: ColorTypes | None = None,
+    is_print: bool = IS_PRINT_DEV
+):
+    if not is_print:
+        return
+    if not color:
+        return print(text)
+    return print_color(text, color)
+
+def pprint_dev(
+        text: str,
+        color: ColorTypes | None = None,
+        is_print: bool = IS_PRINT_DEV
+):
+    if not is_print:
+        return
+    if not color:
+        return pprint(text)
+    return print_color(text, color)
 
 def get_iterm_image_code(image_path, width="auto", height="auto"):
     try:
@@ -67,27 +80,27 @@ def print_image(image_path, width="auto", height="auto"):
         print(image_code)
 
 
-def gg_print(var, color=None):
-    # Try to get the variable name from the caller's source code
-    frame = inspect.currentframe().f_back
-    try:
-        # Get the line of code that called gg_print
-        call_line = inspect.getframeinfo(frame).code_context[0]
-        # Find the argument inside gg_print(...)
-        import re
-        match = re.search(r'gg_print\(([^,)\n]+)', call_line)
-        var_name = match.group(1).strip() if match else "variable"
-    except Exception:
-        var_name = "variable"
-    finally:
-        del frame
+# def gg_print(var, color=None):
+#     # Try to get the variable name from the caller's source code
+#     frame = inspect.currentframe().f_back
+#     try:
+#         # Get the line of code that called gg_print
+#         call_line = inspect.getframeinfo(frame).code_context[0]
+#         # Find the argument inside gg_print(...)
+#         import re
+#         match = re.search(r'gg_print\(([^,)\n]+)', call_line)
+#         var_name = match.group(1).strip() if match else "variable"
+#     except Exception:
+#         var_name = "variable"
+#     finally:
+#         del frame
 
-    # Print in your double-line style
+#     # Print in your double-line style
 
-    if color:
-        print_color(f"-- {var_name}:", color)
-    else:
-        print(f"-- {var_name}:")
-    pprint(var)
+#     if color:
+#         print_color(f"-- {var_name}:", color)
+#     else:
+#         print(f"-- {var_name}:")
+#     pprint(var)
 
 

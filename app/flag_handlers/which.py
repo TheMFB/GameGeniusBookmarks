@@ -1,6 +1,6 @@
 import os
 import json
-from app.bookmarks import find_matching_bookmarks
+from app.bookmarks.matching.matching_utils import find_matching_bookmarks
 from app.bookmark_dir_processes import parse_cli_bookmark_args
 from app.utils.decorators import print_def_name
 

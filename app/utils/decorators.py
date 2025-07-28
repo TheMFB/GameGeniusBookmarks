@@ -1,12 +1,18 @@
 from pprint import pprint
 import os
 from functools import wraps
-from app.utils.printing_utils import get_embedded_file_link, get_embedded_bookmark_file_link
-import inspect
 
 IS_PRINT_FILE_LINK= True
 IS_ADJUST_TO_STACK = True
 
+
+def get_embedded_file_link(func):
+    file_path = os.path.abspath(func.__code__.co_filename)
+
+    # Ensure three slashes after file:
+    uri = f"file://{file_path}" if file_path.startswith(
+        '/') else f"file:///{file_path}"
+    return f"\033]8;;{uri}\033\\{func.__name__}\033]8;;\033\\"
 
 def print_def_name(should_print=True):
     """
