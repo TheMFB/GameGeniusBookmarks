@@ -1,6 +1,7 @@
 # import os
 # import difflib
 import re
+from typing import List
 
 from app.bookmarks_consts import IS_DEBUG
 from app.bookmarks.bookmarks import load_bookmarks_from_folder, get_all_live_bookmarks_in_json_format
@@ -10,89 +11,6 @@ from app.utils.decorators import print_def_name, memoize
 from app.utils.bookmark_utils import split_path_into_array, does_path_exist_in_bookmarks, convert_exact_bookmark_path_to_dict
 
 IS_PRINT_DEF_NAME = True
-
-
-@print_def_name(IS_PRINT_DEF_NAME)
-def stepwise_match(user_parts, all_saved_bookmark_paths):
-    """Perform reverse stepwise matching of user_parts against bookmark paths."""
-    # Preprocess all bookmarks into tokenized forms
-    tokenized_bookmarks = [
-        (path, split_path_into_array(path)) for path in all_saved_bookmark_paths
-    ]
-
-    # Start by finding matches on the last user input part
-    depth = 1  # start from end of user input
-    while True:
-        matching = []
-        for orig_path, tokens in tokenized_bookmarks:
-            if len(tokens) < depth:
-                continue
-            if tokens[-depth].startswith(user_parts[-depth]):
-                matching.append((orig_path, tokens))
-
-        if not matching:
-            return []  # no matches at this depth — fail
-        if depth == len(user_parts):
-            return [m[0] for m in matching]  # all user parts matched
-        if len(matching) == 1:
-            return [matching[0][0]]  # only one left — use it
-
-        # More than one match, keep going deeper
-        tokenized_bookmarks = matching
-        depth += 1
-
-@print_def_name(IS_PRINT_DEF_NAME)
-def find_matching_bookmarks(bookmark_path_rel, root_dir_name):
-    """
-    Find all matching bookmarks using step-through logic and fallback fuzzy matching.
-    Returns a list of (bookmark_path, bookmark_info) tuples.
-    """
-    all_bookmark_objects = load_bookmarks_from_folder(root_dir_name)
-    if not all_bookmark_objects:
-        return [(None, None)]
-
-    all_saved_bookmark_paths = list(all_bookmark_objects.keys())
-    matches = []
-
-    # First try exact match
-    if bookmark_path_rel in all_saved_bookmark_paths:
-        if IS_DEBUG:
-            print(f"🎯 Found exact bookmark_path_rel match: '{bookmark_path_rel}'")
-        return (bookmark_path_rel, all_bookmark_objects[bookmark_path_rel])
-
-    # Normalize user input
-    user_cli_input_parts = split_path_into_array(bookmark_path_rel)
-    if IS_DEBUG:
-        print(f"🔎 Normalized user input: {user_cli_input_parts}")
-
-    # Try stepwise matching
-    stepwise_matches = stepwise_match(
-        user_cli_input_parts, all_saved_bookmark_paths)
-    if stepwise_matches:
-        for match in stepwise_matches:
-            matches.append((match, all_bookmark_objects[match]))
-        return matches
-
-    # Fallback fuzzy match (with scoring)
-    normalized_input = bookmark_path_rel.lower()
-    scored_matches = []
-    for path, info in all_bookmark_objects.items():
-        path_lower = path.lower()
-        tokens = set(path_lower.replace('/', ' ').replace('-', ' ').split())
-        input_tokens = set(normalized_input.replace(
-            '/', ' ').replace('-', ' ').split())
-        score = len(tokens & input_tokens)
-        if score > 0:
-            scored_matches.append((score, path, info))
-    if scored_matches:
-        # Sort by score descending, then path
-        scored_matches.sort(key=lambda x: (-x[0], x[1]))
-        for _, path, info in scored_matches:
-            matches.append((path, info))
-        return matches
-
-    # No matches found
-    return [(None, None)]
 
 
 @print_def_name(IS_PRINT_DEF_NAME)
@@ -264,6 +182,7 @@ def interactive_choose_bookmark(matched_bookmark_strings: list[str]) -> str | No
     for idx, match in enumerate(matched_bookmark_strings):
         print(f"  {idx + 1}. {match}")
     print("  0. Cancel")
+    print("  c. Create new bookmark")
 
     while True:
         try:
@@ -271,6 +190,9 @@ def interactive_choose_bookmark(matched_bookmark_strings: list[str]) -> str | No
             if choice == "0":
                 print("❌ Cancelled.")
                 return None
+            if choice.lower() == "c":
+                print("🆕 Creating new bookmark...")
+                return "create_new_bookmark"
             choice_num = int(choice)
             if 1 <= choice_num <= len(matched_bookmark_strings):
                 selected = matched_bookmark_strings[choice_num - 1]
@@ -284,7 +206,10 @@ def interactive_choose_bookmark(matched_bookmark_strings: list[str]) -> str | No
 
 
 @print_def_name(IS_PRINT_DEF_NAME)
-def handle_bookmark_matches(matched_bookmark_strings: list[str]) -> MatchedBookmarkObj | int | None:
+def handle_bookmark_matches(
+    matched_bookmark_strings: list[str],
+    is_prompt_user_for_selection: bool = False
+) -> MatchedBookmarkObj | int |  List[MatchedBookmarkObj] | None:
     """
     Handle the results of a bookmark match.
     """
@@ -294,11 +219,15 @@ def handle_bookmark_matches(matched_bookmark_strings: list[str]) -> MatchedBookm
     if len(matched_bookmark_strings) == 1:
         return convert_exact_bookmark_path_to_dict(matched_bookmark_strings[0])
     else:
-        chosen_bookmark_string = interactive_choose_bookmark(matched_bookmark_strings)
-        if chosen_bookmark_string:
-            return convert_exact_bookmark_path_to_dict(chosen_bookmark_string)
-        else:
+        if is_prompt_user_for_selection:
+            chosen_bookmark_string = interactive_choose_bookmark(matched_bookmark_strings)
+            if chosen_bookmark_string:
+                return convert_exact_bookmark_path_to_dict(chosen_bookmark_string)
             return 1
+
+        else:
+            return [convert_exact_bookmark_path_to_dict(matched_bookmark_string) for matched_bookmark_string in matched_bookmark_strings]
+
 
 
 @print_def_name(IS_PRINT_DEF_NAME)

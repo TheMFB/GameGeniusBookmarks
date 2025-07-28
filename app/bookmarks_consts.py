@@ -22,8 +22,6 @@ IS_PRINT_JUST_CURRENT_DIRECTORY_BOOKMARKS_ON_LS = False
 
 # LOCAL REDIS DEV
 IS_LOCAL_REDIS_DEV = os.environ.get('IS_LOCAL_REDIS_DEV', False)
-print('---- IS_LOCAL_REDIS_DEV:', 'blue')
-print(IS_LOCAL_REDIS_DEV)
 
 LOCAL_REDIS_SESSIONS_HOST = "localhost"
 LOCAL_REDIS_SESSIONS_PORT = 6379
@@ -46,7 +44,18 @@ NAVIGATION_COMMANDS = ["next", "previous", "first", "last"]
 NON_NAME_BOOKMARK_KEYS = ["tags", "description", "video_filename", "timestamp", "type"]
 # TODO(KERCH): On creation, we should not allow these to be used as directory names. If they exist, we should raise an error.
 # TODO(KERCH): Create this list from the NAVIGATION_COMMANDS and NON_NAME_DIR_KEYS, instead of hardcoding it.
-RESERVED_DIR_KEYS = ["tags", "description", "video_filename", "timestamp", "type", "previous", "next", "first", "last"]
+RESERVED_BOOKMARK_NAMES = [
+    "tags",
+    "description",
+    "video_filename",
+    "timestamp",
+    "type",
+    "previous",
+    "next",
+    "first",
+    "last",
+    "create_new_bookmark"
+]
 
 
 ## ABS PATHS ##

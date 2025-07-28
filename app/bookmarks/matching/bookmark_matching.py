@@ -1,3 +1,4 @@
+from typing import List
 from app.utils.printing_utils import *
 from app.bookmarks.matching.matching_utils import find_bookmarks_by_substring_with_all_live_bm_path_parts, find_bookmarks_by_exact_trailing_live_bm_path_parts, handle_bookmark_matches, find_bookmarks_by_substring_with_trailing_live_bm_path_parts, find_exact_matches_by_bookmark_tokens, find_partial_substring_matches_by_bookmark_tokens
 from app.bookmarks_consts import NAVIGATION_COMMANDS
@@ -13,7 +14,7 @@ IS_PRINT_DEF_NAME = True
 
 
 @print_def_name(IS_PRINT_DEF_NAME)
-def find_best_bookmark_match(cli_bookmark_string) -> MatchedBookmarkObj | int | None:
+def find_best_bookmark_match(cli_bookmark_string, is_prompt_user_for_selection: bool = True) -> MatchedBookmarkObj | List[MatchedBookmarkObj] | int | None:
     """
     Example Target: `GRANDPARENT:PARENT:BOOKMARK -t comp domination`
 
@@ -35,14 +36,14 @@ def find_best_bookmark_match(cli_bookmark_string) -> MatchedBookmarkObj | int | 
     # Match: `GRANDPARENT:PARENT:BOOKMARK`
     if cli_bookmark_string_slash in all_live_bookmark_path_slash_rels:
         print_color(f'Found exact match! {cli_bookmark_string_slash}', 'green')
-        return handle_bookmark_matches([cli_bookmark_string])
+        return handle_bookmark_matches([cli_bookmark_string], is_prompt_user_for_selection)
 
     print('---- find_best_bookmark_match - 2 : Exact Match (without some parents) ----')
     # 2. Exact match (without some parents)
     # Match: `PARENT:BOOKMARK`
     matches = find_bookmarks_by_exact_trailing_live_bm_path_parts(cli_bookmark_string, all_live_bookmark_path_slash_rels)
     if matches:
-        return handle_bookmark_matches(matches)
+        return handle_bookmark_matches(matches, is_prompt_user_for_selection)
 
     print('---- find_best_bookmark_match - 3 : Substring Match (with full path) ----')
     # 3. Substring match (with full path)
@@ -50,7 +51,7 @@ def find_best_bookmark_match(cli_bookmark_string) -> MatchedBookmarkObj | int | 
     matches = find_bookmarks_by_substring_with_all_live_bm_path_parts(
         cli_bookmark_string, all_live_bookmark_path_slash_rels)
     if matches:
-        return handle_bookmark_matches(matches)
+        return handle_bookmark_matches(matches, is_prompt_user_for_selection)
 
     print('---- find_best_bookmark_match - 4 : Substring Match (without some parents) ----')
     # 4. Substring match (without some parents)
@@ -58,7 +59,7 @@ def find_best_bookmark_match(cli_bookmark_string) -> MatchedBookmarkObj | int | 
     matches = find_bookmarks_by_substring_with_trailing_live_bm_path_parts(
         cli_bookmark_string, all_live_bookmark_path_slash_rels)
     if matches:
-        return handle_bookmark_matches(matches)
+        return handle_bookmark_matches(matches, is_prompt_user_for_selection)
 
     # TODO(MFB): DONE UP TO HERE
     print('---- find_best_bookmark_match - 5 : Tag/description match ----')
@@ -67,7 +68,7 @@ def find_best_bookmark_match(cli_bookmark_string) -> MatchedBookmarkObj | int | 
     matches = find_exact_matches_by_bookmark_tokens(
         cli_bookmark_string, all_live_bookmark_path_slash_rels)
     if matches:
-        return handle_bookmark_matches(matches)
+        return handle_bookmark_matches(matches, is_prompt_user_for_selection)
 
     print('---- find_best_bookmark_match - 6 : Tag/description match ----')
     # 6. Tag/description partial matches
@@ -75,7 +76,7 @@ def find_best_bookmark_match(cli_bookmark_string) -> MatchedBookmarkObj | int | 
     matches = find_partial_substring_matches_by_bookmark_tokens(
         cli_bookmark_string, True )
     if matches:
-        return handle_bookmark_matches(matches)
+        return handle_bookmark_matches(matches, is_prompt_user_for_selection)
 
     # TODO(MFB): Implement fuzzy matching
     # print('---- find_best_bookmark_match - 6 : Fuzzy Match ----')
