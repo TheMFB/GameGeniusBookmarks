@@ -1,6 +1,6 @@
 # import os
-import re
 # import difflib
+import re
 
 from app.bookmarks_consts import IS_DEBUG
 from app.bookmarks.bookmarks import load_bookmarks_from_folder, get_all_live_bookmarks_in_json_format
@@ -254,10 +254,11 @@ def build_bookmark_token_map(include_tags_and_descriptions=True):
 #             print("❌ Please enter a number.")
 
 
+# TODO(MFB): Pull out, and then add a "create new bookmark" option.
 @print_def_name(IS_PRINT_DEF_NAME)
 def interactive_choose_bookmark(matched_bookmark_strings: list[str]) -> str | None:
     """
-    Ask the user to choose a bookmark from a list of matches.
+    Ask the user to choose a bookmark fr om a list of matches.
     """
     print("🤔 Multiple results found:")
     for idx, match in enumerate(matched_bookmark_strings):
