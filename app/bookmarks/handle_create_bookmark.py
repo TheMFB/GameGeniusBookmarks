@@ -60,14 +60,15 @@ def handle_create_bookmark_and_parent_dirs(
 
     # CREATE DIRECTORY METADATA #
 
-    # Create folder metadata for nested bookmarks
+    # Create directory metadata for nested bookmarks
     path_parts = bookmark_dir_slash_rel.split('/')
     current_path = ABS_OBS_BOOKMARKS_DIR
     for i, dir_name in enumerate(path_parts[:-1]): # Take all but the last part (the bookmark name itself)
         current_path = os.path.join(current_path, dir_name)
 
-        # TODO(KERCH): We would add in here the description and tags for when we have the -t# flags.
-        # Create folder metadata if it doesn't exist
+        # TODO(KERCH): We would add in here the description and tags for when we have the -t# flags. https://app.clickup.com/t/86aaat28f
+
+        # Create directory metadata if it doesn't exist
         create_directory_meta(current_path, description="", tags=None)
         if IS_DEBUG:
             print(f"📋 Created directory metadata for: {dir_name}")

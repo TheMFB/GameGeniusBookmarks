@@ -9,7 +9,7 @@ from app.bookmarks_print import print_all_live_directories_and_bookmarks
 from app.flag_handlers import handle_matched_bookmark, handle_main_process, handle_save_redis_after_json, process_flags, CurrentRunSettings
 from app.bookmarks.handle_create_bookmark import handle_create_bookmark_and_parent_dirs
 from app.types import MatchedBookmarkObj
-from app.bookmarks.matching.bookmark_matching import find_best_bookmark_match
+from app.bookmarks.matching.bookmark_matching import find_best_bookmark_match_or_create
 from app.bookmarks.last_used import save_last_used_bookmark
 
 
@@ -32,7 +32,7 @@ def main():
     cli_bookmark_string = args[0]
 
     # Find the bookmark requested (either by name or reserved navigation command)
-    matched_bookmark_obj = find_best_bookmark_match(
+    matched_bookmark_obj = find_best_bookmark_match_or_create(
         cli_bookmark_string,
         current_run_settings_obj=current_run_settings_obj,
         is_prompt_user_for_selection=True
@@ -42,14 +42,8 @@ def main():
     pprint_dev(matched_bookmark_obj)
 
     if matched_bookmark_obj == 1 or matched_bookmark_obj == 0:
-        print(f"❌ Error in find_best_bookmark_match")
+        print_color("❌ Error in find_best_bookmark_match_or_create - No matches found nor created", 'red')
         return matched_bookmark_obj
-
-    if matched_bookmark_obj == "create_new_bookmark":
-        print(f"🆕 Creating new bookmark...")
-        return 0
-
-
 
 
     # Handle matched bookmark
@@ -62,11 +56,11 @@ def main():
             current_run_settings_obj
         )
         if isinstance(result, int):
-            print("❌ Error in handle_matched_bookmark")
+            print_color("❌ Error in handle_matched_bookmark", 'red')
             return result  # an error code like 1 was returned
 
     elif not matched_bookmark_obj or matched_bookmark_obj in [1, 0]:
-        print(f"❌ Bookmark not found and user did not create a new bookmark")
+        print_color("❌ Bookmark not found and user did not create a new bookmark", 'red')
         return matched_bookmark_obj
     else:
         print_dev(
@@ -79,7 +73,7 @@ def main():
             current_run_settings_obj
         )
         if isinstance(matched_bookmark_obj, int):
-            print("❌ Error in handle_create_bookmark_and_parent_dirs")
+            print_color("❌ Error in handle_create_bookmark_and_parent_dirs", 'red')
             return matched_bookmark_obj
 
 
@@ -92,7 +86,7 @@ def main():
         print("🚀 Running main process...")
         result = handle_main_process(current_run_settings=current_run_settings_obj)
         if result != 0:
-            print("❌ Main process failed")
+            print_color("❌ Main process failed", 'red')
             return result
 
     # Check if redis_after.json already exists before saving final state (skip in dry run modes)
@@ -130,7 +124,7 @@ def main():
                 print(f"⚠️ Preview not supported on this platform.")
             return 0
         else:
-            print(f"❌ No screenshot.jpg found for bookmark '{matched_bookmark_obj['bookmark_tail_name']}'")
+            print_color(f"❌ No screenshot.jpg found for bookmark '{matched_bookmark_obj['bookmark_tail_name']}'", 'red')
             return 1
 
     # Don't update folder metadata at the end - only update when actually creating new folders

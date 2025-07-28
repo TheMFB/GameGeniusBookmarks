@@ -1,5 +1,5 @@
 from pprint import pprint
-from app.bookmarks.matching.bookmark_matching import find_best_bookmark_match
+from app.bookmarks.matching.bookmark_matching import find_best_bookmark_match_or_create
 from app.bookmark_dir_processes import parse_cli_bookmark_args
 from app.utils.decorators import print_def_name
 
@@ -30,7 +30,7 @@ def handle_which(args):
         print("Usage: bm <bookmark_path> --which")
         return 1
 
-    bookmark_obj_matches = find_best_bookmark_match(
+    bookmark_obj_matches = find_best_bookmark_match_or_create(
         cli_bookmark_string, is_prompt_user_for_selection=False)
 
     if not bookmark_obj_matches:
