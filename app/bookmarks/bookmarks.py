@@ -12,7 +12,7 @@ from app.types import MatchedBookmarkObj, BookmarkPathDictionary
 from app.utils.printing_utils import print_color
 from app.utils.decorators import print_def_name, memoize
 
-IS_AGGREGATE_TAGS = False
+IS_AGGREGATE_TAGS_AND_HOIST_GROUPED = True
 IS_PRINT_DEF_NAME = True
 
 # Global
@@ -111,7 +111,7 @@ def get_all_valid_bookmarks_in_json_format():
         for sub_dir_name, sub_dir_node in sub_dirs.items():
             node[sub_dir_name] = sub_dir_node
 
-        if IS_AGGREGATE_TAGS:
+        if IS_AGGREGATE_TAGS_AND_HOIST_GROUPED:
             # --- Tag aggregation logic ---
             # Gather tags from all children (sub_dirs and bookmarks)
             child_tag_sets = []

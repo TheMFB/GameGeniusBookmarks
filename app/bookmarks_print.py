@@ -36,8 +36,6 @@ def collect_all_bookmark_tags_recursive(node):
 
     return all_tags
 
-# TODO(MFB): Tags are not being hoisted.
-
 @print_def_name(IS_PRINT_DEF_NAME)
 def print_all_live_directories_and_bookmarks(
         bookmark_obj=None,
@@ -49,7 +47,6 @@ def print_all_live_directories_and_bookmarks(
     current_bm_tail_name = None
     current_bm_dir_slash_abs = None
     current_bm_path_colon_rel = None
-    current_bm_dir_slash_rel = None
 
     # Get last used bookmark for highlighting if not provided with the current bookmark object.
     if not bookmark_obj:
@@ -58,20 +55,11 @@ def print_all_live_directories_and_bookmarks(
             current_bm_tail_name = last_used_info.get('bookmark_tail_name', '')
             current_bm_dir_slash_abs = last_used_info.get('bookmark_dir_slash_abs', '')
             current_bm_path_colon_rel = last_used_info.get('bookmark_path_colon_rel', '')
-            current_bm_dir_slash_rel = abs_to_rel_path(current_bm_dir_slash_abs, ABS_OBS_BOOKMARKS_DIR)
 
     else:
         current_bm_tail_name = bookmark_obj["bookmark_tail_name"]
         current_bm_dir_slash_abs = bookmark_obj["bookmark_dir_slash_abs"]
         current_bm_path_colon_rel = bookmark_obj["bookmark_path_colon_rel"]
-        current_bm_dir_slash_rel = bookmark_obj["bookmark_dir_slash_rel"]
-
-
-    if IS_DEBUG:
-        print_color('---- current_bm_tail_name after:', 'magenta')
-        pprint(current_bm_tail_name)
-        print_color('---- current_bm_dir_slash_rel after:', 'magenta')
-        pprint(current_bm_dir_slash_rel)
 
     all_bookmarks = get_all_valid_bookmarks_in_json_format()
 
@@ -187,6 +175,7 @@ def print_all_live_directories_and_bookmarks(
 
     # Start printing from the root level
     for parent_bm_dir_name, sub_dir_json_without_parent in all_bookmarks.items():
+        print('')
         print_tree_recursive(
             indent_level=0,
             parent_bm_dir_name=parent_bm_dir_name,
@@ -259,12 +248,3 @@ def print_bookmarks_in_directory(folder_path, indent=0, last_used_path=None, inh
     # Recurse into sub_dirs
     for sub_dir in sub_dirs:
         print_bookmarks_in_directory(sub_dir, indent + 3, last_used_path, inherited_tags | bm_sub_dir_tags)
-
-    # print_color('---- 2 full_folder_path:', 'magenta')
-    # pprint(full_folder_path)
-
-    # print_all_live_directories_and_bookmarks(
-    #     current_bm_dir_slash_abs=full_folder_path,
-    #     current_bm_tail_name=None,
-    #     is_print_just_current_directory_bookmarks=True
-    # )
