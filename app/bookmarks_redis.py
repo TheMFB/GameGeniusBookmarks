@@ -1,18 +1,15 @@
 import subprocess
 import os
 from typing import Literal
-
 from app.consts.bookmarks_consts import IS_DEBUG, INITIAL_REDIS_STATE_DIR, IS_LOCAL_REDIS_DEV
 from app.utils.decorators import print_def_name
 from app.utils.printing_utils import *
 from standalone_utils.redis.export_from_redis import export_from_redis
 from standalone_utils.redis.load_into_redis import load_into_redis
 
-
-
 IS_PRINT_DEF_NAME = True
 
-# TODO(KERCH): Keep going from here -- I changed the parameters here to be more align to what you're used to seeing.
+
 @print_def_name(IS_PRINT_DEF_NAME)
 def run_redis_command(
     load_or_export: Literal["load", "export"],
@@ -59,7 +56,7 @@ def run_redis_command(
 
 # def copy_preceding_bookmark_redis_state(matched_bookmark_obj: MatchedBookmarkObj):
 #     """Copy redis_after.json from the preceding bookmark to redis_before.json of current bookmark"""
-#     # TODO(KERCH): ++ We need to determine the preceding bookmark for the parent folder. However, if instead we define a bookmark after "--use-preceding-bookmark" or "-p", we should use that bookmark's redis_after.json instead.
+#     # TODO(): ++ We need to determine the preceding bookmark for the parent folder. However, if instead we define a bookmark after "--use-preceding-bookmark" or "-p", we should use that bookmark's redis_after.json instead.
 #     preceding_bookmark = find_preceding_bookmark_args(bookmark_name, folder_dir)
 #     if not preceding_bookmark:
 #         print(f"❌ No preceding bookmark found for '{bookmark_name}'")

@@ -41,7 +41,6 @@ def collect_all_bookmark_tags_recursive(node):
 def print_all_live_directories_and_bookmarks(
         bookmark_obj=None,
         is_print_just_current_directory_bookmarks=IS_PRINT_JUST_CURRENT_DIRECTORY_BOOKMARKS
-        # TODO(KERCH): We no longer have this being used? Re-implement it.
 ):
     """Print all folders and their bookmarks, highlighting the current one"""
     print('')
