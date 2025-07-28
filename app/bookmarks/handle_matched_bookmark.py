@@ -39,14 +39,13 @@ def handle_matched_bookmark(
         print("❌ Failed to load OBS bookmark")
         return 1
 
-    # TODO(KERCH): Should we look to see if the bookmark_meta exists?
+    # Sanity check that the bookmark exists
     if not matched_bookmark_path_rel or not os.path.exists(matched_bookmark_path_abs):
         print(f"❌ Bookmark does not exist: '{matched_bookmark_path_rel}'")
         return 1
 
     # Check if redis_before.json exists in the bookmark directory
-    redis_before_path = os.path.join(
-        matched_bookmark_path_abs, "redis_before.json")
+    redis_before_path = os.path.join(matched_bookmark_path_abs, "redis_before.json")
 
     # Handle Redis state based on flags (skip if super dry run)
     if current_run_settings_obj["is_super_dry_run"]:

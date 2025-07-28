@@ -5,7 +5,7 @@ import os
 import json
 
 from app.bookmark_dir_processes import get_all_valid_root_dir_names
-from app.consts.bookmarks_consts import IS_DEBUG, IS_DEBUG_PRINT_ALL_BOOKMARKS_JSON
+from app.consts.bookmarks_consts import IS_DEBUG, IS_DEBUG_PRINT_ALL_BOOKMARKS_JSON, REPO_ROOT
 from app.bookmarks_meta import load_bookmark_meta_from_rel, load_bookmark_meta_from_abs, load_folder_meta
 from app.types import MatchedBookmarkObj, BookmarkPathDictionary
 from app.utils.printing_utils import *
@@ -195,27 +195,20 @@ def create_bookmark_symlinks(matched_bookmark_obj):
 
 
     # Get the root directory of the bookmark manager
-    root_dir = os.path.dirname(os.path.dirname(__file__))
-    shortcuts_dir = os.path.join(root_dir, "shortcuts")
-
-    # Create shortcuts directory if it doesn't exist
-    if not os.path.exists(shortcuts_dir):
-        os.makedirs(shortcuts_dir)
+    shortcuts_dir = os.path.join(REPO_ROOT, "shortcuts")
+    os.makedirs(shortcuts_dir, exist_ok=True)
 
     # Create last_used_bookmark directory if it doesn't exist
     last_used_bookmark_dir = os.path.join(shortcuts_dir, "last_used_bookmark")
-    if not os.path.exists(last_used_bookmark_dir):
-        os.makedirs(last_used_bookmark_dir)
+    os.makedirs(last_used_bookmark_dir, exist_ok=True)
 
     # Create last_used_bookmark_folder directory if it doesn't exist
     last_used_bookmark_folder_dir = os.path.join(shortcuts_dir, "last_used_bookmark_folder")
-    if not os.path.exists(last_used_bookmark_folder_dir):
-        os.makedirs(last_used_bookmark_folder_dir)
+    os.makedirs(last_used_bookmark_folder_dir, exist_ok=True)
 
-    # Clear the last_used_bookmark directory - remove everything first
-    if os.path.exists(last_used_bookmark_dir):
-        for item in os.listdir(last_used_bookmark_dir):
-            item_path = os.path.join(last_used_bookmark_dir, item)
+    def clear_directory(directory_path):
+        for item in os.listdir(directory_path):
+            item_path = os.path.join(directory_path, item)
             try:
                 if os.path.islink(item_path):
                     os.unlink(item_path)
@@ -226,19 +219,8 @@ def create_bookmark_symlinks(matched_bookmark_obj):
             except Exception as e:
                 print(f"⚠️  Warning: Could not remove {item_path}: {e}")
 
-    # Clear the last_used_bookmark_folder directory - remove everything first
-    if os.path.exists(last_used_bookmark_folder_dir):
-        for item in os.listdir(last_used_bookmark_folder_dir):
-            item_path = os.path.join(last_used_bookmark_folder_dir, item)
-            try:
-                if os.path.islink(item_path):
-                    os.unlink(item_path)
-                elif os.path.isfile(item_path):
-                    os.remove(item_path)
-                elif os.path.isdir(item_path):
-                    shutil.rmtree(item_path)
-            except Exception as e:
-                print(f"⚠️  Warning: Could not remove {item_path}: {e}")
+    clear_directory(last_used_bookmark_dir)
+    clear_directory(last_used_bookmark_folder_dir)
 
     # Construct the target paths
     bookmark_dir = matched_bookmark_obj["bookmark_dir_slash_abs"]
@@ -246,9 +228,6 @@ def create_bookmark_symlinks(matched_bookmark_obj):
     bookmark_tail_name = matched_bookmark_obj["bookmark_tail_name"]
     bookmark_parent_name = os.path.basename(os.path.dirname(bookmark_path))
 
-
-
-    # Get the bookmark name and folder name (last parts of the paths)
 
     # Define symlink paths
     bookmark_symlink_path = os.path.join(
@@ -277,7 +256,6 @@ def create_bookmark_symlinks(matched_bookmark_obj):
         print(f"⚠️  Could not create symlinks: {e}")
 
 
-# TODO(MFB): Bugfix
 @print_def_name(IS_PRINT_DEF_NAME)
 @memoize
 def get_all_live_bookmark_path_slash_rels():
@@ -291,5 +269,3 @@ def get_all_live_bookmark_path_slash_rels():
         bookmark_paths.extend(all_bookmark_objects.keys())
 
     return bookmark_paths
-
-

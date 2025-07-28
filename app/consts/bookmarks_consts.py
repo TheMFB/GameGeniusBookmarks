@@ -59,7 +59,7 @@ RESERVED_BOOKMARK_NAMES = [
 
 
 ## ABS PATHS ##
-
+# TODO(MFB): There's a better way to grab the repo abs root than defining it in the .env file.
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Bookmarks directory is now in the repo root
 ABS_OBS_BOOKMARKS_DIR = os.path.join(REPO_ROOT, "obs_bookmark_saves")
@@ -71,6 +71,4 @@ if IS_LOCAL_REDIS_DEV:
     REDIS_DUMP_DIR = os.path.join(REPO_ROOT, "standalone_utils", "redis", "redis_dump")
 else:
     REDIS_DUMP_DIR = os.path.join(GAME_GENIUS_DIR, "game-genius/services/session_manager/utils/standalone/redis_dump")
-
-
 

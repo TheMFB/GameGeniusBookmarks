@@ -42,12 +42,13 @@ def main():
     pprint_dev(matched_bookmark_obj)
 
     if matched_bookmark_obj == 1 or matched_bookmark_obj == 0:
-        print_color("❌ Error in find_best_bookmark_match_or_create - No matches found nor created", 'red')
+        print_color(
+            "❌ Bookmark not found and user did not create a new bookmark", 'red')
         return matched_bookmark_obj
 
 
     # Handle matched bookmark
-    if matched_bookmark_obj and not matched_bookmark_obj in ["create_new_bookmark", 1, 0]:
+    if matched_bookmark_obj and not matched_bookmark_obj in [1, 0]:
         print_dev('---- navigation/matched_bookmark_obj:', 'magenta')
         pprint_dev(matched_bookmark_obj)
 
@@ -59,27 +60,8 @@ def main():
             print_color("❌ Error in handle_matched_bookmark", 'red')
             return result  # an error code like 1 was returned
 
-    elif not matched_bookmark_obj or matched_bookmark_obj in [1, 0]:
-        print_color("❌ Bookmark not found and user did not create a new bookmark", 'red')
-        return matched_bookmark_obj
-    else:
-        print_dev(
-            '+++++ handle create bookmark but created matched_bookmark_obj:')
-        print_dev(matched_bookmark_obj)
-
-        # Creating Bookmark
-        matched_bookmark_obj = handle_create_bookmark_and_parent_dirs(
-            cli_bookmark_string,
-            current_run_settings_obj
-        )
-        if isinstance(matched_bookmark_obj, int):
-            print_color("❌ Error in handle_create_bookmark_and_parent_dirs", 'red')
-            return matched_bookmark_obj
 
 
-
-
-    # TODO(MFB): Move the handle_matched_bookmark to after create bookmark.
 
     # Run the main process (unless dry run modes)
     if not current_run_settings_obj["is_dry_run"] and not current_run_settings_obj["is_super_dry_run"]:
