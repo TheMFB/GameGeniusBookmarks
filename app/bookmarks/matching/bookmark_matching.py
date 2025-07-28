@@ -31,6 +31,8 @@ def find_best_bookmark_match(cli_bookmark_string, is_prompt_user_for_selection: 
     # Get all valid bookmark paths in slash-separated format (relative)
     all_live_bookmark_path_slash_rels = get_all_live_bookmark_path_slash_rels()
 
+    # TODO(MFB): For anything other than an exact match, even if there is a single match, we should prompt the user for selection (create new bookmark/cancel). We should also tell the user which stage the match got to.
+
     print('---- find_best_bookmark_match - 1 : Exact Match (full path) ----')
     # 1. Exact match (full path)
     # Match: `GRANDPARENT:PARENT:BOOKMARK`

@@ -8,11 +8,16 @@ from app.utils.decorators import print_def_name
 
 IS_PRINT_DEF_NAME = True
 
+
 @print_def_name(IS_PRINT_DEF_NAME)
-def save_obs_screenshot(bookmark_path_slash_abs: str):
+def save_obs_screenshot(bookmark_path_slash_abs: str, is_overwrite: bool = False):
     """Takes screenshot from OBS and saves it to screenshot.jpg in the bookmark directory."""
 
     screenshot_path = os.path.join(bookmark_path_slash_abs, "screenshot.jpg")
+
+    if not is_overwrite and os.path.exists(screenshot_path):
+        print(f"📸 Screenshot already exists: {screenshot_path}")
+        return
 
     try:
         cl = obs.ReqClient(host="localhost", port=4455, password="", timeout=3)

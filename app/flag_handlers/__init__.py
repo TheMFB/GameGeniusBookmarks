@@ -7,7 +7,7 @@ from .find_cli_tags import *
 from .handle_matched_bookmark import *
 from .handle_bookmark_not_found import *
 from .save_obs_screenshot import *
-from .save_redis_and_friendly_json import *
+from .save_current_redis_to_bm_before_json import *
 from .run_main_process import *
 from .handle_save_redis_after_json import *
 from .process_flags import *

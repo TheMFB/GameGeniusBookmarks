@@ -10,7 +10,7 @@ from app.utils.printing_utils import *
 IS_PRINT_DEF_NAME = True
 
 @print_def_name(IS_PRINT_DEF_NAME)
-def save_redis_and_friendly_json(bookmark_path_slash_abs: str):
+def save_current_redis_to_bm_before_json(bookmark_path_slash_abs: str):
     print_color('---- bookmark_path_slash_abs:', 'magenta')
     pprint(bookmark_path_slash_abs)
 

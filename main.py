@@ -6,7 +6,8 @@ from pprint import pprint
 from app.utils.printing_utils import *
 from app.bookmarks_consts import IS_DEBUG, IS_PRINT_JUST_CURRENT_DIRECTORY_BOOKMARKS
 from app.bookmarks_print import print_all_live_directories_and_bookmarks
-from app.flag_handlers import handle_matched_bookmark, handle_bookmark_not_found, handle_main_process, handle_save_redis_after_json, process_flags, CurrentRunSettings
+from app.flag_handlers import handle_matched_bookmark, handle_main_process, handle_save_redis_after_json, process_flags, CurrentRunSettings
+from app.bookmarks.handle_create_bookmark import handle_create_bookmark
 from app.types import MatchedBookmarkObj
 from app.bookmarks.matching.bookmark_matching import find_best_bookmark_match
 from app.bookmarks.last_used import save_last_used_bookmark
@@ -38,15 +39,12 @@ def main():
         print(f"❌ Error in find_best_bookmark_match")
         return matched_bookmark_obj
 
-    # TODO(MFB): +++ main.py +++ ?
-
 
     # Handle exact bookmark path match or navigation match
-    if matched_bookmark_obj:
-        print_color('---- navigation/matched_bookmark_obj:', 'magenta')
-        pprint(matched_bookmark_obj)
+    if matched_bookmark_obj and not matched_bookmark_obj in ["create_new_bookmark", 1, 0]:
+        print_dev('---- navigation/matched_bookmark_obj:', 'magenta')
+        pprint_dev(matched_bookmark_obj)
 
-        # TODO(MFB): create a matched_bookmark_obj, only pass that and the current_run_settings_obj into the function. Allow the function to unpack as necessary.
         result = handle_matched_bookmark(
             matched_bookmark_obj,
             current_run_settings_obj
@@ -54,22 +52,21 @@ def main():
         if isinstance(result, int):
             print("❌ Error in handle_matched_bookmark")
             return result  # an error code like 1 was returned
-    else:
-        print_color('==== no matched_bookmark_obj ====', 'magenta')
 
+    elif not matched_bookmark_obj or matched_bookmark_obj in [1, 0]:
+        print(f"❌ Bookmark not found and user did not create a new bookmark")
+        return matched_bookmark_obj
+    else:
+        print_dev(
+            '+++++ handle create bookmark but created matched_bookmark_obj:')
+        print_dev(matched_bookmark_obj)
         # Bookmark does not exist, and user intends to create it
-        matched_bookmark_obj = handle_bookmark_not_found(
-            cli_bookmark_dir,
-            cli_bookmark_tail_name,
+        matched_bookmark_obj = handle_create_bookmark(
+            cli_bookmark_string,
             current_run_settings_obj
         )
 
-        print('+++++ handle_bookmark_not_found but created matched_bookmark_obj:')
-        pprint(matched_bookmark_obj)
-
-        if matched_bookmark_obj == 1 or matched_bookmark_obj == 0:
-            print(f"❌ Error in handle_bookmark_not_found")
-            return matched_bookmark_obj
+    # TODO(MFB): Move the handle_matched_bookmark to after create bookmark.
 
     # Run the main process (unless dry run modes)
     if not current_run_settings_obj["is_dry_run"] and not current_run_settings_obj["is_super_dry_run"]:

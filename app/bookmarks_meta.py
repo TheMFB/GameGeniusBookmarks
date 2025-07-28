@@ -93,27 +93,37 @@ def load_bookmark_meta_from_abs(bookmark_path_abs):
             return json.load(f)
     return None
 
+# TODO(KERCH): Implement is_patch_updates
 @print_def_name(IS_PRINT_DEF_NAME)
-def create_folder_meta(abs_folder_dir, description="", tags=None):
+def create_directory_meta(
+    dir_absolute_path,
+    description="",
+    tags=None,
+    is_patch_updates=False,
+    is_overwrite=False,
+):
     """Create or update folder_meta.json file"""
-    folder_meta_file = os.path.join(abs_folder_dir, "folder_meta.json")
+
+    dir_meta_file_path = os.path.join(dir_absolute_path, "folder_meta.json")
 
     if tags is None:
         tags = []
 
-    # Load existing or create new
-    if os.path.exists(folder_meta_file):
-        try:
-            with open(folder_meta_file, 'r') as f:
-                meta_data = json.load(f)
-        except json.JSONDecodeError:
-            meta_data = {}
-    else:
-        meta_data = {
-            "created_at": datetime.now().isoformat(),
-            "description": description,
-            "tags": tags
-        }
+    if os.path.exists(dir_meta_file_path):
+        # try:
+        #     with open(dir_meta_file_path, 'r') as f:
+        #         meta_data = json.load(f)
+        # except json.JSONDecodeError:
+        #     meta_data = {}
+        return False
+
+    # Create new
+    meta_data = {
+        "created_at": datetime.now().isoformat(),
+        "description": description,
+        "tags": tags,
+        "video_filename": "",
+    }
 
     # Update description and tags if provided
     if description:
@@ -125,7 +135,7 @@ def create_folder_meta(abs_folder_dir, description="", tags=None):
     meta_data["last_modified"] = datetime.now().isoformat()
 
     try:
-        with open(folder_meta_file, 'w') as f:
+        with open(dir_meta_file_path, 'w') as f:
             json.dump(meta_data, f, indent=2)
         return True
     except Exception as e:
@@ -134,7 +144,14 @@ def create_folder_meta(abs_folder_dir, description="", tags=None):
 
 
 @print_def_name(IS_PRINT_DEF_NAME)
-def create_bookmark_meta(bookmark_dir, bookmark_tail_name, media_info, tags=None):
+def create_bookmark_meta(
+    bookmark_dir_slash_abs,
+    bookmark_tail_name,
+    media_info,
+    tags=None,
+    is_patch_updates=False,
+    is_overwrite=False,
+):
     """Create bookmark metadata with optional tags."""
     meta_data = {
         "created_at": datetime.now().isoformat(),
@@ -145,7 +162,7 @@ def create_bookmark_meta(bookmark_dir, bookmark_tail_name, media_info, tags=None
         "tags": tags or []  # Add tags to metadata
     }
 
-    meta_file = os.path.join(bookmark_dir, "bookmark_meta.json")
+    meta_file = os.path.join(bookmark_dir_slash_abs, "bookmark_meta.json")
     with open(meta_file, 'w') as f:
         json.dump(meta_data, f, indent=2)
 
