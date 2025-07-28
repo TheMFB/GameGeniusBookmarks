@@ -1,5 +1,5 @@
 import os
-from app.flag_handlers.save_current_redis_to_bm_before_json import save_current_redis_to_bm_before_json
+# from app.flag_handlers.save_current_redis_to_bm_before_json import save_current_redis_to_bm_before_json
 from app.types.bookmark_types import MatchedBookmarkObj
 from app.flag_handlers.save_obs_screenshot import save_obs_screenshot
 from app.utils.obs_utils import get_media_source_info
@@ -14,7 +14,7 @@ IS_PRINT_DEF_NAME = True
 
 
 @print_def_name(IS_PRINT_DEF_NAME)
-def handle_create_bookmark(
+def handle_create_bookmark_and_parent_dirs(
     cli_bookmark_string: str,
     current_run_settings_obj: CurrentRunSettings,
 ) -> MatchedBookmarkObj | int | None:
@@ -28,9 +28,8 @@ def handle_create_bookmark(
     cli_bookmark_tail_name = cli_bookmark_obj["bookmark_tail_name"]
 
 
-    # TODO(MFB): How are we handling the navigational commands? (do we do this twice? Should we do it here instead?)
-    if not current_run_settings_obj["is_super_dry_run"]:
-        save_current_redis_to_bm_before_json(bookmark_path_slash_abs)
+    # if not current_run_settings_obj["is_super_dry_run"]:
+    #     save_current_redis_to_bm_before_json(bookmark_path_slash_abs)
 
     os.makedirs(bookmark_dir_slash_abs, exist_ok=True)
 

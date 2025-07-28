@@ -52,14 +52,15 @@ default_processed_flags: CurrentRunSettings = {
     "is_no_obs": False,
     "is_show_image": False,
     "is_add_bookmark": True,
-    "cli_args_list": None,
+    "cli_nav_arg_string": None,
     "tags": None,
+    "nav_from_bookmark": None,
 }
 
 @print_def_name(IS_PRINT_DEF_NAME)
 def process_flags(args) -> CurrentRunSettings | int:
     """Process command line flags and return a dictionary of flag values."""
-    cli_args_list = None
+    cli_nav_arg_string = None
     tags = []
 
     # Handle all flags that terminate the program afterwards (routed flags)
@@ -101,7 +102,7 @@ def process_flags(args) -> CurrentRunSettings | int:
     # Parse the source bookmark for --use-preceding-bookmark if specified
 
     if is_use_preceding_bookmark:
-        cli_args_list = find_preceding_bookmark_args(args)
+        cli_nav_arg_string = find_preceding_bookmark_args(args)
 
     # Parse tags from command line
     if "--tags" in args or "-t" in args:
@@ -124,6 +125,6 @@ def process_flags(args) -> CurrentRunSettings | int:
         "is_no_obs": is_no_obs,
         "is_show_image": is_show_image,
         # "is_add_bookmark": is_add_bookmark,
-        "cli_args_list": cli_args_list,
+        "cli_nav_arg_string": cli_nav_arg_string,
         "tags": tags,
     }

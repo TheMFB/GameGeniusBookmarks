@@ -3,9 +3,10 @@
 import re
 from typing import List
 
+from app.bookmarks.handle_create_bookmark import handle_create_bookmark_and_parent_dirs
 from app.consts.bookmarks_consts import IS_DEBUG
 from app.bookmarks.bookmarks import load_bookmarks_from_folder, get_all_live_bookmarks_in_json_format
-from app.types.bookmark_types import MatchedBookmarkObj
+from app.types.bookmark_types import MatchedBookmarkObj, CurrentRunSettings
 from app.utils.printing_utils import *
 from app.utils.decorators import print_def_name, memoize
 from app.utils.bookmark_utils import split_path_into_array, does_path_exist_in_bookmarks, convert_exact_bookmark_path_to_dict
@@ -207,24 +208,34 @@ def interactive_choose_bookmark(matched_bookmark_strings: list[str]) -> str | No
 
 @print_def_name(IS_PRINT_DEF_NAME)
 def handle_bookmark_matches(
+    cli_bookmark_string: str,
     matched_bookmark_strings: list[str],
-    is_prompt_user_for_selection: bool = False
+    current_run_settings_obj: CurrentRunSettings | None = None,
+    is_prompt_user_for_selection: bool = False,
+    is_prompt_user_for_create_bm_option: bool = False,
 ) -> MatchedBookmarkObj | int |  List[MatchedBookmarkObj] | None:
     """
     Handle the results of a bookmark match.
     """
-    if not matched_bookmark_strings:
+
+    # If no matches, and we're not prompting to create a new bookmark, return an error
+    if not matched_bookmark_strings and not is_prompt_user_for_create_bm_option:
         return 1
 
-    if len(matched_bookmark_strings) == 1:
+    # If there is one (exact) match, and we're not prompting to create a new bookmark, return the match
+    if len(matched_bookmark_strings) == 1 and not is_prompt_user_for_create_bm_option:
         return convert_exact_bookmark_path_to_dict(matched_bookmark_strings[0])
     else:
+        # If there are multiple matches, or we're prompting to create a new bookmark, prompt the user to choose a bookmark
         if is_prompt_user_for_selection:
             chosen_bookmark_string = interactive_choose_bookmark(matched_bookmark_strings)
             if chosen_bookmark_string:
+                if chosen_bookmark_string == "create_new_bookmark":
+                    return handle_create_bookmark_and_parent_dirs(cli_bookmark_string, current_run_settings_obj)
                 return convert_exact_bookmark_path_to_dict(chosen_bookmark_string)
             return 1
 
+        # If we just want all matches and no user interaction, return the matched bookmark objects
         else:
             return [convert_exact_bookmark_path_to_dict(matched_bookmark_string) for matched_bookmark_string in matched_bookmark_strings]
 

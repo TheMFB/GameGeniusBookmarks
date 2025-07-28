@@ -30,7 +30,8 @@ def handle_which(args):
         print("Usage: bm <bookmark_path> --which")
         return 1
 
-    bookmark_obj_matches = find_best_bookmark_match(cli_bookmark_string, False)
+    bookmark_obj_matches = find_best_bookmark_match(
+        cli_bookmark_string, is_prompt_user_for_selection=False)
 
     if not bookmark_obj_matches:
         print(f"❌ No bookmarks matched for '{cli_bookmark_string}'")

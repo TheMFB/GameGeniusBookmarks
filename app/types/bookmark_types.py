@@ -39,5 +39,6 @@ class CurrentRunSettings(TypedDict):
     is_no_obs: bool
     is_show_image: bool
     is_add_bookmark: bool
-    cli_args_list: list[str] | None
+    cli_nav_arg_string: list[str] | None
     tags: list[str] | None
+    nav_from_bookmark: MatchedBookmarkObj | None

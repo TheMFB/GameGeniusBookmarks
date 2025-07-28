@@ -7,7 +7,7 @@ from app.utils.printing_utils import *
 from app.consts.bookmarks_consts import IS_DEBUG, IS_PRINT_JUST_CURRENT_DIRECTORY_BOOKMARKS
 from app.bookmarks_print import print_all_live_directories_and_bookmarks
 from app.flag_handlers import handle_matched_bookmark, handle_main_process, handle_save_redis_after_json, process_flags, CurrentRunSettings
-from app.bookmarks.handle_create_bookmark import handle_create_bookmark
+from app.bookmarks.handle_create_bookmark import handle_create_bookmark_and_parent_dirs
 from app.types import MatchedBookmarkObj
 from app.bookmarks.matching.bookmark_matching import find_best_bookmark_match
 from app.bookmarks.last_used import save_last_used_bookmark
@@ -30,17 +30,29 @@ def main():
 
     # Pull out the first string of the CLI args (the bookmark or reserved command string)
     cli_bookmark_string = args[0]
-    matched_bookmark_obj = find_best_bookmark_match(cli_bookmark_string)
 
-    print_color('===== matched_bookmark_obj:', 'green')
-    pprint(matched_bookmark_obj)
+    # Find the bookmark requested (either by name or reserved navigation command)
+    matched_bookmark_obj = find_best_bookmark_match(
+        cli_bookmark_string,
+        current_run_settings_obj=current_run_settings_obj,
+        is_prompt_user_for_selection=True
+    )
+
+    print_dev('===== matched_bookmark_obj:', 'green')
+    pprint_dev(matched_bookmark_obj)
 
     if matched_bookmark_obj == 1 or matched_bookmark_obj == 0:
         print(f"❌ Error in find_best_bookmark_match")
         return matched_bookmark_obj
 
+    if matched_bookmark_obj == "create_new_bookmark":
+        print(f"🆕 Creating new bookmark...")
+        return 0
 
-    # Handle exact bookmark path match or navigation match
+
+
+
+    # Handle matched bookmark
     if matched_bookmark_obj and not matched_bookmark_obj in ["create_new_bookmark", 1, 0]:
         print_dev('---- navigation/matched_bookmark_obj:', 'magenta')
         pprint_dev(matched_bookmark_obj)
@@ -60,11 +72,18 @@ def main():
         print_dev(
             '+++++ handle create bookmark but created matched_bookmark_obj:')
         print_dev(matched_bookmark_obj)
-        # Bookmark does not exist, and user intends to create it
-        matched_bookmark_obj = handle_create_bookmark(
+
+        # Creating Bookmark
+        matched_bookmark_obj = handle_create_bookmark_and_parent_dirs(
             cli_bookmark_string,
             current_run_settings_obj
         )
+        if isinstance(matched_bookmark_obj, int):
+            print("❌ Error in handle_create_bookmark_and_parent_dirs")
+            return matched_bookmark_obj
+
+
+
 
     # TODO(MFB): Move the handle_matched_bookmark to after create bookmark.
 

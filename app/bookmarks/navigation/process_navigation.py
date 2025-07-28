@@ -29,19 +29,19 @@ def process_main_cli_arg_navigation(cli_bookmark_string) -> MatchedBookmarkObj |
             f"❌ No last used bookmark found. Cannot navigate with '{cli_bookmark_string}'")
         return 1
 
-    folder_name = last_used_info.get("rel_bookmark_dir")
+    bookmark_path_colon_rel = last_used_info.get("bookmark_path_slash_rel")
 
     # Find the folder directory
     folder_dir = None
     valid_root_dir_names = get_all_valid_root_dir_names()
     for folder_path in valid_root_dir_names:
         # TODO(MFB): This is where we need to look for our navigation bugfix.
-        if os.path.basename(folder_path) == folder_name:
+        if os.path.basename(folder_path) == bookmark_path_colon_rel:
             folder_dir = folder_path
             break
 
     if not folder_dir:
-        print(f"❌ Could not find folder directory for '{folder_name}'")
+        print(f"❌ Could not find folder directory for '{bookmark_path_colon_rel}'")
         return 1
 
     # Resolve the navigation command

@@ -20,9 +20,9 @@ def run_redis_command(
         if IS_LOCAL_REDIS_DEV:
             # Local mode: call export_from_redis.py or load_into_redis.py directly
             if load_or_export is "export":
-                return export_from_redis()
+                return export_from_redis(location)
             elif load_or_export is "load":
-                return load_into_redis("obs_bookmark_saves/test/game_01/redis_after.json")
+                return load_into_redis(location)
             else:
                 print(f"❌ Unsupported Redis command: {load_or_export}")
                 return False
@@ -107,11 +107,11 @@ def run_redis_command(
 #         return False
 
 
-# def copy_specific_bookmark_redis_state(cli_args_list, target_bookmark_path_abs):
+# def copy_specific_bookmark_redis_state(cli_nav_arg_string, target_bookmark_path_abs):
 #     """Copy redis_after.json from a specific bookmark to redis_before.json of target bookmark"""
 #     # Parse the source bookmark argument (may be "bookmark" or "folder:bookmark")
 #     source_folder_name, source_bookmark_name = parse_cli_bookmark_args(
-#         cli_args_list)
+#         cli_nav_arg_string)
 
 #     if IS_DEBUG:
 #         print(

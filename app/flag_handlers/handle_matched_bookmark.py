@@ -39,25 +39,16 @@ def handle_matched_bookmark(
         print("❌ Failed to load OBS bookmark")
         return 1
 
-    # Find which folder this bookmark belongs to
-    live_folders = get_all_valid_root_dir_names()
-    print('---- live_folders:')
-    pprint(live_folders)
-
-
-    if not matched_bookmark_path_rel:
-        print(f"❌ Could not determine folder for bookmark '{matched_bookmark_path_rel}'")
+    # TODO(KERCH): Should we look to see if the bookmark_meta exists?
+    if not matched_bookmark_path_rel or not os.path.exists(matched_bookmark_path_abs):
+        print(f"❌ Bookmark does not exist: '{matched_bookmark_path_rel}'")
         return 1
 
     # Check if redis_before.json exists in the bookmark directory
     redis_before_path = os.path.join(
         matched_bookmark_path_abs, "redis_before.json")
 
-    if IS_DEBUG:
-        print(f"🔍 Checking for existing Redis state at: {redis_before_path}")
-
     # Handle Redis state based on flags (skip if super dry run)
-    # TODO(KERCH): If we are in just dry run mode, we need to be saving the redis state. If we are in super dry run mode, we should not save the redis state.
     if current_run_settings_obj["is_super_dry_run"]:
         print(f"💾 Super dry run mode: Skipping all Redis operations")
     elif current_run_settings_obj["is_blank_slate"]:
@@ -71,11 +62,11 @@ def handle_matched_bookmark(
 
     elif current_run_settings_obj["is_use_preceding_bookmark"]:
         # Handle --use-preceding-bookmark flag for existing bookmark
-        if current_run_settings_obj["cli_args_list"]:
+        if current_run_settings_obj["cli_nav_arg_string"]:
             # TODO(?): This SHOULD also look to see if we have defined a source bookmark, else fallback to preceding bookmark?
             print(f"📋 Using specified bookmark's Redis state for '{matched_bookmark_path_rel}'...")
             print_color("Not implemented!!", "red")
-            # if not copy_specific_bookmark_redis_state(current_run_settings_obj["cli_args_list"], matched_bookmark_path_abs):
+            # if not copy_specific_bookmark_redis_state(current_run_settings_obj["cli_nav_arg_string"], matched_bookmark_path_abs):
             #     print("❌ Failed to copy specified bookmark's Redis state")
             #     return 1
         else:

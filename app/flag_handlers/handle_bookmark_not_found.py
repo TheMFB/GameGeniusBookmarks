@@ -120,11 +120,11 @@
 #             return 1
 #     elif current_run_settings_obj["is_use_preceding_bookmark"]:
 #         # Handle --use-preceding-bookmark flag for new bookmark
-#         if current_run_settings_obj["cli_args_list"]:
+#         if current_run_settings_obj["cli_nav_arg_string"]:
 #             print(
 #                 f"📋 Using specified bookmark's Redis state for new bookmark '{cli_bookmark_tail_name}'...")
 #             print_color("Not implemented!!", "red")
-#             # if not copy_specific_bookmark_redis_state(cli_args_list, bookmark_tail_name, folder_dir):
+#             # if not copy_specific_bookmark_redis_state(cli_nav_arg_string, bookmark_tail_name, folder_dir):
 #             #     print("❌ Failed to copy specified bookmark's Redis state")
 #             #     return 1
 #         else:
