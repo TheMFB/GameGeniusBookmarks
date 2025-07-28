@@ -51,8 +51,7 @@ def handle_create_bookmark(
     else:
         media_info = get_media_source_info()
         if media_info:
-            # TODO(KERCH): Need to check if the screenshot exists and if it does, don't save it again unless we have the update/save flag on.
-            save_obs_screenshot(bookmark_path_slash_abs, is_overwrite=False)
+            save_obs_screenshot(bookmark_path_slash_abs, is_overwrite=current_run_settings_obj["is_save_updates"])
 
             print(
                 f"📋 Created bookmark metadata with tags: {current_run_settings_obj["tags"]}")
