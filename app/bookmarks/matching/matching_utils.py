@@ -179,15 +179,24 @@ def interactive_choose_bookmark(matched_bookmark_strings: list[str]) -> str | No
     """
     Ask the user to choose a bookmark fr om a list of matches.
     """
-    print("🤔 Multiple results found:")
-    for idx, match in enumerate(matched_bookmark_strings):
-        print(f"  {idx + 1}. {match}")
+    if len(matched_bookmark_strings) > 1:
+        print("🤔 Multiple results found:")
+        for idx, match in enumerate(matched_bookmark_strings):
+            print(f"  {idx + 1}. {match}")
+    elif len(matched_bookmark_strings) == 1:
+        print(f"✅ One result found: {matched_bookmark_strings[0]}")
+        print(f"  {matched_bookmark_strings[0]}")
+    else:
+        print("❌ No matches found. Create a new bookmark?")
+        return None
+
+    print('')
     print("  0. Cancel")
     print("  c. Create new bookmark")
 
     while True:
         try:
-            choice = input(f"Enter your choice (1-{len(matched_bookmark_strings)} or 0 to cancel): ").strip()
+            choice = input(f"Enter your choice: ").strip()
             if choice == "0":
                 print("❌ Cancelled.")
                 return None
