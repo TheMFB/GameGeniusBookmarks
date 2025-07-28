@@ -1,7 +1,3 @@
-"""
-Integration script that coordinates OBS bookmarks with Redis state management
-"""
-from pprint import pprint
 import os
 import json
 from datetime import datetime
@@ -9,6 +5,7 @@ from datetime import datetime
 from app.consts.bookmarks_consts import IS_DEBUG, IS_DEBUG_FULL
 from app.videos import construct_full_video_file_path
 from app.utils.decorators import print_def_name
+from app.types.bookmark_types import MatchedBookmarkObj
 
 IS_PRINT_DEF_NAME = True
 
@@ -149,8 +146,6 @@ def create_bookmark_meta(
     bookmark_tail_name,
     media_info,
     tags=None,
-    is_patch_updates=False,
-    is_overwrite=False,
 ):
     """Create bookmark metadata with optional tags."""
     meta_data = {
@@ -168,3 +163,112 @@ def create_bookmark_meta(
 
     if IS_DEBUG:
         print(f"📋 Created bookmark metadata with tags: {tags}")
+
+
+@print_def_name(IS_PRINT_DEF_NAME)
+def update_bookmark_meta(
+    matched_bookmark_obj: MatchedBookmarkObj,
+    media_info,
+    tags=None,
+):
+    """Update or create bookmark metadata with optional patching."""
+    bookmark_dir_slash_abs = matched_bookmark_obj["bookmark_path_slash_abs"]
+    bookmark_tail_name = matched_bookmark_obj["bookmark_tail_name"]
+
+    meta_file = os.path.join(bookmark_dir_slash_abs, "bookmark_meta.json")
+    meta_data = {}
+    if os.path.exists(meta_file):
+        with open(meta_file, 'r') as f:
+            try:
+                meta_data = json.load(f)
+            except Exception:
+                meta_data = {}
+
+    meta_data["updated_at"] = datetime.now().isoformat()
+    meta_data["bookmark_tail_name"] = bookmark_tail_name or meta_data["bookmark_tail_name"] or ""
+    meta_data["video_filename"] = media_info.get('video_filename', '') or meta_data["video_filename"] or ""
+    meta_data["timestamp"] = media_info.get('timestamp', 0) or meta_data["timestamp"] or 0
+    meta_data["timestamp_formatted"] = media_info.get('timestamp_formatted', '') or meta_data["timestamp_formatted"] or "00:00:00"
+
+    if tags is not None:
+        meta_data["tags"] = tags
+
+    # If file doesn't exist, set created_at
+    if "created_at" not in meta_data:
+        meta_data["created_at"] = datetime.now().isoformat()
+    with open(meta_file, 'w') as f:
+        json.dump(meta_data, f, indent=2)
+
+
+@print_def_name(IS_PRINT_DEF_NAME)
+def patch_bookmark_meta(
+    matched_bookmark_obj: MatchedBookmarkObj,
+    media_info,
+    tags: list[str] | None = None,
+):
+    """Update or create bookmark metadata with optional patching."""
+    bookmark_dir_slash_abs = matched_bookmark_obj["bookmark_path_slash_abs"]
+    bookmark_tail_name = matched_bookmark_obj["bookmark_tail_name"]
+
+    meta_file = os.path.join(bookmark_dir_slash_abs, "bookmark_meta.json")
+    meta_data = {}
+    if os.path.exists(meta_file):
+        with open(meta_file, 'r') as f:
+            try:
+                meta_data = json.load(f)
+            except Exception:
+                meta_data = {}
+
+    meta_data["updated_at"] = datetime.now().isoformat()
+    meta_data["bookmark_tail_name"] = meta_data["bookmark_tail_name"] or bookmark_tail_name or ""
+    meta_data["video_filename"] = media_info.get('video_filename', '') or meta_data["video_filename"] or ""
+    meta_data["timestamp"] = meta_data["timestamp"] or media_info.get('timestamp', 0) or 0
+    meta_data["timestamp_formatted"] = meta_data["timestamp_formatted"] or media_info.get('timestamp_formatted', '00:00:00') or "00:00:00"
+
+    if tags is not None:
+        meta_data["tags"].extend(tags)
+
+    # If file doesn't exist, set created_at
+    if "created_at" not in meta_data:
+        meta_data["created_at"] = datetime.now().isoformat()
+    with open(meta_file, 'w') as f:
+        json.dump(meta_data, f, indent=2)
+    if IS_DEBUG:
+        print(f"📋 Patched bookmark metadata with tags: {tags}")
+
+@print_def_name(IS_PRINT_DEF_NAME)
+def update_missing_bookmark_meta_fields(
+    matched_bookmark_obj: MatchedBookmarkObj,
+    media_info,
+    tags: list[str] | None = None,
+):
+    """Update or create bookmark metadata with optional patching."""
+    bookmark_dir_slash_abs = matched_bookmark_obj["bookmark_path_slash_abs"]
+    bookmark_tail_name = matched_bookmark_obj["bookmark_tail_name"]
+
+    meta_file = os.path.join(bookmark_dir_slash_abs, "bookmark_meta.json")
+    meta_data = {}
+    if os.path.exists(meta_file):
+        with open(meta_file, 'r') as f:
+            try:
+                meta_data = json.load(f)
+            except Exception:
+                meta_data = {}
+
+    meta_data["updated_at"] = datetime.now().isoformat()
+    meta_data["bookmark_tail_name"] = meta_data["bookmark_tail_name"] or bookmark_tail_name or ""
+    meta_data["video_filename"] = meta_data["video_filename"] or media_info.get('video_filename', '') or ""
+    meta_data["timestamp"] = meta_data["timestamp"] or media_info.get('timestamp', 0) or 0
+    meta_data["timestamp_formatted"] = meta_data["timestamp_formatted"] or media_info.get('timestamp_formatted', '00:00:00') or "00:00:00"
+
+    if tags is not None:
+        meta_data["tags"].extend(tags)
+
+    # If file doesn't exist, set created_at
+    if "created_at" not in meta_data:
+        meta_data["created_at"] = datetime.now().isoformat()
+    with open(meta_file, 'w') as f:
+        json.dump(meta_data, f, indent=2)
+    if IS_DEBUG:
+        print(f"📋 Patched bookmark metadata with tags: {tags}")
+

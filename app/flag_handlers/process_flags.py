@@ -2,7 +2,7 @@ from app.consts.bookmarks_consts import IS_DEBUG
 from app.consts.cli_consts import OPTIONS_HELP
 from app.flag_handlers import handle_help, handle_ls, handle_which, open_video, find_cli_tags
 from app.flag_handlers.preceding_bookmark import find_preceding_bookmark_args
-from app.types.bookmark_types import CurrentRunSettings
+from app.types.bookmark_types import CurrentRunSettings, supported_flags, default_processed_flags
 from app.utils.decorators import print_def_name
 
 IS_PRINT_DEF_NAME = True
@@ -16,48 +16,6 @@ flag_routes = {
     "-w": handle_which,
     "--open-video": open_video,
     "-v": open_video,
-}
-
-# Define supported flags
-supported_flags = [
-    "-a",
-    "--add",
-    "-s",
-    "--save-updates",
-    "-p",
-    "--use-preceding-bookmark",
-    "-b",
-    "--blank-slate",
-    "-d",
-    "--dry-run",
-    "-sd",
-    "-nd",
-    "--super-dry-run",
-    "-ndr",
-    "-ndnr",
-    "--no-obs",
-    "--save-last-redis",
-    "-v",
-    "--open-video",
-    "-t",
-    "--tags",
-    "--show-image",
-]
-
-default_processed_flags: CurrentRunSettings = {
-    "is_overwrite_redis_after": False,
-    "is_overwrite_redis_before": False,
-    "is_save_updates": False,
-    "is_use_preceding_bookmark": False,
-    "is_blank_slate": False,
-    "is_no_docker": False,
-    "is_no_docker_no_redis": False,
-    "is_no_obs": False,
-    "is_show_image": False,
-    "is_add_bookmark": True,
-    "cli_nav_arg_string": None,
-    "tags": None,
-    "nav_from_bookmark": None,
 }
 
 @print_def_name(IS_PRINT_DEF_NAME)
