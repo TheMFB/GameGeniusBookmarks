@@ -64,7 +64,7 @@ def main():
 
 
     # Run the main process (unless dry run modes)
-    if not current_run_settings_obj["is_dry_run"] and not current_run_settings_obj["is_super_dry_run"]:
+    if not current_run_settings_obj["is_no_docker"] and not current_run_settings_obj["is_no_docker_no_redis"]:
         print("🚀 Running main process...")
         result = handle_main_process(current_run_settings=current_run_settings_obj)
         if result != 0:
@@ -72,12 +72,12 @@ def main():
             return result
 
     # Check if redis_after.json already exists before saving final state (skip in dry run modes)
-    if not current_run_settings_obj["is_dry_run"] and not current_run_settings_obj["is_super_dry_run"]:
+    if not current_run_settings_obj["is_no_docker"] and not current_run_settings_obj["is_no_docker_no_redis"]:
         should_save_redis_after = handle_save_redis_after_json(
             matched_bookmark_obj, current_run_settings_obj
         )
     else:
-        if current_run_settings_obj["is_super_dry_run"]:
+        if current_run_settings_obj["is_no_docker_no_redis"]:
             print(f"💾 Super dry run mode: Skipping final Redis state save")
         else:
             print(f"📖 Load-only mode: Skipping final Redis state save")

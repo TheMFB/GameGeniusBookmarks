@@ -34,8 +34,8 @@ class CurrentRunSettings(TypedDict):
     is_save_updates: bool
     is_use_preceding_bookmark: bool
     is_blank_slate: bool
-    is_dry_run: bool
-    is_super_dry_run: bool
+    is_no_docker: bool
+    is_no_docker_no_redis: bool
     is_no_obs: bool
     is_show_image: bool
     is_add_bookmark: bool

@@ -109,7 +109,7 @@
 
 #     # Handle Redis state based on flags (skip if super dry run)
 #     # TODO(KERCH): If we are in just dry run mode, we need to be saving the redis state. If we are in super dry run mode, we should not save the redis state.
-#     if current_run_settings_obj["is_super_dry_run"]:
+#     if current_run_settings_obj["is_no_docker_no_redis"]:
 #         print(f"💾 Super dry run mode: Skipping all Redis operations")
 #     elif current_run_settings_obj["is_blank_slate"]:
 #         # Handle --blank-slate flag for new bookmark
@@ -149,7 +149,7 @@
 
 #     # Normal flow - save current Redis state (skip if super dry run)
 #     # TODO(KERCH): If we are in just dry run mode, we need to be saving the redis state. If we are in super dry run mode, we should not save the redis state.
-#     if not current_run_settings_obj["is_super_dry_run"]:
+#     if not current_run_settings_obj["is_no_docker_no_redis"]:
 #         save_current_redis_to_bm_before_json(bookmark_path_slash_abs)
 
 

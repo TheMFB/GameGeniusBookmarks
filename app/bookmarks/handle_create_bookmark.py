@@ -28,7 +28,7 @@ def handle_create_bookmark_and_parent_dirs(
     cli_bookmark_tail_name = cli_bookmark_obj["bookmark_tail_name"]
 
 
-    # if not current_run_settings_obj["is_super_dry_run"]:
+    # if not current_run_settings_obj["is_no_docker_no_redis"]:
     #     save_current_redis_to_bm_before_json(bookmark_path_slash_abs)
 
     os.makedirs(bookmark_dir_slash_abs, exist_ok=True)

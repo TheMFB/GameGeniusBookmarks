@@ -31,7 +31,10 @@ supported_flags = [
     "-d",
     "--dry-run",
     "-sd",
+    "-nd",
     "--super-dry-run",
+    "-ndr",
+    "-ndnr",
     "--no-obs",
     "--save-last-redis",
     "-v",
@@ -47,8 +50,8 @@ default_processed_flags: CurrentRunSettings = {
     "is_save_updates": False,
     "is_use_preceding_bookmark": False,
     "is_blank_slate": False,
-    "is_dry_run": False,
-    "is_super_dry_run": False,
+    "is_no_docker": False,
+    "is_no_docker_no_redis": False,
     "is_no_obs": False,
     "is_show_image": False,
     "is_add_bookmark": True,
@@ -83,20 +86,20 @@ def process_flags(args) -> CurrentRunSettings | int:
     is_save_updates = "--save-updates" in args or "-s" in args
     is_use_preceding_bookmark = "--use-preceding-bookmark" in args or "-p" in args
     is_blank_slate = "--blank-slate" in args or "-b" in args
-    is_dry_run = "--dry-run" in args or "-d" in args
-    is_super_dry_run = "--super-dry-run" in args or "-sd" in args
-    is_no_obs = "--no-obs" in args  # ✅ FIXED this line
+    is_no_docker = "--dry-run" in args or "--no-docker" in args or "-d" in args or "-nd" in args
+    is_no_docker_no_redis = "--super-dry-run" in args or "--no-docker-no-redis" in args or "-sd" in args or "-ndr" in args or "-ndnr" in args
+    is_no_obs = "--no-obs" in args
     is_show_image = "--show-image" in args
     # is_add_bookmark = "--add" in args or "-a" in args
 
-    if is_super_dry_run:
+    if is_no_docker_no_redis:
         print("💧 SUPER DRY RUN: Will skip Redis operations and Docker commands.")
         print("💧 Still creating/updating bookmarks and metadata.")
         if IS_DEBUG:
-            print(f"🔍 Debug - is_super_dry_run: {is_super_dry_run}")
-    if is_dry_run and IS_DEBUG:
+            print(f"🔍 Debug - is_no_docker_no_redis: {is_no_docker_no_redis}")
+    if is_no_docker and IS_DEBUG:
 
-        print(f"🔍 Debug - is_dry_run: {is_dry_run}")
+        print(f"🔍 Debug - is_no_docker: {is_no_docker}")
         # TODO(MFB): Print what this does (different f)
 
     # Parse the source bookmark for --use-preceding-bookmark if specified
@@ -120,8 +123,8 @@ def process_flags(args) -> CurrentRunSettings | int:
         "is_save_updates": is_save_updates,
         "is_use_preceding_bookmark": is_use_preceding_bookmark,
         "is_blank_slate": is_blank_slate,
-        "is_dry_run": is_dry_run,
-        "is_super_dry_run": is_super_dry_run,
+        "is_no_docker": is_no_docker,
+        "is_no_docker_no_redis": is_no_docker_no_redis,
         "is_no_obs": is_no_obs,
         "is_show_image": is_show_image,
         # "is_add_bookmark": is_add_bookmark,

@@ -12,8 +12,8 @@ def handle_main_process(current_run_settings=None):
     print('')
 
     # Handle dry and super-dry modes
-    is_dry = current_run_settings.get("is_dry_run") if current_run_settings else False
-    is_super_dry = current_run_settings.get("is_super_dry_run") if current_run_settings else False
+    is_dry = current_run_settings.get("is_no_docker") if current_run_settings else False
+    is_super_dry = current_run_settings.get("is_no_docker_no_redis") if current_run_settings else False
 
     if is_super_dry:
         print("🛑 Skipping all processing (super-dry mode)")
