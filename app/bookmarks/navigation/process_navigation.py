@@ -3,7 +3,7 @@ Integration script that coordinates OBS bookmarks with Redis state management
 """
 import os
 from pprint import pprint
-from app.utils.printing_utils import print_color
+from app.utils.printing_utils import *
 from app.bookmark_dir_processes import get_all_valid_root_dir_names
 from app.bookmarks import get_last_used_bookmark
 from app.bookmarks.navigation import resolve_navigation_bookmark

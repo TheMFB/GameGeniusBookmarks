@@ -94,6 +94,22 @@ def print_def_args(func):
         return func(*args, **kwargs)
     return wrapper
 
+def only_run_once(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        if not wrapper.has_run:
+            wrapper.has_run = True
+            return func(*args, **kwargs)
+        return None
+    wrapper.has_run = False
+    return wrapper
+
+def make_hashable(obj):
+    if isinstance(obj, (tuple, list)):
+        return tuple(make_hashable(e) for e in obj)
+    if isinstance(obj, dict):
+        return tuple(sorted((k, make_hashable(v)) for k, v in obj.items()))
+    return obj
 
 def memoize(func):
     """
@@ -104,8 +120,9 @@ def memoize(func):
 
     @wraps(func)
     def wrapper(*args, **kwargs):
-        # Create a key from args and kwargs (must be hashable)
-        key = (args, tuple(sorted(kwargs.items())))
+        hashable_args = make_hashable(args)
+        hashable_kwargs = make_hashable(kwargs)
+        key = (hashable_args, hashable_kwargs)
         if key in cache:
             return cache[key]
         result = func(*args, **kwargs)

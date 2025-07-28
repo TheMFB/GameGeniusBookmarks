@@ -4,10 +4,11 @@
     "python.analysis.autoSearchPaths": true,
     "python.analysis.diagnosticMode": "workspace",
     "python.analysis.stubPath": "./typings",
-    "python.analysis.extraPaths": ["./app"],
+    // "python.analysis.extraPaths": ["./app"],
     "python.analysis.ignore": [
         "**/__pycache__/**",
         "**/.venv/**",
         "**/venv/**"
-    ]
-} 
+    ],
+    "python.envFile": "${workspaceFolder}/.env"
+}

@@ -6,7 +6,7 @@ from pprint import pprint
 import json
 from datetime import datetime
 
-from app.utils.printing_utils import print_color
+from app.utils.printing_utils import *
 from app.utils.decorators import print_def_name, memoize
 from app.bookmarks_consts import ABS_OBS_BOOKMARKS_DIR
 from app.bookmarks.bookmarks import create_bookmark_symlinks
@@ -30,7 +30,7 @@ def save_last_used_bookmark(matched_bookmark_obj):
 
 
 # TODO(KERCH): get_last_used_bookmark
-@print_def_name(IS_PRINT_DEF_NAME)
+@print_def_name(False)
 @memoize
 def get_last_used_bookmark():
     """Get the last used bookmark from the global state file."""

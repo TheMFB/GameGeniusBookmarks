@@ -4,16 +4,18 @@ Integration script that coordinates OBS bookmarks with Redis state management
 import os
 import sys
 import subprocess
+import traceback
 from pprint import pprint
 # from networkx import to_dict_of_dicts
 
-from app.utils.printing_utils import print_color
+from app.utils.printing_utils import *
 from app.bookmarks_consts import IS_DEBUG, IS_PRINT_JUST_CURRENT_DIRECTORY_BOOKMARKS
 from app.bookmarks_print import print_all_live_directories_and_bookmarks
 from app.flag_handlers import handle_matched_bookmark, handle_bookmark_not_found, handle_main_process, handle_save_redis_after_json, process_flags, CurrentRunSettings
 from app.types import MatchedBookmarkObj
 from app.bookmarks.matching.bookmark_matching import find_best_bookmark_match
 from app.bookmarks.last_used import save_last_used_bookmark
+
 
 def main():
     matched_bookmark_obj: MatchedBookmarkObj | None = None
@@ -141,4 +143,13 @@ def main():
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    exit_code = 0
+    try:
+        exit_code = main()
+    except Exception:
+        print_color('==== Exception: ====', 'red')
+        traceback.print_exc()
+        exit_code = 1
+    finally:
+        print_all_live_directories_and_bookmarks()
+        sys.exit(exit_code)

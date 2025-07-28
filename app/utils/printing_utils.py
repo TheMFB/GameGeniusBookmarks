@@ -42,7 +42,7 @@ def print_color(text: str, color: ColorTypes | None = None):
 def print_dev(
     text: str,
     color: ColorTypes | None = None,
-    is_print: bool = IS_PRINT_DEV
+    is_print: bool = IS_PRINT_DEV,
 ):
     if not is_print:
         return
@@ -78,6 +78,23 @@ def print_image(image_path, width="auto", height="auto"):
     image_code = get_iterm_image_code(image_path, width, height)
     if image_code:
         print(image_code)
+
+def print_dev_empty_lines(
+        n: int = 1,
+        is_print: bool = IS_PRINT_DEV
+):
+    if not is_print:
+        return
+    print('\n' * n)
+
+def print_dev_separator(
+        n: int = 10,
+        char: str = '=',
+        is_print: bool = IS_PRINT_DEV
+):
+    if not is_print:
+        return
+    print(char * n)
 
 
 # def gg_print(var, color=None):

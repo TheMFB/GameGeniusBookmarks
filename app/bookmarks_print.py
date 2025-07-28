@@ -4,9 +4,9 @@ import json
 from app.bookmarks_consts import IS_DEBUG, HIDDEN_COLOR, RESET_COLOR, ABS_OBS_BOOKMARKS_DIR, NON_NAME_BOOKMARK_KEYS, IS_PRINT_JUST_CURRENT_DIRECTORY_BOOKMARKS
 from app.bookmarks_meta import compute_hoistable_tags
 from app.bookmarks.last_used import get_last_used_bookmark
-from app.bookmarks.bookmarks import get_all_valid_bookmarks_in_json_format
+from app.bookmarks.bookmarks import get_all_live_bookmarks_in_json_format
 from app.utils.bookmark_utils import abs_to_rel_path
-from app.utils.decorators import print_def_name
+from app.utils.decorators import only_run_once, print_def_name
 
 IS_PRINT_VIDEO_FILE_NAMES = True
 IS_HOIST_TAGS_WHEN_SINGLE_CHILD = True
@@ -36,13 +36,16 @@ def collect_all_bookmark_tags_recursive(node):
 
     return all_tags
 
-@print_def_name(IS_PRINT_DEF_NAME)
+@print_def_name(False)
+@only_run_once
 def print_all_live_directories_and_bookmarks(
         bookmark_obj=None,
         is_print_just_current_directory_bookmarks=IS_PRINT_JUST_CURRENT_DIRECTORY_BOOKMARKS
         # TODO(KERCH): We no longer have this being used? Re-implement it.
 ):
     """Print all folders and their bookmarks, highlighting the current one"""
+    print('')
+    print('=' * 50)
 
     current_bm_tail_name = None
     current_bm_dir_slash_abs = None
@@ -61,7 +64,7 @@ def print_all_live_directories_and_bookmarks(
         current_bm_dir_slash_abs = bookmark_obj["bookmark_dir_slash_abs"]
         current_bm_path_colon_rel = bookmark_obj["bookmark_path_colon_rel"]
 
-    all_bookmarks = get_all_valid_bookmarks_in_json_format()
+    all_bookmarks = get_all_live_bookmarks_in_json_format()
 
     def print_tree_recursive(
         indent_level,

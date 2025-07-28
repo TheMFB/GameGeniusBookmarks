@@ -4,6 +4,7 @@ from typing import Literal
 
 from app.bookmarks_consts import IS_DEBUG, INITIAL_REDIS_STATE_DIR, IS_LOCAL_REDIS_DEV
 from app.utils.decorators import print_def_name
+from app.utils.printing_utils import *
 
 IS_PRINT_DEF_NAME = True
 
@@ -30,6 +31,9 @@ def run_redis_command(
         else:
             # Docker mode
             cmd = f"docker exec -it session_manager python -m utils.standalone.redis_{load_or_export} {location}"
+            print_dev('---- cmd:', 'magenta')
+            print_dev(cmd)
+            print('')
 
         if IS_DEBUG:
             print(f"🔧 Running Redis command: {load_or_export} {location}")

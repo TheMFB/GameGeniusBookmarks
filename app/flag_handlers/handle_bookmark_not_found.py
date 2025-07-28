@@ -16,7 +16,7 @@ from app.bookmarks_redis import copy_initial_redis_state
 # copy_preceding_bookmark_redis_state, copy_specific_bookmark_redis_state,
 
 from app.bookmarks_consts import IS_DEBUG
-from app.utils.printing_utils import print_color
+from app.utils.printing_utils import *
 from app.utils.decorators import print_def_name
 from app.utils.bookmark_utils import convert_exact_bookmark_path_to_dict
 from app.utils.obs_utils import get_media_source_info

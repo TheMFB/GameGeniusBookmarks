@@ -2,14 +2,13 @@
 Integration script that coordinates OBS bookmarks with Redis state management
 """
 import os
-from pprint import pprint
 import json
 
 from app.bookmark_dir_processes import get_all_valid_root_dir_names
 from app.bookmarks_consts import IS_DEBUG, IS_DEBUG_PRINT_ALL_BOOKMARKS_JSON
 from app.bookmarks_meta import load_bookmark_meta_from_rel, load_bookmark_meta_from_abs, load_folder_meta
 from app.types import MatchedBookmarkObj, BookmarkPathDictionary
-from app.utils.printing_utils import print_color
+from app.utils.printing_utils import *
 from app.utils.decorators import print_def_name, memoize
 
 IS_AGGREGATE_TAGS_AND_HOIST_GROUPED = True
@@ -23,7 +22,6 @@ has_printed_all_bookmarks_json = False
 @memoize
 def load_bookmarks_from_folder(folder_dir_abs):
     matched_bookmarks = {}
-    print_color('Loading bookmarks from folder: ' + folder_dir_abs, 'cyan')
 
     if not os.path.exists(folder_dir_abs):
         return matched_bookmarks
@@ -66,9 +64,9 @@ def load_bookmarks_from_folder(folder_dir_abs):
     return matched_bookmarks
 
 
-@print_def_name(IS_PRINT_DEF_NAME)
+@print_def_name(False)
 @memoize
-def get_all_valid_bookmarks_in_json_format():
+def get_all_live_bookmarks_in_json_format():
     """Recursively scan all live folders and build a nested JSON structure with folder and bookmark tags/descriptions, including aggregated tags as 'tags'."""
     # TODO(MFB): Look into this, as this is likely a (relatively) VERY heavy operation.
 

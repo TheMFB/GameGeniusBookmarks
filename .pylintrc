@@ -3,7 +3,7 @@ ignored-modules=cv2
 generated-members=cv2.*
 
 [MESSAGES CONTROL]
-disable=C0111,C0114,E0401,E1136,C0301,W1039
+disable=C0111,C0114,E0401,E1136,C0301,W1039,W0718,W0719,W0707,W0401
 
 # C0111: Missing docstring
 # C0114: Missing docstring
@@ -11,6 +11,10 @@ disable=C0111,C0114,E0401,E1136,C0301,W1039
 # E1136: Use a list comprehension
 # C0301: Too many lines in module
 # W1039: F-string with no variables
+# W0718: Broad exception clause
+# W0719: Broad exception clause
+# W0707: Too broad exception clause
+# W0401: Wildcard import
 
 [MASTER]
 disable=E0401

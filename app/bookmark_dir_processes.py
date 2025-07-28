@@ -1,13 +1,13 @@
 import os
 
-from app.utils.printing_utils import print_color
+from app.utils.printing_utils import *
 from app.bookmarks_consts import IS_DEBUG, ABS_OBS_BOOKMARKS_DIR, EXCLUDED_DIRS
 from app.bookmarks_meta import load_folder_meta, create_folder_meta
 from app.utils.decorators import print_def_name, memoize
 
 IS_PRINT_DEF_NAME = True
 
-@print_def_name(IS_PRINT_DEF_NAME)
+@print_def_name(False)
 @memoize
 def get_all_valid_root_dir_names():
     """Collect all folder paths under ABS_OBS_BOOKMARKS_DIR that contain folder_meta.json (excluding archive)"""
