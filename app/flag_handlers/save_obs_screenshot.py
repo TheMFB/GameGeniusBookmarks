@@ -3,7 +3,7 @@ import io
 import base64
 from PIL import Image
 import obsws_python as obs
-from app.bookmarks_consts import IS_DEBUG, SCREENSHOT_SAVE_SCALE
+from app.consts.bookmarks_consts import IS_DEBUG, SCREENSHOT_SAVE_SCALE
 from app.utils.decorators import print_def_name
 
 IS_PRINT_DEF_NAME = True

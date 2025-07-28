@@ -1,4 +1,4 @@
-from app.bookmarks_consts import IS_DEBUG, ASYNC_WAIT_TIME
+from app.consts.bookmarks_consts import IS_DEBUG, ASYNC_WAIT_TIME
 import subprocess
 import time
 from app.utils.decorators import print_def_name

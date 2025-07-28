@@ -7,7 +7,7 @@ from pprint import pprint
 from typing import Literal
 
 
-from app.bookmarks_consts import LOCAL_REDIS_SESSIONS_HOST, LOCAL_REDIS_SESSIONS_PORT, LOCAL_REDIS_SESSIONS_DB, REPO_ROOT, REDIS_DUMP_DIR
+from app.consts.bookmarks_consts import LOCAL_REDIS_SESSIONS_HOST, LOCAL_REDIS_SESSIONS_PORT, LOCAL_REDIS_SESSIONS_DB, REPO_ROOT, REDIS_DUMP_DIR
 
 
 

@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-from app.bookmarks_consts import ABS_OBS_BOOKMARKS_DIR
+from app.consts.bookmarks_consts import ABS_OBS_BOOKMARKS_DIR
 from app.utils.decorators import print_def_name, memoize
 from app.types.bookmark_types import MatchedBookmarkObj
 from app.bookmarks.bookmarks import get_bookmark_info
@@ -25,7 +25,7 @@ def convert_exact_bookmark_path_to_dict(
     # One-argument: full bookmark_dir
     print(convert_exact_bookmark_path_to_dict("mfb3/MFB/TEST/01"))
     # ('mfb3/MFB/TEST', '01', 'mfb3/MFB/TEST/01')
-    
+
     # Two-argument: tail and bookmark_dir
     print(convert_exact_bookmark_path_to_dict("01", "mfb3/MFB/TEST"))
     # ('mfb3/MFB/TEST', '01', 'mfb3/MFB/TEST/01')
@@ -143,7 +143,7 @@ def split_path_into_array(path):
 
 def does_path_exist_in_bookmarks(all_bookmarks_obj, path, separator=':'):
     """
-    Given a colon-separated path (e.g., 'grand-parent:parent:bm1'), 
+    Given a colon-separated path (e.g., 'grand-parent:parent:bm1'),
     return True if that path exists in the nested bookmarks object.
     """
     parts = path.split(separator)

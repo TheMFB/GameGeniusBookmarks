@@ -6,7 +6,7 @@ import sys
 import glob
 from typing import Literal
 
-from app.bookmarks_consts import LOCAL_REDIS_SESSIONS_HOST, LOCAL_REDIS_SESSIONS_PORT, LOCAL_REDIS_SESSIONS_DB, REDIS_DUMP_DIR
+from app.consts.bookmarks_consts import LOCAL_REDIS_SESSIONS_HOST, LOCAL_REDIS_SESSIONS_PORT, LOCAL_REDIS_SESSIONS_DB, REDIS_DUMP_DIR
 
 
 def export_from_redis(filename:Literal["bookmark_temp", "bookmark_temp_after"]):

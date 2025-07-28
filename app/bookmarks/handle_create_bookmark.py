@@ -6,7 +6,7 @@ from app.utils.obs_utils import get_media_source_info
 from app.utils.bookmark_utils import convert_exact_bookmark_path_to_dict
 from app.utils.decorators import print_def_name
 from app.utils.printing_utils import *
-from app.bookmarks_consts import IS_DEBUG, ABS_OBS_BOOKMARKS_DIR
+from app.consts.bookmarks_consts import IS_DEBUG, ABS_OBS_BOOKMARKS_DIR
 from app.bookmarks_meta import create_bookmark_meta, create_directory_meta
 from app.types.bookmark_types import CurrentRunSettings
 

@@ -1,4 +1,4 @@
-from app.bookmarks_consts import OPTIONS_HELP, IS_PRINT_JUST_CURRENT_DIRECTORY_BOOKMARKS_ON_LS
+from app.consts.bookmarks_consts import OPTIONS_HELP, IS_PRINT_JUST_CURRENT_DIRECTORY_BOOKMARKS_ON_LS
 from app.bookmarks import get_last_used_bookmark_display
 from app.bookmarks_print import print_all_live_directories_and_bookmarks
 from app.utils.decorators import print_def_name

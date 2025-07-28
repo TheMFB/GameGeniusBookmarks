@@ -2,7 +2,7 @@ import subprocess
 import os
 from typing import Literal
 
-from app.bookmarks_consts import IS_DEBUG, INITIAL_REDIS_STATE_DIR, IS_LOCAL_REDIS_DEV
+from app.consts.bookmarks_consts import IS_DEBUG, INITIAL_REDIS_STATE_DIR, IS_LOCAL_REDIS_DEV
 from app.utils.decorators import print_def_name
 from app.utils.printing_utils import *
 from standalone_utils.redis.export_from_redis import export_from_redis

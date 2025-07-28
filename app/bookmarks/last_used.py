@@ -8,7 +8,7 @@ from datetime import datetime
 
 from app.utils.printing_utils import *
 from app.utils.decorators import print_def_name, memoize
-from app.bookmarks_consts import ABS_OBS_BOOKMARKS_DIR
+from app.consts.bookmarks_consts import ABS_OBS_BOOKMARKS_DIR
 from app.bookmarks.bookmarks import create_bookmark_symlinks
 
 IS_AGGREGATE_TAGS = False

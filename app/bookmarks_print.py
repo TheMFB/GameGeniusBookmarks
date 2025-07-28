@@ -1,7 +1,7 @@
 from app.utils.printing_utils import *
 import os
 import json
-from app.bookmarks_consts import IS_DEBUG, HIDDEN_COLOR, RESET_COLOR, ABS_OBS_BOOKMARKS_DIR, NON_NAME_BOOKMARK_KEYS, IS_PRINT_JUST_CURRENT_DIRECTORY_BOOKMARKS
+from app.consts.bookmarks_consts import IS_DEBUG, HIDDEN_COLOR, RESET_COLOR, ABS_OBS_BOOKMARKS_DIR, NON_NAME_BOOKMARK_KEYS, IS_PRINT_JUST_CURRENT_DIRECTORY_BOOKMARKS
 from app.bookmarks_meta import compute_hoistable_tags
 from app.bookmarks.last_used import get_last_used_bookmark
 from app.bookmarks.bookmarks import get_all_live_bookmarks_in_json_format

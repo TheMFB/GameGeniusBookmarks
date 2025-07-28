@@ -1,7 +1,7 @@
 from typing import List
 from app.utils.printing_utils import *
 from app.bookmarks.matching.matching_utils import find_bookmarks_by_substring_with_all_live_bm_path_parts, find_bookmarks_by_exact_trailing_live_bm_path_parts, handle_bookmark_matches, find_bookmarks_by_substring_with_trailing_live_bm_path_parts, find_exact_matches_by_bookmark_tokens, find_partial_substring_matches_by_bookmark_tokens
-from app.bookmarks_consts import NAVIGATION_COMMANDS
+from app.consts.bookmarks_consts import NAVIGATION_COMMANDS
 from app.bookmarks.navigation.process_navigation import process_main_cli_arg_navigation
 from app.types.bookmark_types import MatchedBookmarkObj
 from app.utils.decorators import print_def_name

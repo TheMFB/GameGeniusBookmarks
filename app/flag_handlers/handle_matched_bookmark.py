@@ -15,7 +15,7 @@ from redis_friendly_converter import convert_file as convert_redis_to_friendly
 from app.bookmark_dir_processes import get_all_valid_root_dir_names
 from app.bookmarks_redis import run_redis_command, copy_initial_redis_state
 # copy_preceding_bookmark_redis_state, copy_specific_bookmark_redis_state
-from app.bookmarks_consts import IS_DEBUG, IS_LOCAL_REDIS_DEV, REDIS_DUMP_DIR, SCREENSHOT_SAVE_SCALE
+from app.consts.bookmarks_consts import IS_DEBUG, IS_LOCAL_REDIS_DEV, REDIS_DUMP_DIR, SCREENSHOT_SAVE_SCALE
 from app.types.bookmark_types import MatchedBookmarkObj, CurrentRunSettings
 from app.utils.printing_utils import *
 

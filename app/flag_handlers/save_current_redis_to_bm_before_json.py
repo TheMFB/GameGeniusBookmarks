@@ -1,7 +1,7 @@
 import os
 from pprint import pprint
 import shutil
-from app.bookmarks_consts import REDIS_DUMP_DIR, IS_DEBUG # type: ignore
+from app.consts.bookmarks_consts import REDIS_DUMP_DIR, IS_DEBUG # type: ignore
 from app.bookmarks_redis import run_redis_command
 from redis_friendly_converter import convert_file as convert_redis_to_friendly
 from app.utils.decorators import print_def_name

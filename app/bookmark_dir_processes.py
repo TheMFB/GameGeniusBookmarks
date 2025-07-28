@@ -1,7 +1,7 @@
 import os
 
 from app.utils.printing_utils import *
-from app.bookmarks_consts import IS_DEBUG, ABS_OBS_BOOKMARKS_DIR, EXCLUDED_DIRS
+from app.consts.bookmarks_consts import IS_DEBUG, ABS_OBS_BOOKMARKS_DIR, EXCLUDED_DIRS
 from app.bookmarks_meta import load_folder_meta, create_folder_meta
 from app.utils.decorators import print_def_name, memoize
 
@@ -127,7 +127,7 @@ def create_new_bookmark_dir():
 @print_def_name(IS_PRINT_DEF_NAME)
 def find_bookmark_dir_by_name(bookmark_dir_arg: str):
     """Find folder directory by name or full relative path (e.g. kerch/comp/m02)"""
-    # TODO(KERCH): ++++ This is not working as expected. We should pull in the all bookmarks json, and attempt to step through the tree, and see if there are any full / partial matches. The all_live_folders is giving a full system path, but only the basename for what we need.
+    # TODO(): ++++ This is not working as expected. We should pull in the all bookmarks json, and attempt to step through the tree, and see if there are any full / partial matches. The all_live_folders is giving a full system path, but only the basename for what we need.
 
     # ---- 0 cli_bookmark_dir:
     # 'videos/0001_green_dog/g01/m01'
@@ -165,7 +165,7 @@ def find_bookmark_dir_by_name(bookmark_dir_arg: str):
     # return None
     return bookmark_dir_arg
 
-# TODO(KERCH): How is this different from the one above? Any way to combine?
+# TODO(): How is this different from the one above? Any way to combine?
 
 @print_def_name(IS_PRINT_DEF_NAME)
 def create_dir_with_name(rel_folder_dir):
@@ -184,7 +184,7 @@ def create_dir_with_name(rel_folder_dir):
 
         os.makedirs(abs_folder_dir)
 
-        # TODO(KERCH): HERE go ahead and create the folder_meta.json file in each of these folders if it doesn't exist. (recursive check down path)
+        # TODO(): HERE go ahead and create the folder_meta.json file in each of these folders if it doesn't exist. (recursive check down path)
 
         # Create folder metadata
         if create_folder_meta(abs_folder_dir):
@@ -226,7 +226,7 @@ def parse_cli_bookmark_args(args_for_run_bookmarks):
     return dir_colon_rel, bookmark_tail_name
 
 
-# TODO(KERCH): This is for a local-last saved bookmark. For now, we're not using it.
+# TODO(): This is for a local-last saved bookmark. For now, we're not using it.
 # @print_def_name(IS_PRINT_DEF_NAME)
 # def update_folder_last_bookmark(folder_dir, bookmark_name):
 #     """Update the folder metadata with the last used bookmark."""

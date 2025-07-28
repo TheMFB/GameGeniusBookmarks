@@ -1,4 +1,4 @@
-from app.bookmarks_consts import IS_DEBUG
+from app.consts.bookmarks_consts import IS_DEBUG
 from app.utils.decorators import print_def_name
 
 IS_PRINT_DEF_NAME = True

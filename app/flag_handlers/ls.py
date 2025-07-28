@@ -1,6 +1,6 @@
 import os
 import json
-from app.bookmarks_consts import IS_PRINT_JUST_CURRENT_DIRECTORY_BOOKMARKS_ON_LS
+from app.consts.bookmarks_consts import IS_PRINT_JUST_CURRENT_DIRECTORY_BOOKMARKS_ON_LS
 from app.bookmark_dir_processes import find_bookmark_dir_by_name
 from app.bookmarks_print import print_all_live_directories_and_bookmarks
 from app.bookmarks.matching.matching_utils import token_match_bookmarks

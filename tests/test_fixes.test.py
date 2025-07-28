@@ -11,7 +11,7 @@ sys.path.insert(0, project_root)
 
 from app.bookmarks_folders import parse_cli_bookmark_args, find_folder_by_name
 from app.bookmarks import find_matching_bookmark
-from app.bookmarks_consts import BOOKMARKS_DIR
+from app.consts.bookmarks_consts import BOOKMARKS_DIR
 
 def test_parse_folder_args_for_run_bookmarks():
     """Test the folder:bookmark parsing function."""
@@ -93,7 +93,7 @@ def test_redis_dump_path():
     """Test the Redis dump directory path resolution."""
     print("🧪 Testing Redis dump directory path...")
 
-    from app.bookmarks_consts import REDIS_DUMP_DIR
+    from app.consts.bookmarks_consts import REDIS_DUMP_DIR
     print(f"📁 REDIS_DUMP_DIR: {REDIS_DUMP_DIR}")
     print(f"📁 Exists: {os.path.exists(REDIS_DUMP_DIR)}")
     print(f"📁 Is absolute: {os.path.isabs(REDIS_DUMP_DIR)}")

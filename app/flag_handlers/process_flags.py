@@ -1,4 +1,4 @@
-from app.bookmarks_consts import IS_DEBUG, OPTIONS_HELP
+from app.consts.bookmarks_consts import IS_DEBUG, OPTIONS_HELP
 from app.flag_handlers import handle_help, handle_ls, handle_which, open_video, find_cli_tags
 from app.flag_handlers.preceding_bookmark import find_preceding_bookmark_args
 from app.types.bookmark_types import CurrentRunSettings

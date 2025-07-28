@@ -5,7 +5,7 @@ import os
 import json
 
 from app.bookmark_dir_processes import get_all_valid_root_dir_names
-from app.bookmarks_consts import IS_DEBUG, IS_DEBUG_PRINT_ALL_BOOKMARKS_JSON
+from app.consts.bookmarks_consts import IS_DEBUG, IS_DEBUG_PRINT_ALL_BOOKMARKS_JSON
 from app.bookmarks_meta import load_bookmark_meta_from_rel, load_bookmark_meta_from_abs, load_folder_meta
 from app.types import MatchedBookmarkObj, BookmarkPathDictionary
 from app.utils.printing_utils import *
@@ -165,7 +165,7 @@ def get_all_live_bookmarks_in_json_format():
 @print_def_name(IS_PRINT_DEF_NAME)
 def get_bookmark_info(cli_bookmark_obj: BookmarkPathDictionary) -> MatchedBookmarkObj | None:
     """
-    Get the information file from the bookmark 
+    Get the information file from the bookmark
     """
 
     bookmark_path_slash_abs = cli_bookmark_obj["bookmark_path_slash_abs"]

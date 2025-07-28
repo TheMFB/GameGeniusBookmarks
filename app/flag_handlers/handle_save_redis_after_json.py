@@ -1,6 +1,6 @@
 import os
 import shutil
-from app.bookmarks_consts import IS_DEBUG, REDIS_DUMP_DIR
+from app.consts.bookmarks_consts import IS_DEBUG, REDIS_DUMP_DIR
 from redis_friendly_converter import convert_file as convert_redis_to_friendly
 from app.bookmarks_redis import run_redis_command
 from app.utils.decorators import print_def_name

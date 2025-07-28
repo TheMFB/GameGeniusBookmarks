@@ -4,7 +4,7 @@ import subprocess
 import traceback
 from pprint import pprint
 from app.utils.printing_utils import *
-from app.bookmarks_consts import IS_DEBUG, IS_PRINT_JUST_CURRENT_DIRECTORY_BOOKMARKS
+from app.consts.bookmarks_consts import IS_DEBUG, IS_PRINT_JUST_CURRENT_DIRECTORY_BOOKMARKS
 from app.bookmarks_print import print_all_live_directories_and_bookmarks
 from app.flag_handlers import handle_matched_bookmark, handle_main_process, handle_save_redis_after_json, process_flags, CurrentRunSettings
 from app.bookmarks.handle_create_bookmark import handle_create_bookmark
@@ -82,7 +82,6 @@ def main():
             matched_bookmark_obj, current_run_settings_obj
         )
     else:
-        # TODO(KERCH): If we are in just dry run mode, we need to be saving the redis state. If we are in super dry run mode, we should not save the redis state.
         if current_run_settings_obj["is_super_dry_run"]:
             print(f"💾 Super dry run mode: Skipping final Redis state save")
         else:

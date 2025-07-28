@@ -3,7 +3,7 @@ import base64
 import os
 from pprint import pprint
 
-from app.bookmarks_consts import IS_PRINT_DEV
+from app.consts.bookmarks_consts import IS_PRINT_DEV
 
 # TODO(): Pull out the dev log printing into a separate file, so that we don't have to import everything when we *.
 def get_embedded_bookmark_file_link(dir_abs_slash_path, text):

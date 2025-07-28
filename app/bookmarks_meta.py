@@ -6,7 +6,7 @@ import os
 import json
 from datetime import datetime
 
-from app.bookmarks_consts import IS_DEBUG, IS_DEBUG_FULL
+from app.consts.bookmarks_consts import IS_DEBUG, IS_DEBUG_FULL
 from app.videos import construct_full_video_file_path
 from app.utils.decorators import print_def_name
 

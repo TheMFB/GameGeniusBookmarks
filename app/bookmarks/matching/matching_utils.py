@@ -3,7 +3,7 @@
 import re
 from typing import List
 
-from app.bookmarks_consts import IS_DEBUG
+from app.consts.bookmarks_consts import IS_DEBUG
 from app.bookmarks.bookmarks import load_bookmarks_from_folder, get_all_live_bookmarks_in_json_format
 from app.types.bookmark_types import MatchedBookmarkObj
 from app.utils.printing_utils import *
@@ -333,7 +333,7 @@ def find_exact_matches_by_bookmark_tokens(
     - Bookmark path parts
     - Tags
     - Description
-   
+
     """
     token_map = build_bookmark_token_map(include_tags_and_descriptions)
     # TODO(MFB): Add an option to be case-(in)sensitive
