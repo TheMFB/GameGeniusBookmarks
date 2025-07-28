@@ -1,6 +1,6 @@
-import os
+# import os
 import re
-import difflib
+# import difflib
 
 from app.bookmarks_consts import IS_DEBUG
 from app.bookmarks.bookmarks import load_bookmarks_from_folder, get_all_live_bookmarks_in_json_format

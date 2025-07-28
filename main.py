@@ -1,13 +1,8 @@
-"""
-Integration script that coordinates OBS bookmarks with Redis state management
-"""
 import os
 import sys
 import subprocess
 import traceback
 from pprint import pprint
-# from networkx import to_dict_of_dicts
-
 from app.utils.printing_utils import *
 from app.bookmarks_consts import IS_DEBUG, IS_PRINT_JUST_CURRENT_DIRECTORY_BOOKMARKS
 from app.bookmarks_print import print_all_live_directories_and_bookmarks
