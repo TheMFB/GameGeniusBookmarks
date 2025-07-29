@@ -41,6 +41,7 @@ RESERVED_BOOKMARK_NAMES = [
     "next",
     "first",
     "last",
+    "last_used",
     "create_new_bookmark"
 ]
 

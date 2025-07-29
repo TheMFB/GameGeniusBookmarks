@@ -91,4 +91,4 @@ default_processed_flags: CurrentRunSettings = {
     "base_bookmark_obj": None,
 }
 
-NAVIGATION_COMMANDS = ["next", "previous", "first", "last"]
+NAVIGATION_COMMANDS = ["next", "previous", "first", "last", "last_used"]

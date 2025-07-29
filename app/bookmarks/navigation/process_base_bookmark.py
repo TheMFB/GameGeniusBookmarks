@@ -9,8 +9,7 @@ def process_base_bookmark(matched_bookmark_obj: MatchedBookmarkObj, current_run_
     This function is used to process the base bookmark.
 
     It will handle the following:
-    - Load the Redis state into redis
-    - Load the OBS bookmark into OBS
+    - Load the redis_before.json to redis dump directory.
     """
     base_bookmark_obj = current_run_settings_obj.get("base_bookmark_obj", None)
     cli_nav_arg_string = current_run_settings_obj.get("cli_nav_arg_string", None)

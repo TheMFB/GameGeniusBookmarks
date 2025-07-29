@@ -42,7 +42,7 @@ IS_PRINT_DEF_NAME = True
 def find_sibling_bookmark_in_folder(bookmark_obj: MatchedBookmarkObj, mode: str = "previous") -> MatchedBookmarkObj | None:
     """
     Find a sibling bookmark relative to the given one, in the same folder.
-    Mode can be: 'first', 'previous', 'next', 'last'.
+    Mode can be: 'first', 'previous', 'next', 'last', 'last_used'.
     """
     bookmark_obj_dir_slash_abs = bookmark_obj.get("bookmark_dir_slash_abs")
     if not bookmark_obj_dir_slash_abs:
@@ -73,6 +73,8 @@ def find_sibling_bookmark_in_folder(bookmark_obj: MatchedBookmarkObj, mode: str 
     elif mode == "next":
         if index < len(sibling_paths) - 1:
             selected_index = index + 1
+    elif mode == "last_used":
+        return get_last_used_bookmark()
     else:
         if IS_DEBUG:
             print(f"⚠️ Unsupported mode: {mode}")
@@ -88,7 +90,7 @@ def find_sibling_bookmark_in_folder(bookmark_obj: MatchedBookmarkObj, mode: str 
 
 @print_def_name(IS_PRINT_DEF_NAME)
 def resolve_navigation_bookmark_from_last_used(
-    navigation_command: Literal["next", "previous", "first", "last"],
+    navigation_command: Literal["next", "previous", "first", "last", "last_used"],
 )-> MatchedBookmarkObj | int | None:
     """Resolve navigation commands (next, previous, first, last) to actual bookmark names."""
     # Get the last used bookmark to determine the current position
