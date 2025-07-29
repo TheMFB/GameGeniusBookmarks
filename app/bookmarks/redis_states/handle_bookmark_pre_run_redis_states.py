@@ -54,7 +54,7 @@ def handle_bookmark_pre_run_redis_states(
 
     if is_skip_redis_processing:
         # TODO(MFB): Do we want to skip ALL redis operations, or just the ones that save?
-        print(f"💾 Dry run mode: Skipping all Redis operations")
+        print("💾 Dry run mode: Skipping all Redis operations")
         return
 
     # TODO(MFB): When do we just load in the current bookmark's redis_before.json to redis?
@@ -88,11 +88,11 @@ def handle_bookmark_pre_run_redis_states(
     # Load Redis state
     if os.path.exists(bm_redis_before_path):
         if IS_DEBUG:
-            print(f"📊 Loading Redis state from bookmark...")
+            print("📊 Loading Redis state from bookmark...")
         handle_load_into_redis(matched_bookmark_obj)
 
     else:
-        print(f"💾 No existing Redis state found - saving current state...")
+        print("💾 No existing Redis state found - saving current state...")
 
         # Save current Redis state as redis_before.json
         if not run_redis_command('export', 'bookmark_temp'):

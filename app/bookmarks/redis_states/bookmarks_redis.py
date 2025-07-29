@@ -90,13 +90,17 @@ def copy_blank_redis_state_to_bm_redis_before(bookmark_path_slash_abs: str):
 
 
 def handle_copy_redis_state_from_base_to_bookmark(
-        base_bookmark_obj: MatchedBookmarkObj,
-        target_bookmark_obj: MatchedBookmarkObj
+        base_bookmark_obj: MatchedBookmarkObj | None,
+        target_bookmark_obj: MatchedBookmarkObj | None
 ):
     """
     Copy redis_after.json from a specific bookmark to redis_before.json of target bookmark
-    
+    If base_bookmark_obj is None, we will copy the initial_redis_before.json to redis_before.json of target bookmark
     """
+
+    if base_bookmark_obj is None or target_bookmark_obj is None:
+        return False
+
     # TODO(MFB): Does this need to load into redis, from here, or should
     base_bm_path_abs = base_bookmark_obj.get("bookmark_path_slash_abs")
     target_bm_path_abs = target_bookmark_obj.get("bookmark_path_slash_abs")

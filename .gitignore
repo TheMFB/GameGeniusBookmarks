@@ -28,6 +28,7 @@ standalone_utils/obs_bookmarks_app/obs_bookmark_saves/temp*
 last_bookmark_state.json
 
 shortcuts/
+.vscfavoriterc
 
 obs_bookmark_saves/
 

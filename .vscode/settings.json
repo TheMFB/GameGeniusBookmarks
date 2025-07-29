@@ -10,5 +10,15 @@
         "**/.venv/**",
         "**/venv/**"
     ],
-    "python.envFile": "${workspaceFolder}/.env"
+    "python.envFile": "${workspaceFolder}/.env",
+    "cursorpyright.analysis.autoImportCompletions": true,
+    "cursorpyright.analysis.autoSearchPaths": true,
+    "cursorpyright.analysis.diagnosticMode": "workspace",
+    "cursorpyright.analysis.ignore": [
+        "**/__pycache__/**",
+        "**/.venv/**",
+        "**/venv/**"
+    ],
+    "cursorpyright.analysis.stubPath": "./typings",
+    "cursorpyright.analysis.typeCheckingMode": "off"
 }

@@ -1,0 +1,15 @@
+{
+      "reportGeneralTypeIssues": "error",
+      "reportOptionalMemberAccess": "warning",
+      "reportOptionalSubscript": "warning",
+      "reportOptionalCall": "warning",
+      "reportUnnecessaryTypeIgnoreComment": "warning",
+      "reportUnnecessaryIsInstance": "warning",
+      "reportUnnecessaryComparison": "warning",
+      "reportCallInDefaultInitializer": "warning",
+      "reportImplicitStringConcatenation": "warning",
+      "reportUnusedImport": "information",
+      "reportUnusedClass": "information",
+      "reportUnusedFunction": "information",
+      "reportUnusedVariable": "information"
+}
