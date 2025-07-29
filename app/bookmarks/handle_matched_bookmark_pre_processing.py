@@ -6,7 +6,7 @@ from app.bookmarks.redis_states.handle_bookmark_pre_run_redis_states import hand
 from app.obs.handle_bookmark_obs import save_obs_screenshot_to_bookmark_path, save_obs_media_info_to_bookmark_meta
 
 
-def process_matched_bookmark(
+def handle_matched_bookmark_pre_processing(
     matched_bookmark_obj: MatchedBookmarkObj,
     current_run_settings_obj: CurrentRunSettings,
 ):

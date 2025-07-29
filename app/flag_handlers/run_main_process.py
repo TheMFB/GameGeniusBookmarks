@@ -7,9 +7,11 @@ IS_PRINT_DEF_NAME = True
 
 @print_def_name(IS_PRINT_DEF_NAME)
 def handle_main_process(current_run_settings=None):
-    if IS_DEBUG:
-        print(f"🚀 Running main process...")
+    # if IS_DEBUG:
+    #     print(f"🚀 Running main process...")
     print('')
+    print("🚀 Running main process...")
+
 
     # Handle dry and super-dry modes
     is_dry = current_run_settings.get("is_no_docker") if current_run_settings else False
