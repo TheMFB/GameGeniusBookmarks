@@ -27,7 +27,7 @@ def handle_main_process(current_run_settings=None):
 
     try:
         cmd = 'docker exec -it game_processor_backend python ./main.py --run-once --gg_user_id="DEV_GG_USER_ID"'
-        result = subprocess.run(cmd, shell=True)
+        result = subprocess.run(cmd, shell=True, check=False)
         if result.returncode != 0:
             print("❌ Main process failed")
             return 1

@@ -50,7 +50,7 @@ def handle_load_redis_dump_into_redis():
         else:
             # Docker mode
             cmd = "docker exec -it session_manager python -m utils.standalone.redis_load bookmark_temp"
-            result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+            result = subprocess.run(cmd, shell=True, capture_output=True, text=True, check=False)
 
             if result.returncode != 0:
                 print(f"❌ Redis command failed: {cmd}")

@@ -33,7 +33,7 @@ def run_redis_command(
             print_dev('---- cmd:', 'magenta')
             print_dev(cmd)
             print('')
-            result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+            result = subprocess.run(cmd, shell=True, capture_output=True, text=True, check=False)
 
             if result.returncode != 0:
                 print(f"❌ Redis command failed: {load_or_export} {location}")

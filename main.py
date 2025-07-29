@@ -61,7 +61,7 @@ def main():
 
 
     # Print all folders and bookmarks with current one highlighted
-    print(f"✅ Integrated workflow completed successfully!")
+    print("✅ Integrated workflow completed successfully!")
     print('=' * 60)
     print('')
     print_all_live_directories_and_bookmarks(

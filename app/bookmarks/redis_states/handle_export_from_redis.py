@@ -2,10 +2,8 @@ import os
 import subprocess
 import shutil
 from app.bookmarks.redis_states.redis_friendly_converter import convert_redis_state_file_to_friendly_and_save
-from app.bookmarks.redis_states.bookmarks_redis import run_redis_command, copy_blank_redis_state_to_bm_redis_before
-# copy_preceding_bookmark_redis_state, copy_specific_bookmark_redis_state
 from app.consts.bookmarks_consts import IS_DEBUG, IS_LOCAL_REDIS_DEV, REDIS_DUMP_DIR
-from app.types.bookmark_types import MatchedBookmarkObj, CurrentRunSettings
+from app.types.bookmark_types import MatchedBookmarkObj
 from app.utils.decorators import print_def_name
 from app.utils.printing_utils import *
 from standalone_utils.redis.load_into_redis_local import load_into_redis_local
@@ -62,7 +60,7 @@ def handle_export_from_redis_to_redis_dump(
             # Docker mode
             cmd = f"docker exec -it session_manager python -m utils.standalone.redis_load {temp_redis_state_name}"
             result = subprocess.run(
-                cmd, shell=True, capture_output=True, text=True)
+                cmd, shell=True, capture_output=True, text=True, check=False)
 
             if result.returncode != 0:
                 print(f"❌ Redis command failed: {cmd}")

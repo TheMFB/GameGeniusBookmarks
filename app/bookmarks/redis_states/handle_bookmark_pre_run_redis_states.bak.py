@@ -80,7 +80,7 @@ def handle_bookmark_pre_run_redis_states(
     # TODO(KERCH): If we are in just dry run mode, we need to be saving the redis state. If we are in super dry run mode, we should not save the redis state.
     if not current_run_settings_obj["is_no_docker_no_redis"] and os.path.exists(bm_redis_before_path):
         if IS_DEBUG:
-            print(f"📊 Loading Redis state from bookmark...")
+            print("📊 Loading Redis state from bookmark...")
 
         # Copy the redis_before.json to the redis dump directory and load it
         temp_redis_path = os.path.join(REDIS_DUMP_DIR, "bookmark_temp.json")
@@ -96,7 +96,7 @@ def handle_bookmark_pre_run_redis_states(
             if not IS_LOCAL_REDIS_DEV:
                 print("🔍 Checking Redis keys after failed load...")
                 debug_cmd = 'docker exec -it session_manager redis-cli keys "*" | head -20'
-                subprocess.run(debug_cmd, shell=True)
+                subprocess.run(debug_cmd, shell=True, check=False)
             return 1
 
         # Clean up temp file
@@ -106,7 +106,7 @@ def handle_bookmark_pre_run_redis_states(
                 print(f"🧹 Cleaned up temp file: {temp_redis_path}")
     # TODO(KERCH): If we are in just dry run mode, we need to be saving the redis state. If we are in super dry run mode, we should not save the redis state.
     elif not current_run_settings_obj["is_no_docker_no_redis"]:
-        print(f"💾 No existing Redis state found - saving current state...")
+        print("💾 No existing Redis state found - saving current state...")
         # Save current Redis state as redis_before.json
         if not run_redis_command('export', 'bookmark_temp'):
             print("❌ Failed to export current Redis state")
@@ -131,7 +131,7 @@ def handle_bookmark_pre_run_redis_states(
 
             # Generate friendly version
             try:
-                convert_redis_to_friendly(final_path)
+                convert_redis_state_file_to_friendly_and_save(final_path)
                 if IS_DEBUG:
                     print(f"📋 Generated friendly Redis before")
             except Exception as e:
