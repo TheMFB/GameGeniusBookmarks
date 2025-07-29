@@ -145,11 +145,14 @@ Instead of pulling from the current redis state, we will load in the default ini
 
 ### Dry Run
 
+This will not save any updates when this is done. It will not run docker, but it will pull from Redis (but not save or push)
+
+### No Docker
 Runs everything except for Docker (gg-engine)
 
-### Super Dry Run
+### No Docker, No Redis
 
-Runs everything except for Docker (gg-engine) and Redis ()
+Runs everything except for Docker (gg-engine) and Redis
 
 ### No OBS
 

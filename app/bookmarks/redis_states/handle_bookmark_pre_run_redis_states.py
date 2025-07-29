@@ -23,6 +23,7 @@ def handle_bookmark_pre_run_redis_states(
     matched_bookmark_path_abs = matched_bookmark_obj["bookmark_path_slash_abs"]
 
     is_overwrite_bm_redis_before = current_run_settings_obj["is_save_updates"]
+    is_no_saving_dry_run = current_run_settings_obj["is_no_saving_dry_run"]
     is_skip_redis_processing = current_run_settings_obj["is_no_docker_no_redis"]
     is_blank_slate = current_run_settings_obj["is_blank_slate"]
     is_use_other_bm_as_template = current_run_settings_obj["is_use_bookmark_as_base"]

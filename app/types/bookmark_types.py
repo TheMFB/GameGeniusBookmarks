@@ -70,12 +70,15 @@ VALID_FLAGS = [
     "-t",
     "--tags",
     "--show-image",
+    "--no-saving",
+    "-ns"
 ]
 
 default_processed_flags: CurrentRunSettings = {
     "is_overwrite_redis_after": False,
     "is_overwrite_redis_before": False,
     "is_save_updates": False,
+    "is_no_saving_dry_run": False,
     "is_use_bookmark_as_base": False,
     "is_blank_slate": False,
     "is_no_docker": False,

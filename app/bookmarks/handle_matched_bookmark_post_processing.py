@@ -15,6 +15,7 @@ def handle_matched_bookmark_post_processing(
     - Copy the redis_after.json to the bookmark's redis_after.json
     - Update the last_used_bookmark.json
     """
+    # TODO(MFB): If dry-run, we should not push to redis.
 
     # Run Redis Post-Processing
     if not handle_bookmark_post_run_redis_states(matched_bookmark_obj, current_run_settings_obj):
@@ -23,6 +24,7 @@ def handle_matched_bookmark_post_processing(
     # Save the last used bookmark at the end of successful operations
     if matched_bookmark_obj["bookmark_dir_slash_abs"]:
         print_color('saving last used bookmark', 'red')
+        # TODO(?): If dry-run, should we not save the last used bookmark?
         save_last_used_bookmark(matched_bookmark_obj)
 
     return 0

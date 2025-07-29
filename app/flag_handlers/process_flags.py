@@ -7,7 +7,7 @@ from app.utils.decorators import print_def_name
 
 IS_PRINT_DEF_NAME = True
 
-flag_routes = {
+flag_route_handler_map = {
     "--help": handle_help,
     "-h": handle_help,
     "--ls": handle_ls,
@@ -26,7 +26,7 @@ def process_flags(args) -> CurrentRunSettings | int:
     tags = []
 
     # Handle all flags that terminate the program afterwards (routed flags)
-    for flag, handler in flag_routes.items():
+    for flag, handler in flag_route_handler_map.items():
         if flag in args:
             handler(args)
             return 0
@@ -42,6 +42,7 @@ def process_flags(args) -> CurrentRunSettings | int:
     def is_flag_in_args(flags):
         return any(flag in args for flag in flags)
 
+    # TODO(MFB): Clean this up.
     is_overwrite_redis_after = is_flag_in_args([
         "--save-last-redis",
         "-s"
@@ -60,11 +61,14 @@ def process_flags(args) -> CurrentRunSettings | int:
         "--blank-slate",
         "-b"
     ])
-    # TODO(MFB): dry-run should not run docker nor run anything that would edit a bookmark, redis, or anything else. We should redefine and make sure Kerch's is set up correctly.
-    is_no_docker = is_flag_in_args([
+    is_no_saving_dry_run = is_flag_in_args([
         "--dry-run",
-        "--no-docker",
         "-d",
+        "--no-saving",
+        "-ns"
+    ])
+    is_no_docker = is_flag_in_args([
+        "--no-docker",
         "-nd"
     ])
     is_no_docker_no_redis = is_flag_in_args([
@@ -114,6 +118,7 @@ def process_flags(args) -> CurrentRunSettings | int:
         "is_save_updates": is_save_updates,
         "is_use_bookmark_as_base": is_use_bookmark_as_base,
         "is_blank_slate": is_blank_slate,
+        "is_no_saving_dry_run": is_no_saving_dry_run,
         "is_no_docker": is_no_docker,
         "is_no_docker_no_redis": is_no_docker_no_redis,
         "is_no_obs": is_no_obs,
