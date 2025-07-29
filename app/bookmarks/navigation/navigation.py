@@ -233,7 +233,10 @@ def find_last_bookmark_in_folder(current_bookmark_name, folder_dir):
 
 
 @print_def_name(IS_PRINT_DEF_NAME)
-def resolve_navigation_bookmark(navigation_command, folder_dir):
+def resolve_navigation_bookmark(
+    navigation_command: Literal["next", "previous", "first", "last"],
+    folder_dir
+) :
     """Resolve navigation commands (next, previous, first, last) to actual bookmark names."""
     # Get the last used bookmark to determine the current position
     last_used_info = get_last_used_bookmark()

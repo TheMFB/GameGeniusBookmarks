@@ -1,8 +1,8 @@
 from app.consts.bookmarks_consts import IS_DEBUG
 from app.consts.cli_consts import OPTIONS_HELP
 from app.flag_handlers import handle_help, handle_ls, handle_which, open_video, find_cli_tags
-from app.flag_handlers.bookmark_as_base import find_bookmark_as_base_args
-from app.types.bookmark_types import CurrentRunSettings, supported_flags, default_processed_flags
+from app.flag_handlers.bookmark_as_base import find_bookmark_as_base_match
+from app.types.bookmark_types import CurrentRunSettings, VALID_FLAGS, default_processed_flags
 from app.utils.decorators import print_def_name
 
 IS_PRINT_DEF_NAME = True
@@ -18,6 +18,7 @@ flag_routes = {
     "-v": open_video,
 }
 
+
 @print_def_name(IS_PRINT_DEF_NAME)
 def process_flags(args) -> CurrentRunSettings | int:
     """Process command line flags and return a dictionary of flag values."""
@@ -30,25 +31,55 @@ def process_flags(args) -> CurrentRunSettings | int:
             handler(args)
             return 0
 
-
     # Check for unsupported flags
-    ignore_flags = ["--scale"]
     unsupported_flags = [arg for arg in args if arg.startswith(
-        "--") and arg not in supported_flags + ignore_flags]
+        "--") or arg.startswith("-") and arg not in VALID_FLAGS]
     if unsupported_flags:
         print(f"⚠️  Warning: Unsupported flags detected: {unsupported_flags}")
         print(OPTIONS_HELP)
         print()
 
-    is_overwrite_redis_after = "--save-last-redis" in args or "-s" in args
-    is_save_updates = "--save-updates" in args or "-s" in args
-    is_use_preceding_bookmark = "--use-preceding-bookmark" in args or "-p" in args
-    is_use_bookmark_as_base = "--bookmark-base" in args or "-b" in args or is_use_preceding_bookmark
-    is_blank_slate = "--blank-slate" in args or "-b" in args
-    is_no_docker = "--dry-run" in args or "--no-docker" in args or "-d" in args or "-nd" in args
-    is_no_docker_no_redis = "--super-dry-run" in args or "--no-docker-no-redis" in args or "-sd" in args or "-ndr" in args or "-ndnr" in args
-    is_no_obs = "--no-obs" in args
-    is_show_image = "--show-image" in args
+    def is_flag_in_args(flags):
+        return any(flag in args for flag in flags)
+
+    is_overwrite_redis_after = is_flag_in_args([
+        "--save-last-redis",
+        "-s"
+    ])
+    is_save_updates = is_flag_in_args([
+        "--save-updates",
+        "-s"
+    ])
+    is_use_bookmark_as_base = is_flag_in_args([
+        "--use-preceding-bookmark",
+        "-p",
+        "--bookmark-base",
+        "-bb"
+    ])
+    is_blank_slate = is_flag_in_args([
+        "--blank-slate",
+        "-b"
+    ])
+    # TODO(MFB): dry-run should not run docker nor run anything that would edit a bookmark, redis, or anything else. We should redefine and make sure Kerch's is set up correctly.
+    is_no_docker = is_flag_in_args([
+        "--dry-run",
+        "--no-docker",
+        "-d",
+        "-nd"
+    ])
+    is_no_docker_no_redis = is_flag_in_args([
+        "--super-dry-run",
+        "--no-docker-no-redis",
+        "-sd",
+        "-ndr",
+        "-ndnr"
+    ])
+    is_no_obs = is_flag_in_args([
+        "--no-obs"
+    ])
+    is_show_image = is_flag_in_args([
+        "--show-image"
+    ])
     # is_add_bookmark = "--add" in args or "-a" in args
 
     if is_no_docker_no_redis:
@@ -64,14 +95,15 @@ def process_flags(args) -> CurrentRunSettings | int:
     # Parse the source bookmark for --use-preceding-bookmark if specified
 
     if is_use_bookmark_as_base:
-        cli_nav_arg_string = find_bookmark_as_base_args(args)
+        cli_nav_arg_string = find_bookmark_as_base_match(args)
 
     # Parse tags from command line
     if "--tags" in args or "-t" in args:
         tags = find_cli_tags(args)
 
     if IS_DEBUG:
-        print(f"🔍 Debug - is_overwrite_redis_after: {is_overwrite_redis_after}")
+        print(
+            f"🔍 Debug - is_overwrite_redis_after: {is_overwrite_redis_after}")
         print(f"🔍 Debug - is_save_updates: {is_save_updates}")
         print(f"🔍 Debug - is_blank_slate: {is_blank_slate}")
         print(f"🔍 Debug - is_no_obs: {is_no_obs}")

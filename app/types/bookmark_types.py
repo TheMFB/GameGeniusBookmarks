@@ -46,7 +46,7 @@ class CurrentRunSettings(TypedDict):
 
 # CLI FLAGS #
 
-supported_flags = [
+VALID_FLAGS = [
     "-a",
     "--add",
     "-s",
