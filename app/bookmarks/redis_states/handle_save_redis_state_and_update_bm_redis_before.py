@@ -2,15 +2,17 @@ import os
 from pprint import pprint
 import shutil
 from app.consts.bookmarks_consts import REDIS_DUMP_DIR, IS_DEBUG # type: ignore
-from app.bookmarks_redis import run_redis_command
-from redis_friendly_converter import convert_file as convert_redis_to_friendly
+from app.bookmarks.redis_states.bookmarks_redis import run_redis_command
+from app.bookmarks.redis_states.redis_friendly_converter import convert_redis_state_file_to_friendly_and_save
 from app.utils.decorators import print_def_name
 from app.utils.printing_utils import *
 
 IS_PRINT_DEF_NAME = True
 
+# TODO(MFB): Break this up into two functions. Saving the redis state and updating the bookmark redis_before.json.
+
 @print_def_name(IS_PRINT_DEF_NAME)
-def save_current_redis_to_bm_before_json(bookmark_path_slash_abs: str):
+def handle_save_redis_state_and_update_bm_redis_before(bookmark_path_slash_abs: str):
     print_color('---- bookmark_path_slash_abs:', 'magenta')
     pprint(bookmark_path_slash_abs)
 
@@ -41,7 +43,7 @@ def save_current_redis_to_bm_before_json(bookmark_path_slash_abs: str):
     print(f"💾 Saved Redis state to: {final_path}")
 
     try:
-        convert_redis_to_friendly(final_path)
+        convert_redis_state_file_to_friendly_and_save(final_path)
         if IS_DEBUG:
             print(f"📋 Generated friendly Redis before")
     except Exception as e:

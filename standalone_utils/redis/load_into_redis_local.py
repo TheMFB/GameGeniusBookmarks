@@ -1,17 +1,12 @@
-import pickle
 import json
 import sys
 import os
 import redis
-from pprint import pprint
 from typing import Literal
+from app.consts.bookmarks_consts import LOCAL_REDIS_SESSIONS_HOST, LOCAL_REDIS_SESSIONS_PORT, LOCAL_REDIS_SESSIONS_DB, REDIS_DUMP_DIR
 
 
-from app.consts.bookmarks_consts import LOCAL_REDIS_SESSIONS_HOST, LOCAL_REDIS_SESSIONS_PORT, LOCAL_REDIS_SESSIONS_DB, REPO_ROOT, REDIS_DUMP_DIR
-
-
-
-def load_into_redis(filename:Literal["bookmark_temp", "bookmark_temp_after"]):
+def load_into_redis_local(filename:Literal["bookmark_temp", "bookmark_temp_after"]):
 
     json_filepath = f"{REDIS_DUMP_DIR}/{filename}.json"
 

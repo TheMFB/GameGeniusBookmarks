@@ -2,12 +2,12 @@ import os
 import sys
 import subprocess
 import traceback
-from pprint import pprint
+from app.bookmarks.redis_states import handle_copy_temp_redis_to_bm_redis_after
 from app.utils.printing_utils import *
 from app.consts.bookmarks_consts import IS_DEBUG, IS_PRINT_JUST_CURRENT_DIRECTORY_BOOKMARKS
 from app.bookmarks_print import print_all_live_directories_and_bookmarks
-from app.flag_handlers import handle_matched_bookmark, handle_main_process, handle_save_redis_after_json, process_flags, CurrentRunSettings
-from app.bookmarks.handle_create_bookmark import handle_create_bookmark_and_parent_dirs
+from app.bookmarks.process_matched_bookmark import process_matched_bookmark
+from app.flag_handlers import handle_main_process, process_flags, CurrentRunSettings
 from app.types import MatchedBookmarkObj
 from app.bookmarks.matching.bookmark_matching import find_best_bookmark_match_or_create
 from app.bookmarks.last_used import save_last_used_bookmark
@@ -52,12 +52,12 @@ def main():
         print_dev('---- navigation/matched_bookmark_obj:', 'magenta')
         pprint_dev(matched_bookmark_obj)
 
-        result = handle_matched_bookmark(
+        result = process_matched_bookmark(
             matched_bookmark_obj,
             current_run_settings_obj
         )
         if isinstance(result, int):
-            print_color("❌ Error in handle_matched_bookmark", 'red')
+            print_color("❌ Error in process_matched_bookmark", 'red')
             return result  # an error code like 1 was returned
 
 
@@ -71,9 +71,12 @@ def main():
             print_color("❌ Main process failed", 'red')
             return result
 
+
+
+
     # Check if redis_after.json already exists before saving final state (skip in dry run modes)
     if not current_run_settings_obj["is_no_docker"] and not current_run_settings_obj["is_no_docker_no_redis"]:
-        should_save_redis_after = handle_save_redis_after_json(
+        should_save_redis_after = handle_copy_temp_redis_to_bm_redis_after(
             matched_bookmark_obj, current_run_settings_obj
         )
     else:

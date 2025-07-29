@@ -1,14 +1,14 @@
 import os
 import shutil
 from app.consts.bookmarks_consts import IS_DEBUG, REDIS_DUMP_DIR
-from redis_friendly_converter import convert_file as convert_redis_to_friendly
-from app.bookmarks_redis import run_redis_command
+from app.bookmarks.redis_states.redis_friendly_converter import convert_redis_state_file_to_friendly_and_save
+from app.bookmarks.redis_states.bookmarks_redis import run_redis_command
 from app.utils.decorators import print_def_name
 
 IS_PRINT_DEF_NAME = True
 
 @print_def_name(IS_PRINT_DEF_NAME)
-def handle_save_redis_after_json(matched_bookmark_obj, current_run_settings_obj):
+def handle_copy_temp_redis_to_bm_redis_after(matched_bookmark_obj, current_run_settings_obj):
     """
     Handles saving the final Redis state to redis_after.json
     Returns: True if redis_after was saved, False otherwise
@@ -57,7 +57,8 @@ def handle_save_redis_after_json(matched_bookmark_obj, current_run_settings_obj)
 
                 # Generate friendly version
                 try:
-                    convert_redis_to_friendly(final_after_path)
+                    convert_redis_state_file_to_friendly_and_save(
+                        final_after_path)
                     if IS_DEBUG:
                         print(f"📋 Generated friendly Redis after")
                 except Exception as e:

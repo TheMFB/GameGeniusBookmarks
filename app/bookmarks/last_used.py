@@ -1,6 +1,3 @@
-"""
-Integration script that coordinates OBS bookmarks with Redis state management
-"""
 import os
 from pprint import pprint
 import json

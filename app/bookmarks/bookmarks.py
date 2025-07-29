@@ -1,9 +1,5 @@
-"""
-Integration script that coordinates OBS bookmarks with Redis state management
-"""
 import os
 import json
-
 from app.bookmark_dir_processes import get_all_valid_root_dir_names
 from app.consts.bookmarks_consts import IS_DEBUG, IS_DEBUG_PRINT_ALL_BOOKMARKS_JSON, REPO_ROOT
 from app.bookmarks_meta import load_bookmark_meta_from_rel, load_bookmark_meta_from_abs, load_folder_meta

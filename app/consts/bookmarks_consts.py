@@ -1,11 +1,6 @@
-# Base directory is now the current repo root
 import os
 from dotenv import load_dotenv
-
-# Load environment variables from .env file
 load_dotenv()
-
-# TODO(KERCH): Organize.
 
 ## DEV CONSTANTS ##
 
@@ -19,13 +14,6 @@ IS_PRINT_DEV = True
 IS_PRINT_JUST_CURRENT_DIRECTORY_BOOKMARKS = False
 # IS_PRINT_JUST_CURRENT_DIRECTORY_BOOKMARKS_ON_LS = True
 IS_PRINT_JUST_CURRENT_DIRECTORY_BOOKMARKS_ON_LS = False
-
-# LOCAL REDIS DEV
-IS_LOCAL_REDIS_DEV = os.environ.get('IS_LOCAL_REDIS_DEV', False)
-
-LOCAL_REDIS_SESSIONS_HOST = "localhost"
-LOCAL_REDIS_SESSIONS_PORT = 6379
-LOCAL_REDIS_SESSIONS_DB = 0
 
 ## CONSTANTS ##
 
@@ -59,16 +47,22 @@ RESERVED_BOOKMARK_NAMES = [
 
 
 ## ABS PATHS ##
+
 # TODO(MFB): There's a better way to grab the repo abs root than defining it in the .env file.
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-# Bookmarks directory is now in the repo root
 ABS_OBS_BOOKMARKS_DIR = os.path.join(REPO_ROOT, "obs_bookmark_saves")
-# Redis dump directory - use the GameGenius directory from environment variable
-GAME_GENIUS_DIR = os.environ.get('GAME_GENIUS_DIRECTORY', '')
 
-INITIAL_REDIS_STATE_DIR = os.path.join(REPO_ROOT, "app")
+# REDIS #
+INITIAL_REDIS_STATE_DIR = os.path.join(REPO_ROOT, "app", "bookmarks", "redis_states")
+
+IS_LOCAL_REDIS_DEV = os.environ.get('IS_LOCAL_REDIS_DEV', False)
+LOCAL_REDIS_SESSIONS_HOST = "localhost"
+LOCAL_REDIS_SESSIONS_PORT = 6379
+LOCAL_REDIS_SESSIONS_DB = 0
+
 if IS_LOCAL_REDIS_DEV:
     REDIS_DUMP_DIR = os.path.join(REPO_ROOT, "standalone_utils", "redis", "redis_dump")
 else:
+    GAME_GENIUS_DIR = os.environ.get('GAME_GENIUS_DIRECTORY', '')
     REDIS_DUMP_DIR = os.path.join(GAME_GENIUS_DIR, "game-genius/services/session_manager/utils/standalone/redis_dump")
 

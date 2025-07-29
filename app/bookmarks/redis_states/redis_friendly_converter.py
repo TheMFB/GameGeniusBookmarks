@@ -57,7 +57,7 @@ def convert_redis_to_friendly(redis_data: Dict[str, Any]) -> Dict[str, Any]:
     return friendly_data
 
 
-def convert_file(input_file_path: str, output_file_path: Optional[str] = None) -> bool:
+def convert_redis_state_file_to_friendly_and_save(input_file_path: str, output_file_path: Optional[str] = None) -> bool:
     """
     Convert a Redis JSON export file to friendly format
 
@@ -120,7 +120,7 @@ def main() -> int:
     input_file = sys.argv[1]
     output_file = sys.argv[2] if len(sys.argv) > 2 else None
 
-    if convert_file(input_file, output_file):
+    if convert_redis_state_file_to_friendly_and_save(input_file, output_file):
         return 0
     else:
         return 1

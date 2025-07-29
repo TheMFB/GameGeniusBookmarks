@@ -142,12 +142,17 @@ def create_directory_meta(
 
 @print_def_name(IS_PRINT_DEF_NAME)
 def create_bookmark_meta(
-    bookmark_dir_slash_abs,
-    bookmark_tail_name,
-    media_info,
+    matched_bookmark_obj: MatchedBookmarkObj,
+    media_info=None,
     tags=None,
 ):
     """Create bookmark metadata with optional tags."""
+    bookmark_dir_slash_abs = matched_bookmark_obj["bookmark_path_slash_abs"]
+    bookmark_tail_name = matched_bookmark_obj["bookmark_tail_name"]
+
+    if media_info is None:
+        media_info = {}
+
     meta_data = {
         "created_at": datetime.now().isoformat(),
         "bookmark_tail_name": bookmark_tail_name,
@@ -188,7 +193,7 @@ def update_bookmark_meta(
     meta_data["bookmark_tail_name"] = bookmark_tail_name or meta_data["bookmark_tail_name"] or ""
     meta_data["video_filename"] = media_info.get('video_filename', '') or meta_data["video_filename"] or ""
     meta_data["timestamp"] = media_info.get('timestamp', 0) or meta_data["timestamp"] or 0
-    meta_data["timestamp_formatted"] = media_info.get('timestamp_formatted', '') or meta_data["timestamp_formatted"] or "00:00:00"
+    meta_data["timestamp_formatted"] = media_info.get('timestamp_formatted', '') or meta_data["timestamp_formatted"]
 
     if tags is not None:
         meta_data["tags"] = tags
@@ -223,7 +228,7 @@ def patch_bookmark_meta(
     meta_data["bookmark_tail_name"] = meta_data["bookmark_tail_name"] or bookmark_tail_name or ""
     meta_data["video_filename"] = media_info.get('video_filename', '') or meta_data["video_filename"] or ""
     meta_data["timestamp"] = meta_data["timestamp"] or media_info.get('timestamp', 0) or 0
-    meta_data["timestamp_formatted"] = meta_data["timestamp_formatted"] or media_info.get('timestamp_formatted', '00:00:00') or "00:00:00"
+    meta_data["timestamp_formatted"] = meta_data["timestamp_formatted"] or media_info.get('timestamp_formatted', '')
 
     if tags is not None:
         meta_data["tags"].extend(tags)
@@ -259,7 +264,7 @@ def update_missing_bookmark_meta_fields(
     meta_data["bookmark_tail_name"] = meta_data["bookmark_tail_name"] or bookmark_tail_name or ""
     meta_data["video_filename"] = meta_data["video_filename"] or media_info.get('video_filename', '') or ""
     meta_data["timestamp"] = meta_data["timestamp"] or media_info.get('timestamp', 0) or 0
-    meta_data["timestamp_formatted"] = meta_data["timestamp_formatted"] or media_info.get('timestamp_formatted', '00:00:00') or "00:00:00"
+    meta_data["timestamp_formatted"] = meta_data["timestamp_formatted"] or media_info.get('timestamp_formatted', '')
 
     if tags is not None:
         meta_data["tags"].extend(tags)
