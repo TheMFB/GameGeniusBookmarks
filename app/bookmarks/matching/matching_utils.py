@@ -5,11 +5,11 @@ from typing import List
 
 from app.bookmarks.handle_create_bookmark import handle_create_bookmark_and_parent_dirs
 from app.consts.bookmarks_consts import IS_DEBUG
-from app.bookmarks.bookmarks import load_bookmarks_from_folder, get_all_live_bookmarks_in_json_format
+from app.bookmarks.bookmarks import get_all_deep_bookmarks_in_dir_with_meta, get_all_live_bookmarks_in_json_format
 from app.types.bookmark_types import MatchedBookmarkObj, CurrentRunSettings
 from app.utils.printing_utils import *
 from app.utils.decorators import print_def_name, memoize
-from app.utils.bookmark_utils import split_path_into_array, does_path_exist_in_bookmarks, convert_exact_bookmark_path_to_dict
+from app.utils.bookmark_utils import split_path_into_array, does_path_exist_in_bookmarks, convert_exact_bookmark_path_to_bm_obj
 
 IS_PRINT_DEF_NAME = True
 
@@ -38,7 +38,7 @@ def token_match_bookmarks(query_string, folder_dir):
     """
     Returns a list of bookmark paths where all cli_bookmark_string tokens appear in the path.
     """
-    all_bookmark_objects = load_bookmarks_from_folder(folder_dir)
+    all_bookmark_objects = get_all_deep_bookmarks_in_dir_with_meta(folder_dir)
     if not all_bookmark_objects:
         return []
 
@@ -239,7 +239,7 @@ def handle_bookmark_matches(
 
     # If there is one (exact) match, and we're not prompting to create a new bookmark, return the match
     if len(matched_bookmark_strings) == 1 and not is_prompt_user_for_create_bm_option:
-        return convert_exact_bookmark_path_to_dict(matched_bookmark_strings[0])
+        return convert_exact_bookmark_path_to_bm_obj(matched_bookmark_strings[0])
     else:
         # If there are multiple matches, or we're prompting to create a new bookmark, prompt the user to choose a bookmark
         if is_prompt_user_for_selection:
@@ -247,12 +247,12 @@ def handle_bookmark_matches(
             if chosen_bookmark_string:
                 if chosen_bookmark_string == "create_new_bookmark":
                     return handle_create_bookmark_and_parent_dirs(cli_bookmark_string, current_run_settings_obj)
-                return convert_exact_bookmark_path_to_dict(chosen_bookmark_string)
+                return convert_exact_bookmark_path_to_bm_obj(chosen_bookmark_string)
             return 1
 
         # If we just want all matches and no user interaction, return the matched bookmark objects
         else:
-            return [convert_exact_bookmark_path_to_dict(matched_bookmark_string) for matched_bookmark_string in matched_bookmark_strings]
+            return [convert_exact_bookmark_path_to_bm_obj(matched_bookmark_string) for matched_bookmark_string in matched_bookmark_strings]
 
 
 

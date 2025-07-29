@@ -1,6 +1,6 @@
 import os
 from app.types.bookmark_types import MatchedBookmarkObj
-from app.utils.bookmark_utils import convert_exact_bookmark_path_to_dict
+from app.utils.bookmark_utils import convert_exact_bookmark_path_to_bm_obj
 from app.utils.decorators import print_def_name
 from app.utils.printing_utils import *
 from app.consts.bookmarks_consts import IS_DEBUG, ABS_OBS_BOOKMARKS_DIR
@@ -20,7 +20,7 @@ def handle_create_bookmark_and_parent_dirs(
     
     """
     # Create bookmark directory
-    cli_bookmark_obj = convert_exact_bookmark_path_to_dict(
+    cli_bookmark_obj = convert_exact_bookmark_path_to_bm_obj(
         cli_bookmark_string)
     bookmark_dir_slash_abs = cli_bookmark_obj["bookmark_dir_slash_abs"]
     bookmark_dir_slash_rel = cli_bookmark_obj["bookmark_dir_slash_rel"]

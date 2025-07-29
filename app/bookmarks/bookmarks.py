@@ -3,7 +3,7 @@ import json
 from app.bookmark_dir_processes import get_all_valid_root_dir_names
 from app.consts.bookmarks_consts import IS_DEBUG, IS_DEBUG_PRINT_ALL_BOOKMARKS_JSON, REPO_ROOT
 from app.bookmarks_meta import load_bookmark_meta_from_rel, load_bookmark_meta_from_abs, load_folder_meta
-from app.types import MatchedBookmarkObj, BookmarkPathDictionary
+from app.types import MatchedBookmarkObj, BookmarkPathDictionary, BookmarkInfo
 from app.utils.printing_utils import *
 from app.utils.decorators import print_def_name, memoize
 
@@ -16,48 +16,67 @@ has_printed_all_bookmarks_json = False
 
 @print_def_name(IS_PRINT_DEF_NAME)
 @memoize
-def load_bookmarks_from_folder(folder_dir_abs):
+def get_all_deep_bookmarks_in_dir_with_meta(bookmark_dir_abs: str) -> dict[str, BookmarkInfo]:
+    """
+    Recursively search bookmark_dir_abs for directories containing bookmark_meta.json.
+    Returns a dict mapping from a human-readable key to BookmarkInfo.
+    """
     matched_bookmarks = {}
 
-    if not os.path.exists(folder_dir_abs):
+    if not os.path.exists(bookmark_dir_abs):
         return matched_bookmarks
 
-    root_name = os.path.basename(folder_dir_abs)
+    parent_dir_name = os.path.basename(bookmark_dir_abs)
 
-    def scan_for_bookmarks(bm_dir, current_path=""):
-        """Recursively scan bm_dir for bookmark_meta.json files"""
-        for item in os.listdir(bm_dir):
-            item_path = os.path.join(bm_dir, item)
-            if os.path.isdir(item_path):
-                # Check if this bm_dir contains a bookmark_meta.json
-                meta_file = os.path.join(item_path, "bookmark_meta.json")
+    def scan_for_bookmarks(current_abs_path: str, current_rel_path: str = ""):
+        for entry in os.listdir(current_abs_path):
+            full_entry_path = os.path.join(current_abs_path, entry)
+            if os.path.isdir(full_entry_path):
+                meta_file = os.path.join(full_entry_path, "bookmark_meta.json")
                 if os.path.exists(meta_file):
-                    # This is a bookmark bm_dir
-                    # Use forward slashes for consistency across platforms
-                    if current_path:
-                        bookmark_key = f"{root_name}/{current_path}/{item}"
-                    else:
-                        bookmark_key = f"{root_name}/{item}"
-
-                    # Use the new load_bookmark_meta function
-                    bookmark_meta = load_bookmark_meta_from_rel(item_path)
+                    # This is a bookmark directory
+                    bookmark_key = f"{parent_dir_name}/{current_rel_path}/{entry}" if current_rel_path else f"{parent_dir_name}/{entry}"
+                    bookmark_meta = load_bookmark_meta_from_rel(
+                        full_entry_path)
                     if bookmark_meta:
                         matched_bookmarks[bookmark_key] = bookmark_meta
-                    else:
-                        if IS_DEBUG:
-                            print(
-                                f"⚠️  Could not load bookmark metadata from {item_path}")
+                    elif IS_DEBUG:
+                        print(
+                            f"⚠️  Could not load bookmark metadata from {full_entry_path}")
                 else:
-                    # This is a regular bm_dir, scan recursively
-                    # Use forward slashes for consistency across platforms
-                    if current_path:
-                        new_path = f"{current_path}/{item}"
-                    else:
-                        new_path = item
-                    scan_for_bookmarks(item_path, new_path)
+                    # Recurse deeper
+                    new_rel_path = f"{current_rel_path}/{entry}" if current_rel_path else entry
+                    scan_for_bookmarks(full_entry_path, new_rel_path)
 
-    scan_for_bookmarks(folder_dir_abs)
+    scan_for_bookmarks(bookmark_dir_abs)
     return matched_bookmarks
+
+
+@print_def_name(IS_PRINT_DEF_NAME)
+@memoize
+def get_all_shallow_bookmark_abs_paths_in_dir(parent_bookmark_dir_abs: str) -> list[str]:
+    """
+    Returns a list of immediate absolute bookmark paths inside `parent_bookmark_dir_abs`
+    that contain a 'bookmark_meta.json' file.
+    """
+    if not os.path.exists(parent_bookmark_dir_abs):
+        return []
+
+    result = []
+
+    try:
+        for entry in os.listdir(parent_bookmark_dir_abs):
+            entry_path = os.path.join(parent_bookmark_dir_abs, entry)
+            if os.path.isdir(entry_path):
+                meta_path = os.path.join(entry_path, "bookmark_meta.json")
+                if os.path.exists(meta_path):
+                    result.append(entry_path)
+    except Exception as e:
+        if IS_DEBUG:
+            print(f"⚠️ Failed to read {parent_bookmark_dir_abs}: {e}")
+
+    return result
+
 
 
 @print_def_name(False)
@@ -85,10 +104,10 @@ def get_all_live_bookmarks_in_json_format():
         sub_dirs = {}
 
         for item in items:
-            item_path = os.path.join(folder_path, item)
-            if os.path.isdir(item_path):
+            file_abs_path = os.path.join(folder_path, item)
+            if os.path.isdir(file_abs_path):
                 # Recurse into subfolder
-                sub_dirs[item] = scan_folder(item_path)
+                sub_dirs[item] = scan_folder(file_abs_path)
             elif item == "bookmark_meta.json":
                 # This folder is a bookmark (leaf)
                 bookmark_meta = load_bookmark_meta_from_abs(folder_path)
@@ -204,16 +223,16 @@ def create_bookmark_symlinks(matched_bookmark_obj):
 
     def clear_directory(directory_path):
         for item in os.listdir(directory_path):
-            item_path = os.path.join(directory_path, item)
+            file_abs_path = os.path.join(directory_path, item)
             try:
-                if os.path.islink(item_path):
-                    os.unlink(item_path)
-                elif os.path.isfile(item_path):
-                    os.remove(item_path)
-                elif os.path.isdir(item_path):
-                    shutil.rmtree(item_path)
+                if os.path.islink(file_abs_path):
+                    os.unlink(file_abs_path)
+                elif os.path.isfile(file_abs_path):
+                    os.remove(file_abs_path)
+                elif os.path.isdir(file_abs_path):
+                    shutil.rmtree(file_abs_path)
             except Exception as e:
-                print(f"⚠️  Warning: Could not remove {item_path}: {e}")
+                print(f"⚠️  Warning: Could not remove {file_abs_path}: {e}")
 
     clear_directory(last_used_bookmark_dir)
     clear_directory(last_used_bookmark_folder_dir)
@@ -261,7 +280,7 @@ def get_all_live_bookmark_path_slash_rels():
     bookmark_paths = []
 
     for folder in get_all_valid_root_dir_names():
-        all_bookmark_objects = load_bookmarks_from_folder(folder)
+        all_bookmark_objects = get_all_deep_bookmarks_in_dir_with_meta(folder)
         bookmark_paths.extend(all_bookmark_objects.keys())
 
     return bookmark_paths

@@ -15,7 +15,7 @@ def abs_to_rel_path(abs_path, base_dir):
 
 @print_def_name(IS_PRINT_DEF_NAME)
 @memoize
-def convert_exact_bookmark_path_to_dict(
+def convert_exact_bookmark_path_to_bm_obj(
     *args
 ) -> MatchedBookmarkObj:
     """
@@ -23,27 +23,27 @@ def convert_exact_bookmark_path_to_dict(
 
     # TODO(KERCH): Update this documentation.
     # One-argument: full bookmark_dir
-    print(convert_exact_bookmark_path_to_dict("mfb3/MFB/TEST/01"))
+    print(convert_exact_bookmark_path_to_bm_obj("mfb3/MFB/TEST/01"))
     # ('mfb3/MFB/TEST', '01', 'mfb3/MFB/TEST/01')
 
     # Two-argument: tail and bookmark_dir
-    print(convert_exact_bookmark_path_to_dict("01", "mfb3/MFB/TEST"))
+    print(convert_exact_bookmark_path_to_bm_obj("01", "mfb3/MFB/TEST"))
     # ('mfb3/MFB/TEST', '01', 'mfb3/MFB/TEST/01')
 
     # Two-argument: full bookmark_dir and full bookmark_dir
-    print(convert_exact_bookmark_path_to_dict("mfb3/MFB/TEST/01", "mfb3/MFB/TEST/01"))
+    print(convert_exact_bookmark_path_to_bm_obj("mfb3/MFB/TEST/01", "mfb3/MFB/TEST/01"))
     # ('mfb3/MFB/TEST', '01', 'mfb3/MFB/TEST/01')
 
     # Colon-separated
-    print(convert_exact_bookmark_path_to_dict("01", "mfb3:MFB:TEST", is_colon_separated=True))
+    print(convert_exact_bookmark_path_to_bm_obj("01", "mfb3:MFB:TEST", is_colon_separated=True))
     # ('mfb3:MFB:TEST', '01', 'mfb3:MFB:TEST:01')
 
     # Absolute bookmark_dir output
-    print(convert_exact_bookmark_path_to_dict("01", "mfb3/MFB/TEST", is_absolute_path=True, bookmark_dir=BOOKMARK_DIR))
+    print(convert_exact_bookmark_path_to_bm_obj("01", "mfb3/MFB/TEST", is_absolute_path=True, bookmark_dir=BOOKMARK_DIR))
     # ('/.../obs_bookmark_saves/mfb3/MFB/TEST', '01', '/.../obs_bookmark_saves/mfb3/MFB/TEST/01')
     """
     # TODO(MFB): We may want this to be even more flexible - if both args are a single string, then we may want to look for bookmark names/dir names before we even convert.
-    print('++++ convert_exact_bookmark_path_to_dict')
+    print('++++ convert_exact_bookmark_path_to_bm_obj')
     print('++++ args:', args)
 
     bookmark_dir = None

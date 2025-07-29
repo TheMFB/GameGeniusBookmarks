@@ -3,7 +3,7 @@ from app.types.bookmark_types import MatchedBookmarkObj, CurrentRunSettings
 from app.utils.printing_utils import *
 from app.bookmarks.redis_states.handle_bookmark_pre_run_redis_states import handle_bookmark_pre_run_redis_states
 from app.obs.handle_bookmark_obs import save_obs_screenshot_to_bookmark_path, save_obs_media_info_to_bookmark_meta
-
+from app.bookmarks.navigation.process_base_bookmark import process_base_bookmark
 
 def handle_matched_bookmark_pre_processing(
     matched_bookmark_obj: MatchedBookmarkObj,
@@ -23,6 +23,9 @@ def handle_matched_bookmark_pre_processing(
     if not matched_bookmark_path_abs or not os.path.exists(matched_bookmark_path_abs):
         print(f"❌ Bookmark Path does not exist: '{matched_bookmark_path_abs}'")
         return 1
+
+    # NAV BASE BOOKMARK
+    process_base_bookmark(matched_bookmark_obj, current_run_settings_obj)
 
     # REDIS STATES
 

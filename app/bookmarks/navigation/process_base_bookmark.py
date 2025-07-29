@@ -1,0 +1,23 @@
+from app.types.bookmark_types import MatchedBookmarkObj, CurrentRunSettings
+from app.utils.decorators import print_def_name
+
+IS_PRINT_DEF_NAME = True
+
+@print_def_name(IS_PRINT_DEF_NAME)
+def process_base_bookmark(matched_bookmark_obj: MatchedBookmarkObj, current_run_settings_obj: CurrentRunSettings):
+    """
+    This function is used to process the base bookmark.
+
+    It will handle the following:
+    - Load the Redis state into redis
+    - Load the OBS bookmark into OBS
+    """
+    base_bookmark_obj = current_run_settings_obj.get("base_bookmark_obj", None)
+    cli_nav_arg_string = current_run_settings_obj.get("cli_nav_arg_string", None)
+
+
+
+
+
+
+    pass

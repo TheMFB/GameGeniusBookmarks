@@ -1,7 +1,7 @@
 from app.consts.bookmarks_consts import IS_DEBUG
 from app.consts.cli_consts import OPTIONS_HELP
 from app.flag_handlers import handle_help, handle_ls, handle_which, open_video, find_cli_tags
-from app.flag_handlers.bookmark_as_base import find_bookmark_as_base_match
+from app.bookmarks.navigation.find_bookmark_as_base import find_bookmark_as_base_match
 from app.types.bookmark_types import CurrentRunSettings, VALID_FLAGS, default_processed_flags
 from app.utils.decorators import print_def_name
 
@@ -23,6 +23,7 @@ flag_route_handler_map = {
 def process_flags(args) -> CurrentRunSettings | int:
     """Process command line flags and return a dictionary of flag values."""
     cli_nav_arg_string = None
+    base_bookmark_obj = None
     tags = []
 
     # Handle all flags that terminate the program afterwards (routed flags)
@@ -97,9 +98,16 @@ def process_flags(args) -> CurrentRunSettings | int:
         # TODO(MFB): Print what this does (different f)
 
     # Parse the source bookmark for --use-preceding-bookmark if specified
-
     if is_use_bookmark_as_base:
-        cli_nav_arg_string = find_bookmark_as_base_match(args)
+        base_match_results = find_bookmark_as_base_match(args)
+        if isinstance(base_match_results, int):
+            print(f"❌ find_bookmark_as_base_match Error: {base_match_results}")
+            return base_match_results
+        elif isinstance(base_match_results, str):
+            cli_nav_arg_string = base_match_results
+        else:
+            base_bookmark_obj = base_match_results
+
 
     # Parse tags from command line
     if "--tags" in args or "-t" in args:
@@ -125,5 +133,6 @@ def process_flags(args) -> CurrentRunSettings | int:
         "is_show_image": is_show_image,
         # "is_add_bookmark": is_add_bookmark,
         "cli_nav_arg_string": cli_nav_arg_string,
+        "base_bookmark_obj": base_bookmark_obj,
         "tags": tags,
     }

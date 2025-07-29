@@ -41,7 +41,7 @@ class CurrentRunSettings(TypedDict):
     is_add_bookmark: bool
     cli_nav_arg_string: list[str] | None
     tags: list[str] | None
-    nav_from_bookmark: MatchedBookmarkObj | None
+    base_bookmark_obj: MatchedBookmarkObj | None
 
 
 # CLI FLAGS #
@@ -88,7 +88,7 @@ default_processed_flags: CurrentRunSettings = {
     "is_add_bookmark": True,
     "cli_nav_arg_string": None,
     "tags": None,
-    "nav_from_bookmark": None,
+    "base_bookmark_obj": None,
 }
 
 NAVIGATION_COMMANDS = ["next", "previous", "first", "last"]

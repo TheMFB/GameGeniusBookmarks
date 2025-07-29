@@ -1,12 +1,12 @@
 from app.consts.bookmarks_consts import IS_DEBUG
 from app.utils.decorators import print_def_name
-from app.types.bookmark_types import NAVIGATION_COMMANDS
+from app.types.bookmark_types import NAVIGATION_COMMANDS, MatchedBookmarkObj
 from app.bookmarks.matching.bookmark_matching import find_best_bookmark_match_or_create
 
 IS_PRINT_DEF_NAME = True
 
 @print_def_name(IS_PRINT_DEF_NAME)
-def find_bookmark_as_base_match(args):
+def find_bookmark_as_base_match(args) -> MatchedBookmarkObj | int | str: # NAVIGATION_COMMANDS
     # Find the index of the use_preceding_bookmark flag
     cli_nav_arg_string = None
     preceding_flags = ["--use-preceding-bookmark", "-p", "--bookmark-base", "-bb"]
@@ -40,6 +40,15 @@ def find_bookmark_as_base_match(args):
         if not matching_bookmark_obj:
             print(f"❌ No bookmark found for '{cli_nav_arg_string}'")
             return None
+        if isinstance(matching_bookmark_obj, int):
+            print(f"❌ No bookmark found for '{cli_nav_arg_string}'")
+            return None
+        if isinstance(matching_bookmark_obj, list):
+            if len(matching_bookmark_obj) > 1:
+                print(f"❌ Multiple bookmarks found for '{cli_nav_arg_string}'")
+                return None
+            matching_bookmark_obj = matching_bookmark_obj[0]
+
     else:
         return cli_nav_arg_string
 
