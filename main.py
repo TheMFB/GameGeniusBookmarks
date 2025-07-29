@@ -1,7 +1,6 @@
 import sys
 import traceback
 from app.utils.printing_utils import *
-from app.consts.bookmarks_consts import IS_PRINT_JUST_CURRENT_DIRECTORY_BOOKMARKS
 from app.bookmarks_print import print_all_live_directories_and_bookmarks
 from app.bookmarks.handle_matched_bookmark_pre_processing import handle_matched_bookmark_pre_processing
 from app.bookmarks.handle_matched_bookmark_post_processing import handle_matched_bookmark_post_processing
@@ -54,21 +53,15 @@ def main():
 
     # HANDLE BOOKMARK POST-PROCESSING
 
-    handle_matched_bookmark_post_processing(
+    result = handle_matched_bookmark_post_processing(
         matched_bookmark_obj, current_run_settings_obj)
+    if result == 1:
+        print_color("❌ Error in handle_matched_bookmark_post_processing", 'red')
+        return result
 
-    # PRINT FINAL OUTPUT
+    # SUCCESS!
 
-
-    # Print all folders and bookmarks with current one highlighted
     print("✅ Integrated workflow completed successfully!")
-    print('=' * 60)
-    print('')
-    print_all_live_directories_and_bookmarks(
-        bookmark_obj=matched_bookmark_obj,
-        is_print_just_current_directory_bookmarks=IS_PRINT_JUST_CURRENT_DIRECTORY_BOOKMARKS
-    )
-
     return 0
 
 
@@ -81,5 +74,6 @@ if __name__ == "__main__":
         traceback.print_exc()
         exit_code = 1
     finally:
+        # Print all folders and bookmarks with current one highlighted
         print_all_live_directories_and_bookmarks()
         sys.exit(exit_code)

@@ -32,7 +32,7 @@ class CurrentRunSettings(TypedDict):
     is_overwrite_redis_after: bool
     is_overwrite_redis_before: bool
     is_save_updates: bool
-    is_use_preceding_bookmark: bool
+    is_use_bookmark_as_base: bool
     is_blank_slate: bool
     is_no_docker: bool
     is_no_docker_no_redis: bool
@@ -53,6 +53,7 @@ supported_flags = [
     "--save-updates",
     "-p",
     "--use-preceding-bookmark",
+    "--bookmark-base",
     "-b",
     "--blank-slate",
     "-d",
@@ -75,7 +76,7 @@ default_processed_flags: CurrentRunSettings = {
     "is_overwrite_redis_after": False,
     "is_overwrite_redis_before": False,
     "is_save_updates": False,
-    "is_use_preceding_bookmark": False,
+    "is_use_bookmark_as_base": False,
     "is_blank_slate": False,
     "is_no_docker": False,
     "is_no_docker_no_redis": False,
@@ -86,3 +87,5 @@ default_processed_flags: CurrentRunSettings = {
     "tags": None,
     "nav_from_bookmark": None,
 }
+
+NAVIGATION_COMMANDS = ["next", "previous", "first", "last"]

@@ -1,14 +1,6 @@
-import os
-import sys
-import subprocess
-import traceback
-from app.bookmarks.redis_states import handle_copy_temp_redis_to_bm_redis_after
+from app.bookmarks.redis_states.handle_bookmark_post_run_redis_states import handle_bookmark_post_run_redis_states
 from app.utils.printing_utils import *
-from app.consts.bookmarks_consts import IS_DEBUG, IS_PRINT_JUST_CURRENT_DIRECTORY_BOOKMARKS
-from app.bookmarks_print import print_all_live_directories_and_bookmarks
-from app.flag_handlers import handle_main_process, process_flags, CurrentRunSettings
-from app.types import MatchedBookmarkObj
-from app.bookmarks.matching.bookmark_matching import find_best_bookmark_match_or_create
+from app.types.bookmark_types import MatchedBookmarkObj, CurrentRunSettings
 from app.bookmarks.last_used import save_last_used_bookmark
 
 
@@ -24,7 +16,13 @@ def handle_matched_bookmark_post_processing(
     - Update the last_used_bookmark.json
     """
 
+    # Run Redis Post-Processing
+    if not handle_bookmark_post_run_redis_states(matched_bookmark_obj, current_run_settings_obj):
+        return 1
+
     # Save the last used bookmark at the end of successful operations
     if matched_bookmark_obj["bookmark_dir_slash_abs"]:
         print_color('saving last used bookmark', 'red')
         save_last_used_bookmark(matched_bookmark_obj)
+
+    return 0

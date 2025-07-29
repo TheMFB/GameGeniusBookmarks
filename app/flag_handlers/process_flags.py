@@ -1,7 +1,7 @@
 from app.consts.bookmarks_consts import IS_DEBUG
 from app.consts.cli_consts import OPTIONS_HELP
 from app.flag_handlers import handle_help, handle_ls, handle_which, open_video, find_cli_tags
-from app.flag_handlers.preceding_bookmark import find_preceding_bookmark_args
+from app.flag_handlers.bookmark_as_base import find_bookmark_as_base_args
 from app.types.bookmark_types import CurrentRunSettings, supported_flags, default_processed_flags
 from app.utils.decorators import print_def_name
 
@@ -43,6 +43,7 @@ def process_flags(args) -> CurrentRunSettings | int:
     is_overwrite_redis_after = "--save-last-redis" in args or "-s" in args
     is_save_updates = "--save-updates" in args or "-s" in args
     is_use_preceding_bookmark = "--use-preceding-bookmark" in args or "-p" in args
+    is_use_bookmark_as_base = "--bookmark-base" in args or "-b" in args or is_use_preceding_bookmark
     is_blank_slate = "--blank-slate" in args or "-b" in args
     is_no_docker = "--dry-run" in args or "--no-docker" in args or "-d" in args or "-nd" in args
     is_no_docker_no_redis = "--super-dry-run" in args or "--no-docker-no-redis" in args or "-sd" in args or "-ndr" in args or "-ndnr" in args
@@ -62,8 +63,8 @@ def process_flags(args) -> CurrentRunSettings | int:
 
     # Parse the source bookmark for --use-preceding-bookmark if specified
 
-    if is_use_preceding_bookmark:
-        cli_nav_arg_string = find_preceding_bookmark_args(args)
+    if is_use_bookmark_as_base:
+        cli_nav_arg_string = find_bookmark_as_base_args(args)
 
     # Parse tags from command line
     if "--tags" in args or "-t" in args:
@@ -79,7 +80,7 @@ def process_flags(args) -> CurrentRunSettings | int:
         **default_processed_flags,
         "is_overwrite_redis_after": is_overwrite_redis_after,
         "is_save_updates": is_save_updates,
-        "is_use_preceding_bookmark": is_use_preceding_bookmark,
+        "is_use_bookmark_as_base": is_use_bookmark_as_base,
         "is_blank_slate": is_blank_slate,
         "is_no_docker": is_no_docker,
         "is_no_docker_no_redis": is_no_docker_no_redis,

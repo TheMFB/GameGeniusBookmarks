@@ -1,10 +1,8 @@
 import os
-import subprocess
 import shutil
 from app.bookmarks.redis_states.redis_friendly_converter import convert_redis_state_file_to_friendly_and_save
 from app.bookmarks.redis_states.bookmarks_redis import run_redis_command, copy_blank_redis_state_to_bm_redis_before
-# copy_preceding_bookmark_redis_state, copy_specific_bookmark_redis_state
-from app.consts.bookmarks_consts import IS_DEBUG, IS_LOCAL_REDIS_DEV, REDIS_DUMP_DIR
+from app.consts.bookmarks_consts import IS_DEBUG, REDIS_DUMP_DIR
 from app.types.bookmark_types import MatchedBookmarkObj, CurrentRunSettings
 from app.utils.printing_utils import *
 from app.bookmarks.redis_states.handle_load_into_redis import handle_load_into_redis
@@ -21,15 +19,13 @@ def handle_bookmark_pre_run_redis_states(
     It will then save the redis_before.json (if applicable) and load the redis state into redis.
     """
 
-    # TODO(MFB): Condense with handle_save_redis_state_and_update_bm_redis_before, also splitting up this function into multiple files.
-
     matched_bookmark_path_rel = matched_bookmark_obj["bookmark_path_slash_rel"]
     matched_bookmark_path_abs = matched_bookmark_obj["bookmark_path_slash_abs"]
 
     is_overwrite_bm_redis_before = current_run_settings_obj["is_save_updates"]
     is_skip_redis_processing = current_run_settings_obj["is_no_docker_no_redis"]
     is_blank_slate = current_run_settings_obj["is_blank_slate"]
-    is_use_other_bm_as_template = current_run_settings_obj["is_use_preceding_bookmark"]
+    is_use_other_bm_as_template = current_run_settings_obj["is_use_bookmark_as_base"]
     is_use_last_used_bookmark = current_run_settings_obj.get("is_use_last_used_bookmark", False)
 
     # TODO(MFB): Add one more flag for pulling in the last-used-bookmark's redis_after.json (--continue / --last-used)
@@ -42,11 +38,10 @@ def handle_bookmark_pre_run_redis_states(
         print(f"💾 Super dry run mode: Skipping all Redis operations")
         return
 
-    # TODO(MFB): Check if the bookmark already has a redis_before.json
     # TODO(MFB): When do we just load in the current bookmark's redis_before.json to redis?
 
 
-    # Creating a new redis_before.json / ignoring the existing one
+    # REDIS BEFORE UPDATES
 
     if is_blank_slate:
         # Pull in the default redis state to redis_before.json (and eventually load it into redis)
@@ -56,7 +51,6 @@ def handle_bookmark_pre_run_redis_states(
         if not copy_blank_redis_state_to_bm_redis_before(matched_bookmark_path_abs):
             print("❌ Failed to copy initial Redis state")
             return 1
-
     elif is_use_other_bm_as_template:
         # Handle --use-preceding-bookmark flag for existing bookmark
         # if current_run_settings_obj["cli_nav_arg_string"]:
@@ -130,7 +124,7 @@ def handle_bookmark_pre_run_redis_states(
             try:
                 convert_redis_state_file_to_friendly_and_save(final_path)
                 if IS_DEBUG:
-                    print(f"📋 Generated friendly Redis before")
+                    print("📋 Generated friendly Redis before")
             except Exception as e:
                 print(f"⚠️  Could not generate friendly Redis before: {e}")
         else:

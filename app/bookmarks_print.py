@@ -39,29 +39,17 @@ def collect_all_bookmark_tags_recursive(node):
 @print_def_name(False)
 @only_run_once
 def print_all_live_directories_and_bookmarks(
-        bookmark_obj=None,
         is_print_just_current_directory_bookmarks=IS_PRINT_JUST_CURRENT_DIRECTORY_BOOKMARKS
 ):
     """Print all folders and their bookmarks, highlighting the current one"""
     print('')
     print('=' * 50)
 
-    current_bm_tail_name = None
-    current_bm_dir_slash_abs = None
-    current_bm_path_colon_rel = None
-
     # Get last used bookmark for highlighting if not provided with the current bookmark object.
-    if not bookmark_obj:
-        last_used_info = get_last_used_bookmark()
-        if last_used_info:
-            current_bm_tail_name = last_used_info.get('bookmark_tail_name', '')
-            current_bm_dir_slash_abs = last_used_info.get('bookmark_dir_slash_abs', '')
-            current_bm_path_colon_rel = last_used_info.get('bookmark_path_colon_rel', '')
-
-    else:
-        current_bm_tail_name = bookmark_obj["bookmark_tail_name"]
-        current_bm_dir_slash_abs = bookmark_obj["bookmark_dir_slash_abs"]
-        current_bm_path_colon_rel = bookmark_obj["bookmark_path_colon_rel"]
+    last_used_info = get_last_used_bookmark() or {}
+    current_bm_tail_name = last_used_info.get('bookmark_tail_name', None)
+    current_bm_dir_slash_abs = last_used_info.get('bookmark_dir_slash_abs', None)
+    current_bm_path_colon_rel = last_used_info.get('bookmark_path_colon_rel', None)
 
     all_bookmarks = get_all_live_bookmarks_in_json_format()
 

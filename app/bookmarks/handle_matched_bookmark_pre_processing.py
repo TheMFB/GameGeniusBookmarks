@@ -1,4 +1,3 @@
-import os
 from app.utils.obs_utils import load_bookmark_into_obs
 from app.types.bookmark_types import MatchedBookmarkObj, CurrentRunSettings
 from app.utils.printing_utils import *
@@ -10,20 +9,27 @@ def handle_matched_bookmark_pre_processing(
     matched_bookmark_obj: MatchedBookmarkObj,
     current_run_settings_obj: CurrentRunSettings,
 ):
+    """
+    This function is used to handle the pre-processing of a matched bookmark.
 
-    ## MATCHED BOOKMARK ##
-    matched_bookmark_path_rel = matched_bookmark_obj["bookmark_path_slash_rel"]
+    It will handle the following:
+    - Load the Redis state into redis
+    - Load the OBS bookmark into OBS
+    """
     matched_bookmark_path_abs = matched_bookmark_obj["bookmark_path_slash_abs"]
 
-    # Sanity check that the bookmark exists
-    if not matched_bookmark_path_rel or not os.path.exists(matched_bookmark_path_abs):
-        print(f"❌ Bookmark does not exist: '{matched_bookmark_path_rel}'")
+    # SANITY CHECK
+
+    if not matched_bookmark_path_abs or not os.path.exists(matched_bookmark_path_abs):
+        print(f"❌ Bookmark Path does not exist: '{matched_bookmark_path_abs}'")
         return 1
 
     # REDIS STATES
+
     handle_bookmark_pre_run_redis_states(matched_bookmark_obj, current_run_settings_obj)
 
-    # OBS Interaction
+    # OBS
+
     if current_run_settings_obj["is_no_obs"]:
         print("📷 No-OBS mode: Skipping screenshot capture and metadata update")
     else:

@@ -1,9 +1,8 @@
 from typing import List
 from app.utils.printing_utils import *
 from app.bookmarks.matching.matching_utils import find_bookmarks_by_substring_with_all_live_bm_path_parts, find_bookmarks_by_exact_trailing_live_bm_path_parts, handle_bookmark_matches, find_bookmarks_by_substring_with_trailing_live_bm_path_parts, find_exact_matches_by_bookmark_tokens, find_partial_substring_matches_by_bookmark_tokens
-from app.consts.bookmarks_consts import NAVIGATION_COMMANDS
 from app.bookmarks.navigation.process_navigation import process_main_cli_arg_navigation
-from app.types.bookmark_types import MatchedBookmarkObj, CurrentRunSettings
+from app.types.bookmark_types import MatchedBookmarkObj, CurrentRunSettings, NAVIGATION_COMMANDS
 from app.utils.decorators import print_def_name
 from app.bookmarks.bookmarks import get_all_live_bookmark_path_slash_rels
 
@@ -18,6 +17,7 @@ def find_best_bookmark_match_or_create(
     current_run_settings_obj: CurrentRunSettings | None = None,
     is_prompt_user_for_selection: bool = True,
     is_prompt_user_for_create_bm_option: bool = True,
+    context: str | None = None,
 ) -> MatchedBookmarkObj | List[MatchedBookmarkObj] | int | None:
     """
     Example Target: `GRANDPARENT:PARENT:BOOKMARK -t comp domination`
@@ -53,7 +53,8 @@ def find_best_bookmark_match_or_create(
             [cli_bookmark_string],
             current_run_settings_obj,
             is_prompt_user_for_selection,
-            is_prompt_user_for_create_bm_option=is_prompt_user_for_create_bm_option
+            is_prompt_user_for_create_bm_option=is_prompt_user_for_create_bm_option,
+            context=context
         )
 
     print('---- 2 : Exact Match (without some parents) ----')
@@ -66,7 +67,8 @@ def find_best_bookmark_match_or_create(
             matches,
             current_run_settings_obj,
             is_prompt_user_for_selection,
-            is_prompt_user_for_create_bm_option=is_prompt_user_for_create_bm_option
+            is_prompt_user_for_create_bm_option=is_prompt_user_for_create_bm_option,
+            context=context
         )
 
     print('---- 3 : Substring Match (with full path) ----')
@@ -80,7 +82,8 @@ def find_best_bookmark_match_or_create(
             matches,
             current_run_settings_obj,
             is_prompt_user_for_selection,
-            is_prompt_user_for_create_bm_option=is_prompt_user_for_create_bm_option
+            is_prompt_user_for_create_bm_option=is_prompt_user_for_create_bm_option,
+            context=context
         )
 
     print('---- 4 : Substring Match (without some parents) ----')
@@ -94,7 +97,8 @@ def find_best_bookmark_match_or_create(
             matches,
             current_run_settings_obj,
             is_prompt_user_for_selection,
-            is_prompt_user_for_create_bm_option=is_prompt_user_for_create_bm_option
+            is_prompt_user_for_create_bm_option=is_prompt_user_for_create_bm_option,
+            context=context
         )
 
     # TODO(MFB): DONE UP TO HERE
@@ -109,7 +113,8 @@ def find_best_bookmark_match_or_create(
             matches,
             current_run_settings_obj,
             is_prompt_user_for_selection,
-            is_prompt_user_for_create_bm_option=is_prompt_user_for_create_bm_option
+            is_prompt_user_for_create_bm_option=is_prompt_user_for_create_bm_option,
+            context=context
         )
 
     print('---- 6 : Tag/description match ----')
@@ -123,7 +128,8 @@ def find_best_bookmark_match_or_create(
             matches,
             current_run_settings_obj,
             is_prompt_user_for_selection,
-            is_prompt_user_for_create_bm_option=is_prompt_user_for_create_bm_option
+            is_prompt_user_for_create_bm_option=is_prompt_user_for_create_bm_option,
+            context=context
         )
 
     # TODO(MFB): Implement fuzzy matching
@@ -142,7 +148,8 @@ def find_best_bookmark_match_or_create(
             [],
             current_run_settings_obj,
             is_prompt_user_for_selection,
-            is_prompt_user_for_create_bm_option=is_prompt_user_for_create_bm_option
+            is_prompt_user_for_create_bm_option=is_prompt_user_for_create_bm_option,
+            context=context
         )
 
     return 1

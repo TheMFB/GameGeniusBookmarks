@@ -175,12 +175,16 @@ def build_bookmark_token_map(include_tags_and_descriptions=True):
 
 # TODO(MFB): Pull out, and then add a "create new bookmark" option.
 @print_def_name(IS_PRINT_DEF_NAME)
-def interactive_choose_bookmark(matched_bookmark_strings: list[str]) -> str | None:
+def interactive_choose_bookmark(matched_bookmark_strings: list[str], context: str | None = None) -> str | None:
     """
     Ask the user to choose a bookmark fr om a list of matches.
     """
     if len(matched_bookmark_strings) > 1:
-        print("🤔 Multiple results found:")
+        if context == "bookmark_template":
+            print("🤔 Multiple results found for the bookmark template.")
+            print("Please select the bookmark template you would like to use:")
+        else:
+            print("🤔 Multiple results found:")
         for idx, match in enumerate(matched_bookmark_strings):
             print(f"  {idx + 1}. {match}")
     elif len(matched_bookmark_strings) == 1:
@@ -192,7 +196,8 @@ def interactive_choose_bookmark(matched_bookmark_strings: list[str]) -> str | No
 
     print('')
     print("  0. Cancel")
-    print("  c. Create new bookmark")
+    if context != "bookmark_template":
+        print("  c. Create new bookmark")
 
     while True:
         try:
@@ -200,7 +205,7 @@ def interactive_choose_bookmark(matched_bookmark_strings: list[str]) -> str | No
             if choice == "0":
                 print("❌ Cancelled.")
                 return None
-            if choice.lower() == "c":
+            if choice.lower() == "c" and context != "bookmark_template":
                 print("🆕 Creating new bookmark...")
                 return "create_new_bookmark"
             choice_num = int(choice)
@@ -222,6 +227,7 @@ def handle_bookmark_matches(
     current_run_settings_obj: CurrentRunSettings | None = None,
     is_prompt_user_for_selection: bool = False,
     is_prompt_user_for_create_bm_option: bool = False,
+    context: str | None = None,
 ) -> MatchedBookmarkObj | int |  List[MatchedBookmarkObj] | None:
     """
     Handle the results of a bookmark match.
@@ -237,7 +243,7 @@ def handle_bookmark_matches(
     else:
         # If there are multiple matches, or we're prompting to create a new bookmark, prompt the user to choose a bookmark
         if is_prompt_user_for_selection:
-            chosen_bookmark_string = interactive_choose_bookmark(matched_bookmark_strings)
+            chosen_bookmark_string = interactive_choose_bookmark(matched_bookmark_strings, context)
             if chosen_bookmark_string:
                 if chosen_bookmark_string == "create_new_bookmark":
                     return handle_create_bookmark_and_parent_dirs(cli_bookmark_string, current_run_settings_obj)

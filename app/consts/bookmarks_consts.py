@@ -27,7 +27,6 @@ SCREENSHOT_SAVE_SCALE = 0.5
 EXCLUDED_DIRS = {"archive", "archive_temp", "temp", "videos"} # # TODO(MFB): DELETE AFTER TESTING
 # EXCLUDED_DIRS = {"archive", "archive_temp", "temp", "videos", "grand-parent", "grand-parent-2"}
 
-NAVIGATION_COMMANDS = ["next", "previous", "first", "last"]
 
 NON_NAME_BOOKMARK_KEYS = ["tags", "description", "video_filename", "timestamp", "type"]
 # TODO(KERCH): On creation, we should not allow these to be used as directory names. If they exist, we should raise an error.
