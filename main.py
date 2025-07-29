@@ -1,17 +1,13 @@
-import os
 import sys
-import subprocess
 import traceback
-from app.bookmarks.redis_states import handle_copy_temp_redis_to_bm_redis_after
 from app.utils.printing_utils import *
-from app.consts.bookmarks_consts import IS_DEBUG, IS_PRINT_JUST_CURRENT_DIRECTORY_BOOKMARKS
+from app.consts.bookmarks_consts import IS_PRINT_JUST_CURRENT_DIRECTORY_BOOKMARKS
 from app.bookmarks_print import print_all_live_directories_and_bookmarks
 from app.bookmarks.handle_matched_bookmark_pre_processing import handle_matched_bookmark_pre_processing
 from app.bookmarks.handle_matched_bookmark_post_processing import handle_matched_bookmark_post_processing
 from app.flag_handlers import handle_main_process, process_flags, CurrentRunSettings
 from app.types import MatchedBookmarkObj
 from app.bookmarks.matching.bookmark_matching import find_best_bookmark_match_or_create
-from app.bookmarks.last_used import save_last_used_bookmark
 
 
 # TODO(MFB): There's got to be a better way to handle the return errors and exit codes.

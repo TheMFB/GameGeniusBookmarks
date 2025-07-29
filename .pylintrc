@@ -3,7 +3,7 @@ ignored-modules=cv2
 generated-members=cv2.*
 
 [MESSAGES CONTROL]
-disable=C0111,C0114,E0401,E1136,C0301,W1039,W0718,W0719,W0707,W0401,W0614
+disable=C0111,C0114,E0401,E1136,C0301,W0718,W0719,W0707,W0401,W0614
 
 # C0111: Missing docstring
 # C0114: Missing docstring
