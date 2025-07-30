@@ -5,7 +5,7 @@ Convert flat Redis JSON exports into hierarchical "friendly" JSON structure
 import json
 import sys
 from pathlib import Path
-from typing import Dict, List, Any, Optional
+from typing import Any, Dict, List, Optional
 
 IS_DEBUG = False
 

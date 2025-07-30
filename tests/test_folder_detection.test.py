@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 
-import sys
 import os
+import sys
 
 # Add the project root to the Python path so we can import from app/
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, project_root)
 
-from app.bookmarks_folders import get_all_valid_root_dir_names
 from app.bookmarks import load_bookmarks_from_folder
+from app.bookmarks_folders import get_all_valid_root_dir_names
 
 print("Testing folder detection fix...")
 print("=" * 50)

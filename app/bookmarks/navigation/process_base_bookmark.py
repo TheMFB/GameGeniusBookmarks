@@ -1,4 +1,4 @@
-from app.types.bookmark_types import MatchedBookmarkObj, CurrentRunSettings
+from app.types.bookmark_types import CurrentRunSettings, MatchedBookmarkObj
 from app.utils.decorators import print_def_name
 
 IS_PRINT_DEF_NAME = True

@@ -1,8 +1,9 @@
-import sys
 import os
+import sys
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from app.bookmarks import find_matching_bookmark
+
 
 def test_exact_match():
     print("Testing exact match...")

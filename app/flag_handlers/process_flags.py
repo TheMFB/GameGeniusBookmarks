@@ -1,8 +1,18 @@
+from app.bookmarks.navigation.find_bookmark_as_base import find_bookmark_as_base_match
 from app.consts.bookmarks_consts import IS_DEBUG
 from app.consts.cli_consts import OPTIONS_HELP
-from app.flag_handlers import handle_help, handle_ls, handle_which, open_video, find_cli_tags
-from app.bookmarks.navigation.find_bookmark_as_base import find_bookmark_as_base_match
-from app.types.bookmark_types import CurrentRunSettings, VALID_FLAGS, default_processed_flags
+from app.flag_handlers import (
+    find_cli_tags,
+    handle_help,
+    handle_ls,
+    handle_which,
+    open_video,
+)
+from app.types.bookmark_types import (
+    VALID_FLAGS,
+    CurrentRunSettings,
+    default_processed_flags,
+)
 from app.utils.decorators import print_def_name
 
 IS_PRINT_DEF_NAME = True

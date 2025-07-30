@@ -20,7 +20,7 @@ def open_video(args):
             break
 
     if not video_path:
-        print(f"❌ Video path required for --open-video flag")
+        print("❌ Video path required for --open-video flag")
         print(OPTIONS_HELP)
         return 1
 
@@ -30,10 +30,10 @@ def open_video(args):
     from app.utils.obs_utils import open_video_in_obs
 
     if open_video_in_obs(video_path):
-        print(f"✅ Video opened successfully!")
+        print("✅ Video opened successfully!")
         return 0
     else:
-        print(f"❌ Failed to open video in OBS")
+        print("❌ Failed to open video in OBS")
         return 1
 
     return video_path

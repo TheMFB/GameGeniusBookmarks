@@ -9,9 +9,10 @@ import sys
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, project_root)
 
-from app.bookmarks_folders import parse_cli_bookmark_args, find_folder_by_name
 from app.bookmarks import find_matching_bookmark
+from app.bookmarks_folders import find_folder_by_name, parse_cli_bookmark_args
 from app.consts.bookmarks_consts import BOOKMARKS_DIR
+
 
 def test_parse_folder_args_for_run_bookmarks():
     """Test the folder:bookmark parsing function."""

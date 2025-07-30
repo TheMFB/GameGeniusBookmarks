@@ -1,9 +1,16 @@
 import json
-import sys
 import os
-import redis
+import sys
 from typing import Literal
-from app.consts.bookmarks_consts import LOCAL_REDIS_SESSIONS_HOST, LOCAL_REDIS_SESSIONS_PORT, LOCAL_REDIS_SESSIONS_DB, REDIS_DUMP_DIR
+
+import redis
+
+from app.consts.bookmarks_consts import (
+    LOCAL_REDIS_SESSIONS_DB,
+    LOCAL_REDIS_SESSIONS_HOST,
+    LOCAL_REDIS_SESSIONS_PORT,
+    REDIS_DUMP_DIR,
+)
 
 
 def load_into_redis_local(filename:Literal["bookmark_temp", "bookmark_temp_after"]):

@@ -1,9 +1,9 @@
-from typing import Literal
 import base64
 import os
 from pprint import pprint
+from typing import Literal
 
-from app.consts.bookmarks_consts import IS_PRINT_DEV
+IS_PRINT_DEV = True
 
 # TODO(): Pull out the dev log printing into a separate file, so that we don't have to import everything when we *.
 def get_embedded_bookmark_file_link(dir_abs_slash_path, text):
@@ -45,7 +45,7 @@ def print_dev(
     is_print: bool = IS_PRINT_DEV,
 ):
     if not is_print:
-        return
+        return None
     if not color:
         return print(text)
     return print_color(text, color)
@@ -56,7 +56,7 @@ def pprint_dev(
         is_print: bool = IS_PRINT_DEV
 ):
     if not is_print:
-        return
+        return None
     if not color:
         return pprint(text)
     return print_color(text, color)
@@ -119,5 +119,3 @@ def print_dev_separator(
 #     else:
 #         print(f"-- {var_name}:")
 #     pprint(var)
-
-

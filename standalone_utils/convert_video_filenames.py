@@ -1,6 +1,7 @@
 import os
 import re
 from pathlib import Path
+
 from codename import codename
 
 VIDEO_DIR = Path(

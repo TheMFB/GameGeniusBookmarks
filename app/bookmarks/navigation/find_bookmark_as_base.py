@@ -1,7 +1,7 @@
-from app.consts.bookmarks_consts import IS_DEBUG
-from app.utils.decorators import print_def_name
-from app.types.bookmark_types import NAVIGATION_COMMANDS, MatchedBookmarkObj
 from app.bookmarks.matching.bookmark_matching import find_best_bookmark_match_or_create
+from app.consts.bookmarks_consts import IS_DEBUG
+from app.types.bookmark_types import NAVIGATION_COMMANDS, MatchedBookmarkObj
+from app.utils.decorators import print_def_name
 
 IS_PRINT_DEF_NAME = True
 
@@ -27,7 +27,7 @@ def find_bookmark_as_base_match(args) -> MatchedBookmarkObj | int | str: # NAVIG
         return "previous"
 
     # Handle if the user has input a bookmark name as the nav arg
-    if not cli_nav_arg_string in NAVIGATION_COMMANDS:
+    if cli_nav_arg_string not in NAVIGATION_COMMANDS:
         matching_bookmark_obj = find_best_bookmark_match_or_create(
                                     cli_nav_arg_string,
                                     is_prompt_user_for_selection=True,

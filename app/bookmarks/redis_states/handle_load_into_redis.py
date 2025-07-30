@@ -1,10 +1,10 @@
 import os
-import subprocess
 import shutil
+import subprocess
+
 from app.consts.bookmarks_consts import IS_DEBUG, IS_LOCAL_REDIS_DEV, REDIS_DUMP_DIR
 from app.types.bookmark_types import MatchedBookmarkObj
 from app.utils.decorators import print_def_name
-from app.utils.printing_utils import *
 from standalone_utils.redis.load_into_redis_local import load_into_redis_local
 
 IS_PRINT_DEF_NAME = True

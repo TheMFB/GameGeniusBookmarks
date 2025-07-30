@@ -1,12 +1,10 @@
-import os
-from pprint import pprint
-from app.utils.printing_utils import *
-from app.bookmark_dir_processes import get_all_valid_root_dir_names
 from app.bookmarks import get_last_used_bookmark
 from app.bookmarks.navigation import resolve_navigation_bookmark_from_last_used
 from app.types.bookmark_types import MatchedBookmarkObj
 from app.utils.bookmark_utils import convert_exact_bookmark_path_to_bm_obj
 from app.utils.decorators import print_def_name
+from app.utils.printing_utils import pprint, print_color
+
 
 IS_PRINT_DEF_NAME = True
 
@@ -25,21 +23,9 @@ def process_main_cli_arg_navigation(navigation_command) -> MatchedBookmarkObj | 
         return 1
 
     # Resolve the navigation command
-    matched_bookmark_path_rel, bookmark_info = resolve_navigation_bookmark_from_last_used(
+    matched_bookmark_obj = resolve_navigation_bookmark_from_last_used(
         navigation_command)
 
-    print('+++++ resolve_navigation_bookmark_from_last_used matched_bookmark_path_rel:')
-    pprint(matched_bookmark_path_rel)
+    # TODO(MFB): Does this return with the bookmark_info? (resolve_navigation_bookmark_from_last_used used to return the bookmark_info)
 
-    if not matched_bookmark_path_rel:
-        print(
-            f"❌ No bookmark name found for'{matched_bookmark_path_rel}' '{navigation_command}'")
-        return 1
-
-    matched_bookmark_obj = convert_exact_bookmark_path_to_bm_obj(matched_bookmark_path_rel)
-
-    return {
-        **matched_bookmark_obj,
-        "bookmark_info": bookmark_info,
-    }
-
+    return matched_bookmark_obj

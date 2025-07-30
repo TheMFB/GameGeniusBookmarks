@@ -1,6 +1,7 @@
 import os
-from app.types.bookmark_types import MatchedBookmarkObj, CurrentRunSettings
-from app.utils.printing_utils import *
+
+from app.types.bookmark_types import CurrentRunSettings, MatchedBookmarkObj
+
 
 def handle_bookmark_post_run_redis_states(
     matched_bookmark_obj: MatchedBookmarkObj,

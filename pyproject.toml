@@ -55,3 +55,17 @@ typeCheckingMode = "off"
 # reportUnknownMemberType = false
 # reportMissingTypeStubs = false
 
+[tool.ruff]
+select = ["E", "F", "I"]
+# E: pycodestyle errors (mostly about code style, e.g., indentation, whitespace, line length, etc.)
+# F: pyflakes errors (about code correctness, e.g., undefined names, unused imports, etc.)
+# I:isort rules (for import sorting and grouping)
+
+[tool.ruff.lint.pycodestyle]
+# max-line-length = 140
+max-line-length = 700
+
+# [tool.ruff.lint.pyflakes]
+
+# [tool.isort]
+# include_trailing_comma = false

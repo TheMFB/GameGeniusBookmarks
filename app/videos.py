@@ -1,5 +1,7 @@
 import os
+
 from dotenv import load_dotenv
+
 from app.utils.decorators import print_def_name
 
 IS_PRINT_DEF_NAME = True

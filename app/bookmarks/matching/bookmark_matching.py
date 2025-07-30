@@ -1,12 +1,22 @@
 from typing import List
-from app.utils.printing_utils import *
-from app.bookmarks.matching.matching_utils import find_bookmarks_by_substring_with_all_live_bm_path_parts, find_bookmarks_by_exact_trailing_live_bm_path_parts, handle_bookmark_matches, find_bookmarks_by_substring_with_trailing_live_bm_path_parts, find_exact_matches_by_bookmark_tokens, find_partial_substring_matches_by_bookmark_tokens
-from app.bookmarks.navigation.process_navigation import process_main_cli_arg_navigation
-from app.types.bookmark_types import MatchedBookmarkObj, CurrentRunSettings, NAVIGATION_COMMANDS
-from app.utils.decorators import print_def_name
+
 from app.bookmarks.bookmarks import get_all_live_bookmark_path_slash_rels
-
-
+from app.bookmarks.matching.matching_utils import (
+    find_bookmarks_by_exact_trailing_live_bm_path_parts,
+    find_bookmarks_by_substring_with_all_live_bm_path_parts,
+    find_bookmarks_by_substring_with_trailing_live_bm_path_parts,
+    find_exact_matches_by_bookmark_tokens,
+    find_partial_substring_matches_by_bookmark_tokens,
+    handle_bookmark_matches,
+)
+from app.bookmarks.navigation.process_navigation import process_main_cli_arg_navigation
+from app.types.bookmark_types import (
+    NAVIGATION_COMMANDS,
+    CurrentRunSettings,
+    MatchedBookmarkObj,
+)
+from app.utils.decorators import print_def_name
+from app.utils.printing_utils import print_color
 
 IS_PRINT_DEF_NAME = True
 
@@ -106,7 +116,7 @@ def find_best_bookmark_match_or_create(
     # 6. Tag/description match
     # Searches through all names, directories, tags and descriptions -- and does not take order into consideration. Looks for exact matches.
     matches = find_exact_matches_by_bookmark_tokens(
-        cli_bookmark_string, all_live_bookmark_path_slash_rels)
+        cli_bookmark_string, include_tags_and_descriptions=True)
     if matches:
         return handle_bookmark_matches(
             cli_bookmark_string,
@@ -135,11 +145,6 @@ def find_best_bookmark_match_or_create(
     # TODO(MFB): Implement fuzzy matching
     # print('---- 6 : Fuzzy Match ----')
     # # 8. Fuzzy match across names, directories, tags and descriptions
-    # # Match: `GPARENT:DARENT:BOKKMARK`
-    # fuzzy_matches = fuzzy_match_bookmark_tokens(cli_bookmark_string)
-    # if fuzzy_matches:
-    #     return fuzzy_matches
-
     print('---- X : No matches - Prompt to create new bookmark ----')
     # X. Handle no matches - prompt to create new bookmark
     if is_prompt_user_for_selection:
@@ -153,4 +158,3 @@ def find_best_bookmark_match_or_create(
         )
 
     return 1
-

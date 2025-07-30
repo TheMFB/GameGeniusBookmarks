@@ -1,12 +1,16 @@
-import redis
-import pickle
 import json
 import os
-import sys
-import glob
+import pickle
 from typing import Literal
 
-from app.consts.bookmarks_consts import LOCAL_REDIS_SESSIONS_HOST, LOCAL_REDIS_SESSIONS_PORT, LOCAL_REDIS_SESSIONS_DB, REDIS_DUMP_DIR
+import redis
+
+from app.consts.bookmarks_consts import (
+    LOCAL_REDIS_SESSIONS_DB,
+    LOCAL_REDIS_SESSIONS_HOST,
+    LOCAL_REDIS_SESSIONS_PORT,
+    REDIS_DUMP_DIR,
+)
 
 
 def export_from_redis(filename:Literal["bookmark_temp", "bookmark_temp_after"]):

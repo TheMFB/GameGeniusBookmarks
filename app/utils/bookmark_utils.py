@@ -1,9 +1,10 @@
 import os
 from pathlib import Path
-from app.consts.bookmarks_consts import ABS_OBS_BOOKMARKS_DIR
-from app.utils.decorators import print_def_name, memoize
-from app.types.bookmark_types import MatchedBookmarkObj
+
 from app.bookmarks.bookmarks import get_bookmark_info
+from app.consts.bookmarks_consts import ABS_OBS_BOOKMARKS_DIR
+from app.types.bookmark_types import MatchedBookmarkObj
+from app.utils.decorators import memoize, print_def_name
 
 IS_PRINT_DEF_NAME = True
 

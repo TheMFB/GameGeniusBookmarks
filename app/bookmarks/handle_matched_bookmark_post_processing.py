@@ -1,7 +1,9 @@
-from app.bookmarks.redis_states.handle_bookmark_post_run_redis_states import handle_bookmark_post_run_redis_states
-from app.utils.printing_utils import *
-from app.types.bookmark_types import MatchedBookmarkObj, CurrentRunSettings
 from app.bookmarks.last_used import save_last_used_bookmark
+from app.bookmarks.redis_states.handle_bookmark_post_run_redis_states import (
+    handle_bookmark_post_run_redis_states,
+)
+from app.types.bookmark_types import CurrentRunSettings, MatchedBookmarkObj
+from app.utils.printing_utils import print_color
 
 
 def handle_matched_bookmark_post_processing(

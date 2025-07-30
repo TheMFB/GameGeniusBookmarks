@@ -1,9 +1,16 @@
-from app.utils.obs_utils import load_bookmark_into_obs
-from app.types.bookmark_types import MatchedBookmarkObj, CurrentRunSettings
-from app.utils.printing_utils import *
-from app.bookmarks.redis_states.handle_bookmark_pre_run_redis_states import handle_bookmark_pre_run_redis_states
-from app.obs.handle_bookmark_obs import save_obs_screenshot_to_bookmark_path, save_obs_media_info_to_bookmark_meta
+import os
+
 from app.bookmarks.navigation.process_base_bookmark import process_base_bookmark
+from app.bookmarks.redis_states.handle_bookmark_pre_run_redis_states import (
+    handle_bookmark_pre_run_redis_states,
+)
+from app.obs.handle_bookmark_obs import (
+    save_obs_media_info_to_bookmark_meta,
+    save_obs_screenshot_to_bookmark_path,
+)
+from app.types.bookmark_types import CurrentRunSettings, MatchedBookmarkObj
+from app.utils.obs_utils import load_bookmark_into_obs
+
 
 def handle_matched_bookmark_pre_processing(
     matched_bookmark_obj: MatchedBookmarkObj,

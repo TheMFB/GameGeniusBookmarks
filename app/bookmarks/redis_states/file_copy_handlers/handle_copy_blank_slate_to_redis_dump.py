@@ -1,6 +1,11 @@
 import os
 import shutil
-from app.consts.bookmarks_consts import IS_DEBUG, REDIS_DUMP_DIR, INITIAL_REDIS_STATE_DIR
+
+from app.consts.bookmarks_consts import (
+    INITIAL_REDIS_STATE_DIR,
+    IS_DEBUG,
+    REDIS_DUMP_DIR,
+)
 from app.utils.decorators import print_def_name
 
 IS_PRINT_DEF_NAME = True

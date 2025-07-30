@@ -1,10 +1,15 @@
-import subprocess
 import os
+import subprocess
 from typing import Literal
-from app.consts.bookmarks_consts import IS_DEBUG, INITIAL_REDIS_STATE_DIR, IS_LOCAL_REDIS_DEV
+
+from app.consts.bookmarks_consts import (
+    INITIAL_REDIS_STATE_DIR,
+    IS_DEBUG,
+    IS_LOCAL_REDIS_DEV,
+)
 from app.types.bookmark_types import MatchedBookmarkObj
 from app.utils.decorators import print_def_name
-from app.utils.printing_utils import *
+from app.utils.printing_utils import print_dev
 from standalone_utils.redis.export_from_redis import export_from_redis
 from standalone_utils.redis.load_into_redis_local import load_into_redis_local
 

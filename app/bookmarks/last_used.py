@@ -1,13 +1,12 @@
-import os
-from pprint import pprint
 import json
+import os
 from datetime import datetime
 
-from app.types.bookmark_types import MatchedBookmarkObj
-from app.utils.printing_utils import *
-from app.utils.decorators import print_def_name, memoize
-from app.consts.bookmarks_consts import ABS_OBS_BOOKMARKS_DIR
 from app.bookmarks.bookmarks import create_bookmark_symlinks
+from app.consts.bookmarks_consts import ABS_OBS_BOOKMARKS_DIR
+from app.types.bookmark_types import MatchedBookmarkObj
+from app.utils.decorators import memoize, print_def_name
+from app.utils.printing_utils import pprint, print_color
 
 IS_AGGREGATE_TAGS = False
 IS_PRINT_DEF_NAME = True

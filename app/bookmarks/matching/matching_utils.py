@@ -3,13 +3,17 @@
 import re
 from typing import List
 
+from app.bookmarks.bookmarks import (
+    get_all_deep_bookmarks_in_dir_with_meta,
+    get_all_live_bookmarks_in_json_format,
+)
 from app.bookmarks.handle_create_bookmark import handle_create_bookmark_and_parent_dirs
-from app.consts.bookmarks_consts import IS_DEBUG
-from app.bookmarks.bookmarks import get_all_deep_bookmarks_in_dir_with_meta, get_all_live_bookmarks_in_json_format
-from app.types.bookmark_types import MatchedBookmarkObj, CurrentRunSettings
-from app.utils.printing_utils import *
-from app.utils.decorators import print_def_name, memoize
-from app.utils.bookmark_utils import split_path_into_array, does_path_exist_in_bookmarks, convert_exact_bookmark_path_to_bm_obj
+from app.types.bookmark_types import CurrentRunSettings, MatchedBookmarkObj
+from app.utils.bookmark_utils import (
+    convert_exact_bookmark_path_to_bm_obj,
+    does_path_exist_in_bookmarks,
+)
+from app.utils.decorators import memoize, print_def_name
 
 IS_PRINT_DEF_NAME = True
 
@@ -201,7 +205,7 @@ def interactive_choose_bookmark(matched_bookmark_strings: list[str], context: st
 
     while True:
         try:
-            choice = input(f"Enter your choice: ").strip()
+            choice = input("Enter your choice: ").strip()
             if choice == "0":
                 print("❌ Cancelled.")
                 return None

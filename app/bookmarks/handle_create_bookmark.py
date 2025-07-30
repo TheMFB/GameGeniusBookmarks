@@ -1,11 +1,11 @@
 import os
-from app.types.bookmark_types import MatchedBookmarkObj
+
+from app.bookmarks_meta import create_bookmark_meta, create_directory_meta
+from app.consts.bookmarks_consts import ABS_OBS_BOOKMARKS_DIR, IS_DEBUG
+from app.types.bookmark_types import CurrentRunSettings, MatchedBookmarkObj
 from app.utils.bookmark_utils import convert_exact_bookmark_path_to_bm_obj
 from app.utils.decorators import print_def_name
-from app.utils.printing_utils import *
-from app.consts.bookmarks_consts import IS_DEBUG, ABS_OBS_BOOKMARKS_DIR
-from app.bookmarks_meta import create_bookmark_meta, create_directory_meta
-from app.types.bookmark_types import CurrentRunSettings
+from app.utils.printing_utils import pprint
 
 IS_PRINT_DEF_NAME = True
 
@@ -33,7 +33,7 @@ def handle_create_bookmark_and_parent_dirs(
         # Create directory metadata for nested bookmarks
         path_parts = bookmark_dir_slash_rel.split('/')
         current_path = ABS_OBS_BOOKMARKS_DIR
-        for i, dir_name in enumerate(path_parts[:-1]): # Take all but the last part (the bookmark name itself)
+        for _i, dir_name in enumerate(path_parts[:-1]): # Take all but the last part (the bookmark name itself)
             current_path = os.path.join(current_path, dir_name)
 
             # TODO(KERCH): We would add in here the description and tags for when we have the -t# flags. https://app.clickup.com/t/86aaat28f

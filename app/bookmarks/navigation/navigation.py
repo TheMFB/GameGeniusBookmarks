@@ -1,10 +1,11 @@
-from app.types.bookmark_types import MatchedBookmarkObj
-from app.utils.bookmark_utils import convert_exact_bookmark_path_to_bm_obj
-from app.utils.printing_utils import *
+from typing import Literal
+
 from app.bookmarks.bookmarks import get_all_shallow_bookmark_abs_paths_in_dir
 from app.bookmarks.last_used import get_last_used_bookmark
-from app.utils.decorators import print_def_name
 from app.consts.bookmarks_consts import IS_DEBUG
+from app.types.bookmark_types import MatchedBookmarkObj
+from app.utils.bookmark_utils import convert_exact_bookmark_path_to_bm_obj
+from app.utils.decorators import print_def_name
 
 IS_AGGREGATE_TAGS = False
 IS_PRINT_DEF_NAME = True
@@ -98,7 +99,7 @@ def resolve_navigation_bookmark_from_last_used(
     if not last_used_bookmark_obj:
         print(
             f"❌ No last used bookmark found. Cannot navigate with '{navigation_command}'")
-        return None, None
+        return None
 
     last_used_bm_dir_slash_abs = last_used_bookmark_obj.get("bookmark_dir_slash_abs")
     last_used_bm_dir_colon_rel = last_used_bookmark_obj.get("bookmark_dir_colon_rel")
@@ -114,7 +115,7 @@ def resolve_navigation_bookmark_from_last_used(
     if not target_bookmark:
         print(
             f"❌ No next bookmark found after '{last_used_bm_dir_colon_rel}'")
-        return None, None
+        return None
 
 
     target_bookmark_obj = convert_exact_bookmark_path_to_bm_obj(target_bookmark)

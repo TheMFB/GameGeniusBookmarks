@@ -1,5 +1,5 @@
-import subprocess
 import os
+import subprocess
 import sys
 
 SCRIPT_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "runonce_redis_integration.py"))

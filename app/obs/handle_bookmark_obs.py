@@ -1,14 +1,15 @@
-import os
 import base64
 import io
-from PIL import Image
-import obsws_python as obs
+import os
 
-from app.utils.obs_utils import get_media_source_info
+import obsws_python as obs
+from PIL import Image
+
 from app.bookmarks_meta import patch_bookmark_meta, update_missing_bookmark_meta_fields
 from app.consts.bookmarks_consts import IS_DEBUG, SCREENSHOT_SAVE_SCALE
-from app.types.bookmark_types import MatchedBookmarkObj, CurrentRunSettings
-from app.utils.printing_utils import *
+from app.types.bookmark_types import CurrentRunSettings, MatchedBookmarkObj
+from app.utils.obs_utils import get_media_source_info
+from app.utils.printing_utils import print_color
 
 
 def save_obs_screenshot_to_bookmark_path(

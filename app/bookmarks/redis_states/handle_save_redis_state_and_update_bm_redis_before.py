@@ -1,11 +1,13 @@
 import os
-from pprint import pprint
 import shutil
-from app.consts.bookmarks_consts import REDIS_DUMP_DIR, IS_DEBUG # type: ignore
+
 from app.bookmarks.redis_states.bookmarks_redis import run_redis_command
-from app.bookmarks.redis_states.redis_friendly_converter import convert_redis_state_file_to_friendly_and_save
+from app.bookmarks.redis_states.redis_friendly_converter import (
+    convert_redis_state_file_to_friendly_and_save,
+)
+from app.consts.bookmarks_consts import IS_DEBUG, REDIS_DUMP_DIR  # type: ignore
 from app.utils.decorators import print_def_name
-from app.utils.printing_utils import *
+from app.utils.printing_utils import pprint, print_color
 
 IS_PRINT_DEF_NAME = True
 
@@ -45,6 +47,6 @@ def handle_save_redis_state_and_update_bm_redis_before(bookmark_path_slash_abs: 
     try:
         convert_redis_state_file_to_friendly_and_save(final_path)
         if IS_DEBUG:
-            print(f"📋 Generated friendly Redis before")
+            print("📋 Generated friendly Redis before")
     except Exception as e:
         print(f"⚠️  Could not generate friendly Redis before: {e}")

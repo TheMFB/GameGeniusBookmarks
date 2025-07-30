@@ -1,11 +1,18 @@
 import os
 import shutil
-from app.bookmarks.redis_states.redis_friendly_converter import convert_redis_state_file_to_friendly_and_save
-from app.bookmarks.redis_states.bookmarks_redis import handle_copy_redis_state_from_base_to_bookmark, run_redis_command, copy_blank_redis_state_to_bm_redis_before
-from app.consts.bookmarks_consts import IS_DEBUG, REDIS_DUMP_DIR
-from app.types.bookmark_types import MatchedBookmarkObj, CurrentRunSettings
-from app.utils.printing_utils import *
+
+from app.bookmarks.redis_states.bookmarks_redis import (
+    copy_blank_redis_state_to_bm_redis_before,
+    handle_copy_redis_state_from_base_to_bookmark,
+    run_redis_command,
+)
 from app.bookmarks.redis_states.handle_load_into_redis import handle_load_into_redis
+from app.bookmarks.redis_states.redis_friendly_converter import (
+    convert_redis_state_file_to_friendly_and_save,
+)
+from app.consts.bookmarks_consts import IS_DEBUG, REDIS_DUMP_DIR
+from app.types.bookmark_types import CurrentRunSettings, MatchedBookmarkObj
+from app.utils.printing_utils import print_color
 
 
 def handle_bookmark_pre_run_redis_states(

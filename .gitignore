@@ -29,6 +29,7 @@ last_bookmark_state.json
 
 shortcuts/
 .vscfavoriterc
+.vscode/
 
 obs_bookmark_saves/
 

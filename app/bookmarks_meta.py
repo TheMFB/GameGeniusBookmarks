@@ -1,11 +1,11 @@
-import os
 import json
+import os
 from datetime import datetime
 
 from app.consts.bookmarks_consts import IS_DEBUG, IS_DEBUG_FULL
-from app.videos import construct_full_video_file_path
-from app.utils.decorators import print_def_name
 from app.types.bookmark_types import MatchedBookmarkObj
+from app.utils.decorators import print_def_name
+from app.videos import construct_full_video_file_path
 
 IS_PRINT_DEF_NAME = True
 
@@ -68,7 +68,7 @@ def load_bookmark_meta_from_rel(bookmark_dir_rel):
                     meta_data['video_path'] = ''
             else:
                 if IS_DEBUG:
-                    print(f"🔍 Debug - No file_path or video_filename found in metadata")
+                    print("🔍 Debug - No file_path or video_filename found in metadata")
                 meta_data['video_path'] = ''
 
             if IS_DEBUG_FULL:

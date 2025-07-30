@@ -1,7 +1,8 @@
-from pprint import pprint
-from app.bookmarks.matching.bookmark_matching import find_best_bookmark_match_or_create
+from app.utils.printing_utils import *
 from app.bookmark_dir_processes import parse_cli_bookmark_args
+from app.bookmarks.matching.bookmark_matching import find_best_bookmark_match_or_create
 from app.utils.decorators import print_def_name
+from app.utils.printing_utils import pprint
 
 IS_PRINT_DEF_NAME = True
 

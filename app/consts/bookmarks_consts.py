@@ -1,5 +1,9 @@
 import os
+
 from dotenv import load_dotenv
+
+from app.utils.printing_utils import pprint_dev, print_dev
+
 load_dotenv()
 
 ## DEV CONSTANTS ##
@@ -9,7 +13,6 @@ IS_DEBUG = False
 # IS_DEBUG_FULL = True
 IS_DEBUG_FULL = False
 IS_DEBUG_PRINT_ALL_BOOKMARKS_JSON = False
-IS_PRINT_DEV = True
 # IS_PRINT_JUST_CURRENT_DIRECTORY_BOOKMARKS = True
 IS_PRINT_JUST_CURRENT_DIRECTORY_BOOKMARKS = False
 # IS_PRINT_JUST_CURRENT_DIRECTORY_BOOKMARKS_ON_LS = True
@@ -50,7 +53,12 @@ RESERVED_BOOKMARK_NAMES = [
 
 # TODO(MFB): There's a better way to grab the repo abs root than defining it in the .env file.
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+print_dev('---- REPO_ROOT:')
+pprint_dev(REPO_ROOT)
 ABS_OBS_BOOKMARKS_DIR = os.path.join(REPO_ROOT, "obs_bookmark_saves")
+
+print_dev('---- ABS_OBS_BOOKMARKS_DIR:')
+pprint_dev(ABS_OBS_BOOKMARKS_DIR)
 
 # REDIS #
 INITIAL_REDIS_STATE_DIR = os.path.join(REPO_ROOT, "app", "bookmarks", "redis_states")

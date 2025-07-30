@@ -1,6 +1,7 @@
-from app.consts.bookmarks_consts import IS_DEBUG, ASYNC_WAIT_TIME
 import subprocess
 import time
+
+from app.consts.bookmarks_consts import ASYNC_WAIT_TIME, IS_DEBUG
 from app.utils.decorators import print_def_name
 
 IS_PRINT_DEF_NAME = True
@@ -33,7 +34,7 @@ def handle_main_process(current_run_settings=None):
             return 1
 
         if IS_DEBUG:
-            print(f"⏳ Waiting for async processes to complete...")
+            print("⏳ Waiting for async processes to complete...")
         time.sleep(ASYNC_WAIT_TIME)
 
         return 0

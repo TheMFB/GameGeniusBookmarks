@@ -1,10 +1,13 @@
 import os
 import shutil
-from app.consts.bookmarks_consts import IS_DEBUG, REDIS_DUMP_DIR
-from app.bookmarks.redis_states.redis_friendly_converter import convert_redis_state_file_to_friendly_and_save
-from app.utils.decorators import print_def_name
 from typing import Literal
-from app.types.bookmark_types import MatchedBookmarkObj, CurrentRunSettings
+
+from app.bookmarks.redis_states.redis_friendly_converter import (
+    convert_redis_state_file_to_friendly_and_save,
+)
+from app.consts.bookmarks_consts import IS_DEBUG, REDIS_DUMP_DIR
+from app.types.bookmark_types import CurrentRunSettings, MatchedBookmarkObj
+from app.utils.decorators import print_def_name
 
 IS_PRINT_DEF_NAME = True
 
@@ -25,8 +28,8 @@ def handle_copy_bookmark_redis_state_from_dump(
     bookmark_redis_state_filename = "redis_" + bookmark_redis_state_type + ".json"
     bookmark_redis_state_path = os.path.join(bookmark_path_slash_abs, bookmark_redis_state_filename)
 
-    redis_temp_state_filename = redis_temp_state_filename + ".json"
-    redis_dump_state_path = os.path.join(REDIS_DUMP_DIR, redis_temp_state_filename)
+    redis_temp_state_filename_json = redis_temp_state_filename + ".json"
+    redis_dump_state_path = os.path.join(REDIS_DUMP_DIR, redis_temp_state_filename_json)
 
     # Make sure the source file exists
     if not os.path.exists(redis_dump_state_path):
@@ -50,16 +53,17 @@ def handle_copy_bookmark_redis_state_from_dump(
                 print("💾 Saving final Redis state...")
 
         # Move the final Redis export to the bookmark directory
-        shutil.move(redis_dump_state_path, bookmark_redis_state_path)
+        _ = shutil.move(redis_dump_state_path, bookmark_redis_state_path)
         if IS_DEBUG:
             print(f"💾 Saved final Redis state to: {bookmark_redis_state_path}")
 
         # Generate friendly version
         try:
-            convert_redis_state_file_to_friendly_and_save(
+            results = convert_redis_state_file_to_friendly_and_save(
                 bookmark_redis_state_path)
             if IS_DEBUG:
                 print("📋 Generated friendly Redis after")
+            return results
         except Exception as e:
             print(f"⚠️  Could not generate friendly Redis after: {e}")
 

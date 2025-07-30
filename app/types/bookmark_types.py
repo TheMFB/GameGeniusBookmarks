@@ -1,5 +1,6 @@
 from typing import NotRequired, TypedDict
 
+
 class BookmarkPathDictionary(TypedDict):
     bookmark_tail_name: str
 
@@ -29,19 +30,20 @@ class MatchedBookmarkObj(BookmarkPathDictionary):
     bookmark_info: NotRequired[BookmarkInfo]
 
 class CurrentRunSettings(TypedDict):
-    is_overwrite_redis_after: bool
-    is_overwrite_redis_before: bool
-    is_save_updates: bool
-    is_use_bookmark_as_base: bool
+    base_bookmark_obj: MatchedBookmarkObj | None
+    cli_nav_arg_string: list[str] | None
+    is_add_bookmark: bool
     is_blank_slate: bool
     is_no_docker: bool
     is_no_docker_no_redis: bool
     is_no_obs: bool
+    is_no_saving_dry_run: bool
+    is_overwrite_redis_after: bool
+    is_overwrite_redis_before: bool
+    is_save_updates: bool
     is_show_image: bool
-    is_add_bookmark: bool
-    cli_nav_arg_string: list[str] | None
+    is_use_bookmark_as_base: bool
     tags: list[str] | None
-    base_bookmark_obj: MatchedBookmarkObj | None
 
 
 # CLI FLAGS #
@@ -75,20 +77,20 @@ VALID_FLAGS = [
 ]
 
 default_processed_flags: CurrentRunSettings = {
-    "is_overwrite_redis_after": False,
-    "is_overwrite_redis_before": False,
-    "is_save_updates": False,
-    "is_no_saving_dry_run": False,
-    "is_use_bookmark_as_base": False,
+    "base_bookmark_obj": None,
+    "cli_nav_arg_string": None,
+    "is_add_bookmark": True,
     "is_blank_slate": False,
     "is_no_docker": False,
     "is_no_docker_no_redis": False,
     "is_no_obs": False,
+    "is_no_saving_dry_run": False,
+    "is_overwrite_redis_after": False,
+    "is_overwrite_redis_before": False,
+    "is_save_updates": False,
     "is_show_image": False,
-    "is_add_bookmark": True,
-    "cli_nav_arg_string": None,
+    "is_use_bookmark_as_base": False,
     "tags": None,
-    "base_bookmark_obj": None,
 }
 
 NAVIGATION_COMMANDS = ["next", "previous", "first", "last", "last_used"]

@@ -1,12 +1,19 @@
-from app.utils.printing_utils import *
-import os
 import json
-from app.consts.bookmarks_consts import IS_DEBUG, HIDDEN_COLOR, RESET_COLOR, ABS_OBS_BOOKMARKS_DIR, NON_NAME_BOOKMARK_KEYS, IS_PRINT_JUST_CURRENT_DIRECTORY_BOOKMARKS
-from app.bookmarks_meta import compute_hoistable_tags
-from app.bookmarks.last_used import get_last_used_bookmark
+import os
+
 from app.bookmarks.bookmarks import get_all_live_bookmarks_in_json_format
+from app.bookmarks.last_used import get_last_used_bookmark
+from app.bookmarks_meta import compute_hoistable_tags
+from app.consts.bookmarks_consts import (
+    ABS_OBS_BOOKMARKS_DIR,
+    HIDDEN_COLOR,
+    IS_PRINT_JUST_CURRENT_DIRECTORY_BOOKMARKS,
+    NON_NAME_BOOKMARK_KEYS,
+    RESET_COLOR,
+)
 from app.utils.bookmark_utils import abs_to_rel_path
 from app.utils.decorators import only_run_once, print_def_name
+from app.utils.printing_utils import get_embedded_bookmark_file_link, print_color
 
 IS_PRINT_VIDEO_FILE_NAMES = True
 IS_HOIST_TAGS_WHEN_SINGLE_CHILD = True

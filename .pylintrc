@@ -3,7 +3,7 @@ ignored-modules=cv2
 generated-members=cv2.*
 
 [MESSAGES CONTROL]
-disable=C0111,C0114,E0401,E1136,C0301,W0718,W0719,W0707,W0401,W0614
+disable=C0111,C0114,E0401,E1136,C0301,W0718,W0719,W0707,W0401,W0614,W0603,W1514,R0912
 
 # C0111: Missing docstring
 # C0114: Missing docstring
@@ -16,6 +16,9 @@ disable=C0111,C0114,E0401,E1136,C0301,W0718,W0719,W0707,W0401,W0614
 # W0707: Too broad exception clause
 # W0401: Wildcard import
 # W0614: Unused wildcard import
+# W0603: Global statement
+# W1514: Using open without explicitly specifying an encoding
+# R0912: Too many branches
 
 [MASTER]
 disable=E0401

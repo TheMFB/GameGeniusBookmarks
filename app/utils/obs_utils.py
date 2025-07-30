@@ -1,14 +1,12 @@
 # type: ignore
-from pprint import pprint
-from typing import Literal
-import obsws_python as obs
 import os
-import base64
+
+import obsws_python as obs
 
 from app.consts.bookmarks_consts import IS_DEBUG
-from app.videos import construct_full_video_file_path
 from app.types import MatchedBookmarkObj
 from app.utils.decorators import print_def_name
+from app.videos import construct_full_video_file_path
 
 IS_PRINT_DEF_NAME = True
 
@@ -43,7 +41,7 @@ def open_video_in_obs(video_path: str, source_name: str = "Media Source"):
 
         print(f"✅ Opened video in OBS: {video_path}")
         print(f"📺 Source: {source_name}")
-        print(f"⏸️  Status: Paused")
+        print("⏸️  Status: Paused")
         return True
 
     except Exception as e:
@@ -94,7 +92,7 @@ def get_media_source_info():
 
                     print(f"🔍 Formatted timestamp: {timestamp_formatted}")
                 else:
-                    print(f"❌ No media_cursor attribute in media_status")
+                    print("❌ No media_cursor attribute in media_status")
                     raise Exception("No media_cursor attribute in media_status")
 
             except Exception as cursor_error:
@@ -103,7 +101,7 @@ def get_media_source_info():
                 print(f"   File exists: {os.path.exists(file_path)}")
                 raise cursor_error
         else:
-            print(f"❌ No valid media file loaded")
+            print("❌ No valid media file loaded")
             print(f"   File path: {file_path}")
             print(f"   Exists: {os.path.exists(file_path) if file_path else 'No file path'}")
             raise Exception("No valid media file loaded in OBS")
@@ -156,7 +154,7 @@ def load_bookmark_into_obs(matched_bookmark_obj: MatchedBookmarkObj):
         video_file_path = construct_full_video_file_path(video_filename)
 
         if not video_filename:
-            print(f"❌ No file path found in bookmark_path_slash_rel metadata")
+            print("❌ No file path found in bookmark_path_slash_rel metadata")
             if IS_DEBUG:
                 print(
                     f"🔍 Debug - Available keys in bookmark_info: {list(bookmark_info.keys())}")
