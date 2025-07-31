@@ -85,9 +85,7 @@ def process_flags(args) -> CurrentRunSettings | int:
         "-nd"
     ])
     is_no_docker_no_redis = is_flag_in_args([
-        "--super-dry-run",
         "--no-docker-no-redis",
-        "-sd",
         "-ndr",
         "-ndnr"
     ])
@@ -100,7 +98,7 @@ def process_flags(args) -> CurrentRunSettings | int:
     # is_add_bookmark = "--add" in args or "-a" in args
 
     if is_no_docker_no_redis:
-        print("💧 SUPER DRY RUN: Will skip Redis operations and Docker commands.")
+        print("💧 NO DOCKER NO REDIS: Will skip Redis operations and Docker commands.")
         print("💧 Still creating/updating bookmarks and metadata.")
         if IS_DEBUG:
             print(f"🔍 Debug - is_no_docker_no_redis: {is_no_docker_no_redis}")

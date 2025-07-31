@@ -1,6 +1,3 @@
-# ruff: noqa
-# pylint: skip-file
-
 import os
 import shutil
 
@@ -39,9 +36,6 @@ def handle_bookmark_pre_run_redis_states(
     - Dry Run: No lasting changes will be made. It will still update Redis, but all redis state files will remain the same. NO code changes.
     - is_no_docker_no_redis: We will skip ALL redis operations, and proceed with updates and such that we can.
     - is_save_updates: We ignore the redis_before / redis_after states in our matched bookmark, and save any changes that happen.
-
-
-    It will also handle the super dry run mode, where it will skip all redis operations.
     """
 
     matched_bookmark_path_rel = matched_bookmark_obj["bookmark_path_slash_rel"]

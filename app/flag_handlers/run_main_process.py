@@ -6,25 +6,29 @@ from app.utils.decorators import print_def_name
 
 IS_PRINT_DEF_NAME = True
 
+
 @print_def_name(IS_PRINT_DEF_NAME)
 def handle_main_process(current_run_settings=None):
-    # if IS_DEBUG:
-    #     print(f"🚀 Running main process...")
-    print('')
-    print("🚀 Running main process...")
+    """
+    Handle the running main process.
+    """
 
-
-    # Handle dry and super-dry modes
-    is_dry = current_run_settings.get("is_no_docker") if current_run_settings else False
-    is_super_dry = current_run_settings.get("is_no_docker_no_redis") if current_run_settings else False
-
-    if is_super_dry:
-        print("🛑 Skipping all processing (super-dry mode)")
+    # Handle dry and no docker, no redis modes
+    is_no_docker_no_redis = (current_run_settings.get(
+        "is_no_docker_no_redis") or current_run_settings.get("is_no_docker")) if current_run_settings else False
+    if is_no_docker_no_redis:
+        print("🛑 Skipping all processing (no docker, no redis)")
         return 0
 
+    # Dry Mode
+    is_dry = current_run_settings.get(
+        "is_no_saving_dry_run") if current_run_settings else False
     if is_dry:
         print("💧 Skipping main process (dry mode)")
         return 0
+
+    print('')
+    print("🚀 Running main process...")
 
     try:
         cmd = 'docker exec -it game_processor_backend python ./main.py --run-once --gg_user_id="DEV_GG_USER_ID"'

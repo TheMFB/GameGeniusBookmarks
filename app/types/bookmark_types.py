@@ -60,31 +60,38 @@ ValidRoutedFlags = Literal[
 ]
 
 VALID_FLAGS = [
-    "-a",
-    "--add",
-    "-s",
+    # Overwrite existing bookmark data
     "--save-updates",
-    "-p",
+    "-s",
+    # Save last redis state
+    "--save-last-redis",
+    "-s",
+    # Use another bookmark as a base template
     "--use-preceding-bookmark",
+    "-p",
     "--bookmark-base",
-    "-b",
+    # Use a blank redis state as the base template
     "--blank-slate",
-    "-d",
+    "-b",
+    # Dry run (no saving) - nor will it run the main process
     "--dry-run",
-    "-sd",
+    "-d",
+    "--no-saving",
+    "-ns",
+    # No docker (game processing/main process) run
+    "--no-docker",
     "-nd",
-    "--super-dry-run",
+    # No docker, no redis - updates to states will still be saved
+    "--no-docker-no-redis",
     "-ndr",
     "-ndnr",
+    # Does not pull information from OBS
     "--no-obs",
-    "--save-last-redis",
-    "-v",
-    "--open-video",
-    "-t",
+    # Add tags to the bookmark
     "--tags",
+    "-t",
+    # Show the image of the bookmark
     "--show-image",
-    "--no-saving",
-    "-ns"
 ]
 
 default_processed_flags: CurrentRunSettings = {

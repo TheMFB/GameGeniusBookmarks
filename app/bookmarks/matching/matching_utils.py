@@ -1,5 +1,3 @@
-# import os
-# import difflib
 import re
 from typing import List
 
@@ -14,7 +12,7 @@ from app.utils.bookmark_utils import (
     does_path_exist_in_bookmarks,
 )
 from app.utils.decorators import memoize, print_def_name
-from app.utils.printing_utils import print_dev
+from app.utils.printing_utils import print_color
 
 IS_PRINT_DEF_NAME = True
 
@@ -110,9 +108,6 @@ def build_bookmark_token_map(include_tags_and_descriptions=True):
 
     return bookmark_token_map
 
-
-
-
 # @print_def_name(IS_PRINT_DEF_NAME)
 # def fuzzy_match_bookmark_tokens(cli_bookmark_string: str, include_tags_and_descriptions: bool = True, top_n: int = 5):
 #     token_map = build_bookmark_token_map(include_tags_and_descriptions)
@@ -197,7 +192,9 @@ def interactive_choose_bookmark(matched_bookmark_strings: list[str], context: st
         print(f"  {matched_bookmark_strings[0]}")
     else:
         print("❌ No matches found. Create a new bookmark?")
-        return None
+        # TODO(KERCH): Have an option to list the current live bookmarks and re-prompt the user for action.
+        # TODO(KERCH): Print out the cli string here for reference.
+        # TODO(MFB): When creating a new bookmark, we should look to see if the dir matches any valid dir names and then prompt the user to select a directory / create a new one.
 
     print('')
     print("  0. Cancel")
@@ -243,10 +240,6 @@ def handle_bookmark_matches(
     if not matched_bookmark_strings and not is_prompt_user_for_create_bm_option:
         return 1
 
-    if not current_run_settings_obj:
-        print_dev('++++ 3 DO WE NEED TO CREATE IT HERE? +++', 'red')
-        return 1
-
     # If there is one (exact) match, and we're not prompting to create a new bookmark, return the match
     if len(matched_bookmark_strings) == 1 and not is_prompt_user_for_create_bm_option:
         return convert_exact_bookmark_path_to_bm_obj(matched_bookmark_strings[0])
@@ -256,6 +249,9 @@ def handle_bookmark_matches(
         chosen_bookmark_string = interactive_choose_bookmark(matched_bookmark_strings, context)
         if chosen_bookmark_string:
             if chosen_bookmark_string == "create_new_bookmark":
+                if not current_run_settings_obj:
+                    print_color('❌ Cannot create a bookmark in this mode', 'red')
+                    return 1
                 return handle_create_bookmark_and_parent_dirs(cli_bookmark_string, current_run_settings_obj)
             return convert_exact_bookmark_path_to_bm_obj(chosen_bookmark_string)
         return 1

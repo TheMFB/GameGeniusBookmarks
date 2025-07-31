@@ -16,7 +16,6 @@ Options:
     (bmsave / savebm)
   -p <bookmark>, --use-preceding-bookmark    Use redis_after.json from preceding or specified bookmark as redis_before.json
   -d, --dry-run                              Dry run, Load bookmark only (no main process)
-  -sd, --super-dry-run                       Super dry run, Load bookmark only (no main process, no Redis operations)
   --no-obs                                   No OBS mode, Create bookmarks without OBS connection (for tagging only)
   -b, --blank-slate                          Use initial blank slate Redis state
   --save-last-redis                          Save current Redis state as redis_after.json

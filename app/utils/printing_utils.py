@@ -51,7 +51,7 @@ def print_dev(
     return print_color(text, color)
 
 def pprint_dev(
-        text: str,
+        text,
         color: ColorTypes | None = None,
         is_print: bool = IS_PRINT_DEV
 ):

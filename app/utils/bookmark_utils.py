@@ -45,8 +45,6 @@ def convert_exact_bookmark_path_to_bm_obj(
     # ('/.../obs_bookmark_saves/mfb3/MFB/TEST', '01', '/.../obs_bookmark_saves/mfb3/MFB/TEST/01')
     """
     # TODO(MFB): We may want this to be even more flexible - if both args are a single string, then we may want to look for bookmark names/dir names before we even convert.
-    print('++++ convert_exact_bookmark_path_to_bm_obj')
-    print('++++ args:', args)
 
     bookmark_dir = None
     bookmark_tail_name = None
@@ -82,7 +80,6 @@ def convert_exact_bookmark_path_to_bm_obj(
     elif len(args) == 1:
         # (bookmark_path was provided)
         value = args[0]
-        print('++++ value:', value)
         if ':' in value:
             parts = value.split(':')
         elif '/' in value:
@@ -91,8 +88,6 @@ def convert_exact_bookmark_path_to_bm_obj(
             parts = [value]
     else:
         raise ValueError("Must provide either (bookmark_tail_name, bookmark_dir) or (full_path)")
-
-    print('++++ parts:', parts)
 
     if not parts:
         raise ValueError("Could not parse bookmark bookmark_dir.")

@@ -39,10 +39,10 @@ def handle_which(args):
     if isinstance(bookmark_obj_matches, list):
         if len(bookmark_obj_matches) == 1:
             bookmark_obj_match = bookmark_obj_matches[0]
+            print(f"✅ Match found for: '{cli_bookmark_string}':")
             if is_json:
                 pprint(bookmark_obj_match)
             else:
-                print(f"✅ Match (list) found for: '{cli_bookmark_string}':")
                 print(f"  • {bookmark_obj_match['bookmark_path_colon_rel']}")
             return bookmark_obj_match
 

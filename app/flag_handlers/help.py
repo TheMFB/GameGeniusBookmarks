@@ -3,7 +3,7 @@ from app.consts.bookmarks_consts import IS_PRINT_JUST_CURRENT_DIRECTORY_BOOKMARK
 from app.consts.cli_consts import OPTIONS_HELP
 from app.utils.decorators import print_def_name
 
-IS_PRINT_DEF_NAME = True
+IS_PRINT_DEF_NAME = False
 
 @print_def_name(IS_PRINT_DEF_NAME)
 def handle_help(_args=None):  # ← allow optional args
