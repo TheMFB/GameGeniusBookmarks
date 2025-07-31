@@ -1,8 +1,7 @@
 import os
+from pathlib import Path
 
 from dotenv import load_dotenv
-
-from app.utils.printing_utils import pprint_dev, print_dev
 
 load_dotenv()
 
@@ -51,14 +50,9 @@ RESERVED_BOOKMARK_NAMES = [
 
 ## ABS PATHS ##
 
-# TODO(MFB): There's a better way to grab the repo abs root than defining it in the .env file.
-REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-print_dev('---- REPO_ROOT:')
-pprint_dev(REPO_ROOT)
-ABS_OBS_BOOKMARKS_DIR = os.path.join(REPO_ROOT, "obs_bookmark_saves")
+REPO_ROOT = str(Path(__file__).resolve().parents[2])
 
-print_dev('---- ABS_OBS_BOOKMARKS_DIR:')
-pprint_dev(ABS_OBS_BOOKMARKS_DIR)
+ABS_OBS_BOOKMARKS_DIR = os.path.join(REPO_ROOT, "obs_bookmark_saves")
 
 # REDIS #
 INITIAL_REDIS_STATE_DIR = os.path.join(REPO_ROOT, "app", "bookmarks", "redis_states")
@@ -71,5 +65,5 @@ LOCAL_REDIS_SESSIONS_DB = 0
 if IS_LOCAL_REDIS_DEV:
     REDIS_DUMP_DIR = os.path.join(REPO_ROOT, "standalone_utils", "redis", "redis_dump")
 else:
-    GAME_GENIUS_DIR = os.environ.get('GAME_GENIUS_DIRECTORY', '')
-    REDIS_DUMP_DIR = os.path.join(GAME_GENIUS_DIR, "game-genius/services/session_manager/utils/standalone/redis_dump")
+    GAME_GENIUS_PARENT_DIR = str(Path(REPO_ROOT).resolve().parents[0])
+    REDIS_DUMP_DIR = os.path.join(GAME_GENIUS_PARENT_DIR, "game-genius/services/session_manager/utils/standalone/redis_dump")
