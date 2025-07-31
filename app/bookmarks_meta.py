@@ -3,9 +3,10 @@ import os
 from datetime import datetime
 
 from app.consts.bookmarks_consts import IS_DEBUG, IS_DEBUG_FULL
+from app.obs.videos import construct_full_video_file_path
 from app.types.bookmark_types import MatchedBookmarkObj
 from app.utils.decorators import print_def_name
-from app.videos import construct_full_video_file_path
+from app.utils.printing_utils import pprint_dev, print_dev
 
 IS_PRINT_DEF_NAME = True
 
@@ -155,6 +156,11 @@ def create_bookmark_meta(
     }
 
     meta_file = os.path.join(bookmark_dir_slash_abs, "bookmark_meta.json")
+
+    print_dev('===== CREATE BOOKMARK METADATA:', 'magenta')
+    pprint_dev(meta_data)
+    print_dev('---- meta_file:')
+    pprint_dev(meta_file)
     with open(meta_file, 'w') as f:
         json.dump(meta_data, f, indent=2)
 

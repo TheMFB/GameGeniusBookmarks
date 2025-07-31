@@ -1,5 +1,6 @@
 from app.consts.bookmarks_consts import IS_DEBUG
 from app.consts.cli_consts import OPTIONS_HELP
+from app.obs.obs_utils import open_video_in_obs
 from app.utils.decorators import print_def_name
 
 IS_PRINT_DEF_NAME = True
@@ -27,7 +28,6 @@ def open_video(args) -> int:
     print(f"🎬 Opening video in OBS: {video_path}")
 
     # Import the open_video_in_obs function
-    from app.utils.obs_utils import open_video_in_obs
 
     if open_video_in_obs(video_path):
         print("✅ Video opened successfully!")

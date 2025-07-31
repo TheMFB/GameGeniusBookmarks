@@ -3,11 +3,11 @@ from typing import Callable, cast
 from app.bookmarks.navigation.find_bookmark_as_base import find_bookmark_as_base_match
 from app.consts.bookmarks_consts import IS_DEBUG
 from app.consts.cli_consts import OPTIONS_HELP
-from app.flag_handlers.find_cli_tags import find_cli_tags
 from app.flag_handlers.help import handle_help
 from app.flag_handlers.ls import handle_ls
 from app.flag_handlers.open_video import open_video
 from app.flag_handlers.which import handle_which
+from app.tags.find_cli_tags import find_cli_tags
 from app.types.bookmark_types import (
     VALID_FLAGS,
     CurrentRunSettings,

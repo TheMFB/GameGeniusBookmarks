@@ -41,6 +41,7 @@ class CurrentRunSettings(TypedDict):
     is_overwrite_redis_after: bool
     is_overwrite_redis_before: bool
     is_save_updates: bool
+    is_save_obs: bool
     is_show_image: bool
     is_use_bookmark_as_base: bool
     tags: list[str] | None
@@ -87,6 +88,11 @@ VALID_FLAGS = [
     "-ndnr",
     # Does not pull information from OBS
     "--no-obs",
+    # Save OBS information to the bookmark meta
+    "--save-obs",
+    "-so",
+    "--update-obs",
+    "-uo",
     # Add tags to the bookmark
     "--tags",
     "-t",
@@ -106,6 +112,7 @@ default_processed_flags: CurrentRunSettings = {
     "is_overwrite_redis_after": False,
     "is_overwrite_redis_before": False,
     "is_save_updates": False,
+    "is_save_obs": False,
     "is_show_image": False,
     "is_use_bookmark_as_base": False,
     "tags": None,

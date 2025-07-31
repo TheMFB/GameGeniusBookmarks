@@ -1,12 +1,12 @@
-# type: ignore
 import os
+import time
 
 import obsws_python as obs
 
 from app.consts.bookmarks_consts import IS_DEBUG
+from app.obs.videos import construct_full_video_file_path
 from app.types.bookmark_types import MatchedBookmarkObj
 from app.utils.decorators import print_def_name
-from app.videos import construct_full_video_file_path
 
 IS_PRINT_DEF_NAME = True
 
@@ -57,7 +57,8 @@ def get_media_source_info():
 
         # Get current media source settings
         settings = cl.send("GetInputSettings", {"inputName": "Media Source"})
-        file_path = settings.input_settings.get("local_file", "")
+        file_path = settings.input_settings.get(  # type: ignore
+            "local_file", "")
 
         # Initialize with default values
         timestamp = 0
@@ -71,7 +72,7 @@ def get_media_source_info():
 
                 # Get cursor position from media_status
                 if hasattr(media_status, 'media_cursor'):
-                    timestamp = media_status.media_cursor
+                    timestamp = media_status.media_cursor  # type: ignore
                     print(f"🔍 Raw timestamp: {timestamp}")
 
                     # Convert timestamp to seconds if it's in milliseconds
@@ -122,7 +123,7 @@ def load_bookmark_into_obs(matched_bookmark_obj: MatchedBookmarkObj):
     # TODO(MFB): Look into me and see if this is the bookmark name or the whole bookmark (path+name)
     """Load OBS bookmark directly without using the bookmark manager script"""
 
-    bookmark_info = matched_bookmark_obj["bookmark_info"]
+    bookmark_info = matched_bookmark_obj["bookmark_info"]  # type: ignore
     bookmark_path_slash_rel = matched_bookmark_obj["bookmark_path_slash_rel"]
 
     try:
@@ -147,7 +148,7 @@ def load_bookmark_into_obs(matched_bookmark_obj: MatchedBookmarkObj):
         # Load the media file if different
         current_settings = cl.send(
             "GetInputSettings", {"inputName": "Media Source"})
-        current_file = current_settings.input_settings.get("local_file", "")
+        current_file = current_settings.input_settings.get("local_file", "") # type: ignore
 
         # Construct the full video file path from env variable
         video_filename = bookmark_info.get('video_filename', '')
@@ -169,7 +170,6 @@ def load_bookmark_into_obs(matched_bookmark_obj: MatchedBookmarkObj):
                 }
             })
             # Wait longer for the media to load before trying to set cursor
-            import time
             time.sleep(2)  # Increased from 1 to 2 seconds
 
         # Start playing the media first
@@ -179,7 +179,6 @@ def load_bookmark_into_obs(matched_bookmark_obj: MatchedBookmarkObj):
         })
 
         # Wait a moment for playback to start
-        import time
         time.sleep(0.5)
 
         # Set the timestamp

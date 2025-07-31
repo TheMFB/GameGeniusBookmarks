@@ -8,8 +8,8 @@ from app.obs.handle_bookmark_obs import (
     save_obs_media_info_to_bookmark_meta,
     save_obs_screenshot_to_bookmark_path,
 )
+from app.obs.obs_utils import load_bookmark_into_obs
 from app.types.bookmark_types import CurrentRunSettings, MatchedBookmarkObj
-from app.utils.obs_utils import load_bookmark_into_obs
 
 
 def handle_matched_bookmark_pre_processing(

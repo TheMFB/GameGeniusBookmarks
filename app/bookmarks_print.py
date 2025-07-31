@@ -1,7 +1,6 @@
 import json
 import os
 
-from app.bookmarks.bookmark_tags import compute_hoistable_tags
 from app.bookmarks.bookmarks import get_all_live_bookmarks_in_json_format
 from app.bookmarks.last_used import get_last_used_bookmark
 from app.consts.bookmarks_consts import (
@@ -11,6 +10,7 @@ from app.consts.bookmarks_consts import (
     NON_NAME_BOOKMARK_KEYS,
     RESET_COLOR,
 )
+from app.tags.bookmark_tags import compute_hoistable_tags
 from app.utils.bookmark_utils import abs_to_rel_path
 from app.utils.decorators import only_run_once, print_def_name
 from app.utils.printing_utils import get_embedded_bookmark_file_link, print_color

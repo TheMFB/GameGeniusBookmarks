@@ -7,8 +7,8 @@ from PIL import Image
 
 from app.bookmarks_meta import patch_bookmark_meta, update_missing_bookmark_meta_fields
 from app.consts.bookmarks_consts import IS_DEBUG, SCREENSHOT_SAVE_SCALE
+from app.obs.obs_utils import get_media_source_info
 from app.types.bookmark_types import CurrentRunSettings, MatchedBookmarkObj
-from app.utils.obs_utils import get_media_source_info
 from app.utils.printing_utils import print_color
 
 
@@ -166,3 +166,23 @@ def save_obs_media_info_to_bookmark_meta(
                         f"📋 Updated missing bookmark obs metadata with tags: {current_run_settings_obj['tags']}")
 
     return 0
+
+
+def handle_bookmark_obs_pre_run(
+    matched_bookmark_obj: MatchedBookmarkObj,
+    current_run_settings_obj: CurrentRunSettings,
+):
+    """
+    This function is used to handle the pre-run of a bookmark.
+
+    If the bookmark meta does not have all of the video meta information, or the --save-obs flag is set, we will update the metadata. If not, we will pull the metadata and load the state into OBS.
+    """
+
+    if current_run_settings_obj["is_no_obs"]:
+        return
+
+    if not os.path.exists(matched_bookmark_obj["bookmark_path_slash_abs"]):
+        print_color(f"❌ Could not create bookmark metadata - bookmark directory doesn't exist: {matched_bookmark_obj['bookmark_path_slash_abs']}", 'red')
+        return 1
+
+    pass
