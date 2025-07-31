@@ -1,9 +1,9 @@
 import json
 import os
 
+from app.bookmarks.bookmark_tags import compute_hoistable_tags
 from app.bookmarks.bookmarks import get_all_live_bookmarks_in_json_format
 from app.bookmarks.last_used import get_last_used_bookmark
-from app.bookmarks_meta import compute_hoistable_tags
 from app.consts.bookmarks_consts import (
     ABS_OBS_BOOKMARKS_DIR,
     HIDDEN_COLOR,
@@ -28,20 +28,7 @@ def is_ancestor_path(candidate, target):
     return target == candidate or target.startswith(candidate + ":")
 
 
-@print_def_name(False) # This is loaded for all bookmarks to create a tree of bookmarks and tags.
-def collect_all_bookmark_tags_recursive(node):
-    """Recursively gather all tags from bookmarks inside a folder"""
-    all_tags = []
 
-    for _key, value in node.items():
-        if isinstance(value, dict):
-            if value.get('type') == 'bookmark':
-                all_tags.append(set(value.get('tags', [])))
-            else:
-                # Recurse into sub_dir
-                all_tags.extend(collect_all_bookmark_tags_recursive(value))
-
-    return all_tags
 
 @print_def_name(False)
 @only_run_once
@@ -100,6 +87,7 @@ def print_all_live_directories_and_bookmarks(
         bm_sub_dir_tags = set()
         if 'tags' in bookmark_dir_json_without_parent and bookmark_dir_json_without_parent['tags']:
             bm_sub_dir_tags = set(bookmark_dir_json_without_parent['tags'])
+        # TODO(MFB): Do we want to do this?
         # else:
         #     # Prefer node's own tags if present, else compute from children
         #     all_tags = collect_all_bookmark_tags_recursive(bookmark_dir_json_without_parent)

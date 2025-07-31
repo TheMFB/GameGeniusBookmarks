@@ -25,14 +25,6 @@ def load_folder_meta(folder_path):
             return {}
     return {}
 
-# TODO(MFB): Do we have enough to make a tags folder?
-@print_def_name(IS_PRINT_DEF_NAME)
-def compute_hoistable_tags(list_of_tag_sets):
-    """Given a list of tag sets (one per bookmark), return the set of tags shared by all -- in order to bring them up to the next parent folder"""
-    if not list_of_tag_sets:
-        return set()
-    return set.intersection(*list_of_tag_sets)
-
 
 @print_def_name(IS_PRINT_DEF_NAME)
 def load_bookmark_meta_from_rel(bookmark_dir_rel):

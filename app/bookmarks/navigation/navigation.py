@@ -7,7 +7,6 @@ from app.types.bookmark_types import MatchedBookmarkObj
 from app.utils.bookmark_utils import convert_exact_bookmark_path_to_bm_obj
 from app.utils.decorators import print_def_name
 
-IS_AGGREGATE_TAGS = False
 IS_PRINT_DEF_NAME = True
 
 # Likely not used:
