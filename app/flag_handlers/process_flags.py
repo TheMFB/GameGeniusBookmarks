@@ -1,25 +1,24 @@
-from typing import cast
+from typing import Callable, cast
 
 from app.bookmarks.navigation.find_bookmark_as_base import find_bookmark_as_base_match
 from app.consts.bookmarks_consts import IS_DEBUG
 from app.consts.cli_consts import OPTIONS_HELP
-from app.flag_handlers import (
-    find_cli_tags,
-    handle_help,
-    handle_ls,
-    handle_which,
-    open_video,
-)
+from app.flag_handlers.find_cli_tags import find_cli_tags
+from app.flag_handlers.help import handle_help
+from app.flag_handlers.ls import handle_ls
+from app.flag_handlers.open_video import open_video
+from app.flag_handlers.which import handle_which
 from app.types.bookmark_types import (
     VALID_FLAGS,
     CurrentRunSettings,
+    ValidRoutedFlags,
     default_processed_flags,
 )
 from app.utils.decorators import print_def_name
 
 IS_PRINT_DEF_NAME = True
 
-flag_route_handler_map = {
+flag_route_handler_map: dict[ValidRoutedFlags, Callable] = {
     "--help": handle_help,
     "-h": handle_help,
     "--ls": handle_ls,
@@ -39,6 +38,7 @@ def process_flags(args) -> CurrentRunSettings | int:
     tags = []
 
     # Handle all flags that terminate the program afterwards (routed flags)
+    # for flag, handler in flag_route_handler_map.items():
     for flag, handler in flag_route_handler_map.items():
         if flag in args:
             handler(args)

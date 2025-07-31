@@ -4,7 +4,7 @@ import os
 import obsws_python as obs
 
 from app.consts.bookmarks_consts import IS_DEBUG
-from app.types import MatchedBookmarkObj
+from app.types.bookmark_types import MatchedBookmarkObj
 from app.utils.decorators import print_def_name
 from app.videos import construct_full_video_file_path
 

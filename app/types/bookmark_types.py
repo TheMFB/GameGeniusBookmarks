@@ -1,4 +1,4 @@
-from typing import NotRequired, TypedDict
+from typing import Literal, NotRequired, TypedDict
 
 
 class BookmarkPathDictionary(TypedDict):
@@ -47,6 +47,17 @@ class CurrentRunSettings(TypedDict):
 
 
 # CLI FLAGS #
+
+ValidRoutedFlags = Literal[
+    "--help",
+    "-h",
+    "--ls",
+    "-ls",
+    "--which",
+    "-w",
+    "--open-video",
+    "-v"
+]
 
 VALID_FLAGS = [
     "-a",

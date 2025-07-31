@@ -1,5 +1,7 @@
-from app.bookmarks import get_last_used_bookmark
-from app.bookmarks.navigation import resolve_navigation_bookmark_from_last_used
+from app.bookmarks.last_used import get_last_used_bookmark
+from app.bookmarks.navigation.navigation import (
+    resolve_navigation_bookmark_from_last_used,
+)
 from app.types.bookmark_types import MatchedBookmarkObj
 from app.utils.decorators import print_def_name
 from app.utils.printing_utils import print_color

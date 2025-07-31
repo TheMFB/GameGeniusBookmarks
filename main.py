@@ -9,13 +9,24 @@ from app.bookmarks.handle_matched_bookmark_pre_processing import (
 )
 from app.bookmarks.matching.bookmark_matching import find_best_bookmark_match_or_create
 from app.bookmarks_print import print_all_live_directories_and_bookmarks
-from app.flag_handlers import CurrentRunSettings, handle_main_process, process_flags
+from app.flag_handlers.process_flags import process_flags
+from app.flag_handlers.run_main_process import handle_main_process
+from app.types.bookmark_types import CurrentRunSettings
 from app.utils.printing_utils import print_color
 
 
 # TODO(MFB): There's got to be a better way to handle the return errors and exit codes.
 def main():
-    args = sys.argv[1:]
+    """
+    This is the main entry point for the bookmark CLI. See --help for more information. README.md has more information.
+    """
+
+    # ARGS
+
+    if not sys.argv or len(sys.argv) == 1:
+        args = ["-h"]
+    else:
+        args = sys.argv[1:]
 
     # FLAGS
 
