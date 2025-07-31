@@ -62,8 +62,8 @@ def find_best_bookmark_match_or_create(
             cli_bookmark_string,
             [cli_bookmark_string],
             current_run_settings_obj,
-            is_prompt_user_for_selection,
-            is_prompt_user_for_create_bm_option=is_prompt_user_for_create_bm_option,
+            is_prompt_user_for_selection=False,
+            is_prompt_user_for_create_bm_option=False,
             context=context
         )
 
