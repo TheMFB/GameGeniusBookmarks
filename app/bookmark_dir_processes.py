@@ -11,7 +11,7 @@ IS_PRINT_DEF_NAME = True
 @memoize
 def get_all_valid_root_dir_names() -> list[str]:
     """Collect all folder paths under ABS_OBS_BOOKMARKS_DIR that contain folder_meta.json (excluding archive)"""
-    print('++++ get_all_valid_root_dir_names')
+
     try:
         if IS_DEBUG:
             print(f"🔍 Scanning for folders inside: {ABS_OBS_BOOKMARKS_DIR}")

@@ -1,14 +1,11 @@
 import json
 import os
-from datetime import datetime
 
 from app.bookmarks.bookmarks import create_bookmark_symlinks
 from app.consts.bookmarks_consts import ABS_OBS_BOOKMARKS_DIR
 from app.types.bookmark_types import MatchedBookmarkObj
 from app.utils.decorators import memoize, print_def_name
-from app.utils.printing_utils import pprint, print_color
 
-IS_AGGREGATE_TAGS = False
 IS_PRINT_DEF_NAME = True
 
 
@@ -39,31 +36,4 @@ def get_last_used_bookmark() -> MatchedBookmarkObj | None:
                 return json.load(f)
         except json.JSONDecodeError:
             return None
-    return None
-
-
-@print_def_name(IS_PRINT_DEF_NAME)
-def get_last_used_bookmark_display():
-    """Get a formatted string for displaying the last used bookmark."""
-    last_used = get_last_used_bookmark()
-    if last_used:
-        folder_name = last_used.get("folder_name", "unknown")
-        bookmark_tail_name = last_used.get("bookmark_tail_name", "unknown")
-        timestamp = last_used.get("timestamp", "")
-
-        print_color(
-            '??? ---- get_last_used_bookmark_display folder_name:', 'red')
-        pprint(folder_name)
-        print_color(
-            '??? ---- get_last_used_bookmark_display bookmark_tail_name:', 'red')
-        pprint(bookmark_tail_name)
-
-        # Format timestamp for display
-        try:
-            dt = datetime.fromisoformat(timestamp)
-            formatted_time = dt.strftime("%Y-%m-%d %H:%M:%S")
-        except:
-            formatted_time = timestamp
-
-        return f"{folder_name}:{bookmark_tail_name} (last used: {formatted_time})"
     return None
