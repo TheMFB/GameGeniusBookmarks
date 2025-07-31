@@ -36,7 +36,7 @@ def save_obs_screenshot_to_bookmark_path(
                 "sourceName": "Media Source",  # TODO: Make configurable if needed
                 "imageFormat": "png"
             })
-            image_data = response.image_data
+            image_data = response.image_data # type: ignore
             if image_data.startswith("data:image/png;base64,"):
                 image_data = image_data.replace(
                     "data:image/png;base64,", "")

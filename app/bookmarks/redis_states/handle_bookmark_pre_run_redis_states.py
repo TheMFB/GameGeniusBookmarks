@@ -1,3 +1,6 @@
+# ruff: noqa
+# pylint: skip-file
+
 import os
 import shutil
 
@@ -44,8 +47,10 @@ def handle_bookmark_pre_run_redis_states(
     matched_bookmark_path_rel = matched_bookmark_obj["bookmark_path_slash_rel"]
     matched_bookmark_path_abs = matched_bookmark_obj["bookmark_path_slash_abs"]
 
-    is_overwrite_bm_redis_before = current_run_settings_obj["is_save_updates"]
-    is_no_saving_dry_run = current_run_settings_obj["is_no_saving_dry_run"]
+    # TODO(MFB): Not Finished.
+
+    _is_overwrite_bm_redis_before = current_run_settings_obj["is_save_updates"]
+    _is_no_saving_dry_run = current_run_settings_obj["is_no_saving_dry_run"]
 
     is_skip_redis_processing = current_run_settings_obj["is_no_docker_no_redis"]
     is_blank_slate = current_run_settings_obj["is_blank_slate"]
@@ -57,7 +62,7 @@ def handle_bookmark_pre_run_redis_states(
 
     bm_redis_before_path = os.path.join(
         matched_bookmark_path_abs, "redis_before.json")
-    is_bm_redis_before_exists = os.path.exists(bm_redis_before_path)
+    _is_bm_redis_before_exists = os.path.exists(bm_redis_before_path)
 
     if is_skip_redis_processing:
         # TODO(MFB): Do we want to skip ALL redis operations, or just the ones that save?

@@ -23,7 +23,7 @@ def handle_copy_bookmark_redis_state_to_redis_dump(
     bookmark_redis_state_filename = "redis_" + bm_redis_state_type + ".json"
     bookmark_redis_state_path = os.path.join(bookmark_path_slash_abs, bookmark_redis_state_filename)
 
-    redis_temp_state_filename = redis_temp_state_filename + ".json"
+    redis_temp_state_filename_json = redis_temp_state_filename + ".json"
     redis_dump_state_path = os.path.join(REDIS_DUMP_DIR, redis_temp_state_filename)
 
     # Make sure the source file exists
@@ -34,7 +34,7 @@ def handle_copy_bookmark_redis_state_to_redis_dump(
 
     if IS_DEBUG:
         print(
-            f"💾 Saving {bookmark_redis_state_path} to Redis Temp as {redis_temp_state_filename}...")
+            f"💾 Saving {bookmark_redis_state_path} to Redis Temp as {redis_temp_state_filename_json}...")
 
     # if not run_redis_command('export', 'bookmark_temp_after'):
     #     print("❌ Failed to export final Redis state")

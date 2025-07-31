@@ -6,7 +6,7 @@ from app.utils.decorators import print_def_name
 IS_PRINT_DEF_NAME = True
 
 @print_def_name(IS_PRINT_DEF_NAME)
-def find_bookmark_as_base_match(args) -> MatchedBookmarkObj | int | str: # NAVIGATION_COMMANDS
+def find_bookmark_as_base_match(args) -> MatchedBookmarkObj | int | str | None: # NAVIGATION_COMMANDS
     # Find the index of the use_preceding_bookmark flag
     cli_nav_arg_string = None
     preceding_flags = ["--use-preceding-bookmark", "-p", "--bookmark-base", "-bb"]

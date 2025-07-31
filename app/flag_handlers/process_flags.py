@@ -1,3 +1,5 @@
+from typing import cast
+
 from app.bookmarks.navigation.find_bookmark_as_base import find_bookmark_as_base_match
 from app.consts.bookmarks_consts import IS_DEBUG
 from app.consts.cli_consts import OPTIONS_HELP
@@ -113,10 +115,9 @@ def process_flags(args) -> CurrentRunSettings | int:
         if isinstance(base_match_results, int):
             print(f"❌ find_bookmark_as_base_match Error: {base_match_results}")
             return base_match_results
-        elif isinstance(base_match_results, str):
+        if isinstance(base_match_results, str):
             cli_nav_arg_string = base_match_results
-        else:
-            base_bookmark_obj = base_match_results
+        base_bookmark_obj = base_match_results
 
 
     # Parse tags from command line
@@ -130,19 +131,20 @@ def process_flags(args) -> CurrentRunSettings | int:
         print(f"🔍 Debug - is_blank_slate: {is_blank_slate}")
         print(f"🔍 Debug - is_no_obs: {is_no_obs}")
 
-    return {
+    return cast(CurrentRunSettings, {
         **default_processed_flags,
-        "is_overwrite_redis_after": is_overwrite_redis_after,
-        "is_save_updates": is_save_updates,
-        "is_use_bookmark_as_base": is_use_bookmark_as_base,
+        "base_bookmark_obj": base_bookmark_obj,
+        "cli_nav_arg_string": cli_nav_arg_string,
+        # "is_add_bookmark": is_add_bookmark,
         "is_blank_slate": is_blank_slate,
-        "is_no_saving_dry_run": is_no_saving_dry_run,
         "is_no_docker": is_no_docker,
         "is_no_docker_no_redis": is_no_docker_no_redis,
         "is_no_obs": is_no_obs,
+        "is_no_saving_dry_run": is_no_saving_dry_run,
+        "is_overwrite_redis_after": is_overwrite_redis_after,
+        # "is_overwrite_redis_before": is_overwrite_redis_before,
+        "is_save_updates": is_save_updates,
         "is_show_image": is_show_image,
-        # "is_add_bookmark": is_add_bookmark,
-        "cli_nav_arg_string": cli_nav_arg_string,
-        "base_bookmark_obj": base_bookmark_obj,
+        "is_use_bookmark_as_base": is_use_bookmark_as_base,
         "tags": tags,
-    }
+    })

@@ -1,10 +1,8 @@
 from app.bookmarks import get_last_used_bookmark
 from app.bookmarks.navigation import resolve_navigation_bookmark_from_last_used
 from app.types.bookmark_types import MatchedBookmarkObj
-from app.utils.bookmark_utils import convert_exact_bookmark_path_to_bm_obj
 from app.utils.decorators import print_def_name
-from app.utils.printing_utils import pprint, print_color
-
+from app.utils.printing_utils import print_color
 
 IS_PRINT_DEF_NAME = True
 

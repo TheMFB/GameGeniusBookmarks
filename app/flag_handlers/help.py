@@ -7,7 +7,7 @@ from app.utils.decorators import print_def_name
 IS_PRINT_DEF_NAME = True
 
 @print_def_name(IS_PRINT_DEF_NAME)
-def handle_help(args=None):  # ← allow optional args
+def handle_help(_args=None):  # ← allow optional args
     print(OPTIONS_HELP)
 
 

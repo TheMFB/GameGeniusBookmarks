@@ -14,6 +14,7 @@ from app.utils.bookmark_utils import (
     does_path_exist_in_bookmarks,
 )
 from app.utils.decorators import memoize, print_def_name
+from app.utils.printing_utils import print_dev
 
 IS_PRINT_DEF_NAME = True
 
@@ -50,7 +51,7 @@ def token_match_bookmarks(query_string, folder_dir):
         ":", " ").replace("/", " ").split())
     matches = []
 
-    for path in all_bookmark_objects.keys():
+    for path in all_bookmark_objects:
         path_tokens = set(re.split(r"[-_/]", path.lower()))
         if query_tokens.issubset(path_tokens):
             matches.append(path)
@@ -212,14 +213,15 @@ def interactive_choose_bookmark(matched_bookmark_strings: list[str], context: st
             if choice.lower() == "c" and context != "bookmark_template":
                 print("🆕 Creating new bookmark...")
                 return "create_new_bookmark"
+
             choice_num = int(choice)
             if 1 <= choice_num <= len(matched_bookmark_strings):
                 selected = matched_bookmark_strings[choice_num - 1]
                 print(f"✅ Selected: {selected}")
                 return selected
-            else:
-                print(
-                    f"❌ Invalid input. Choose between 0 and {len(matched_bookmark_strings)}.")
+            print(
+                f"❌ Invalid input. Choose between 0 and {len(matched_bookmark_strings)}.")
+
         except ValueError:
             print("❌ Please enter a number.")
 
@@ -232,7 +234,7 @@ def handle_bookmark_matches(
     is_prompt_user_for_selection: bool = False,
     is_prompt_user_for_create_bm_option: bool = False,
     context: str | None = None,
-) -> MatchedBookmarkObj | int |  List[MatchedBookmarkObj] | None:
+    ) -> MatchedBookmarkObj | int |  List[MatchedBookmarkObj] | None:
     """
     Handle the results of a bookmark match.
     """
@@ -241,22 +243,25 @@ def handle_bookmark_matches(
     if not matched_bookmark_strings and not is_prompt_user_for_create_bm_option:
         return 1
 
+    if not current_run_settings_obj:
+        print_dev('++++ 3 DO WE NEED TO CREATE IT HERE? +++', 'red')
+        return 1
+
     # If there is one (exact) match, and we're not prompting to create a new bookmark, return the match
     if len(matched_bookmark_strings) == 1 and not is_prompt_user_for_create_bm_option:
         return convert_exact_bookmark_path_to_bm_obj(matched_bookmark_strings[0])
-    else:
-        # If there are multiple matches, or we're prompting to create a new bookmark, prompt the user to choose a bookmark
-        if is_prompt_user_for_selection:
-            chosen_bookmark_string = interactive_choose_bookmark(matched_bookmark_strings, context)
-            if chosen_bookmark_string:
-                if chosen_bookmark_string == "create_new_bookmark":
-                    return handle_create_bookmark_and_parent_dirs(cli_bookmark_string, current_run_settings_obj)
-                return convert_exact_bookmark_path_to_bm_obj(chosen_bookmark_string)
-            return 1
 
-        # If we just want all matches and no user interaction, return the matched bookmark objects
-        else:
-            return [convert_exact_bookmark_path_to_bm_obj(matched_bookmark_string) for matched_bookmark_string in matched_bookmark_strings]
+    # If there are multiple matches, or we're prompting to create a new bookmark, prompt the user to choose a bookmark
+    if is_prompt_user_for_selection:
+        chosen_bookmark_string = interactive_choose_bookmark(matched_bookmark_strings, context)
+        if chosen_bookmark_string:
+            if chosen_bookmark_string == "create_new_bookmark":
+                return handle_create_bookmark_and_parent_dirs(cli_bookmark_string, current_run_settings_obj)
+            return convert_exact_bookmark_path_to_bm_obj(chosen_bookmark_string)
+        return 1
+
+    # If we just want all matches and no user interaction, return the matched bookmark objects
+    return [convert_exact_bookmark_path_to_bm_obj(matched_bookmark_string) for matched_bookmark_string in matched_bookmark_strings]
 
 
 
@@ -441,4 +446,3 @@ def find_partial_substring_matches_by_bookmark_tokens(
 #             matches.append(live_bm_path_slash_rel)
 
 #     return matches
-

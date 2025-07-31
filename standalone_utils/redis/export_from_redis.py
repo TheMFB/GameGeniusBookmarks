@@ -53,7 +53,7 @@ def export_from_redis(filename:Literal["bookmark_temp", "bookmark_temp_after"]):
                 data[key.decode("utf-8")] = try_json_load(decoded)
         else:
             print(
-                f"Skipping key {key.decode('utf-8')} of type {key_type.decode('utf-8')}")
+                f"Skipping key {key.decode('utf-8')} of type {key_type.decode('utf-8')}") # type: ignore
 
     os.makedirs(REDIS_DUMP_DIR, exist_ok=True)
 

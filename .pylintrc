@@ -3,7 +3,7 @@ ignored-modules=cv2
 generated-members=cv2.*
 
 [MESSAGES CONTROL]
-disable=C0111,C0114,E0401,E1136,C0301,W0718,W0719,W0707,W0401,W0614,W0603,W1514,R0912
+disable=C0111,C0114,E0401,E1136,C0301,W0718,W0719,W0707,W0401,W0614,W0603,W1514,R0912,R0913,R0917,R0911,R0914,R0915,R1711
 
 # C0111: Missing docstring
 # C0114: Missing docstring
@@ -19,6 +19,12 @@ disable=C0111,C0114,E0401,E1136,C0301,W0718,W0719,W0707,W0401,W0614,W0603,W1514,
 # W0603: Global statement
 # W1514: Using open without explicitly specifying an encoding
 # R0912: Too many branches
+# R0913: Too many arguments
+# R0917: Too many return statements
+# R9011: Too many return statements
+# R9014: Too many return statements
+# R0915: Too many statements
+# R1711: Useless return statement at end of function
 
 [MASTER]
 disable=E0401

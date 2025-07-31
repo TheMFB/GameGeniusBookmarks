@@ -1,4 +1,5 @@
 import os
+import shutil
 import subprocess
 from typing import Literal
 
@@ -27,11 +28,8 @@ def run_redis_command(
             # Local mode: call export_from_redis.py or load_into_redis.py directly
             if load_or_export == "export":
                 return export_from_redis(location)
-            elif load_or_export == "load":
-                return load_into_redis_local(location)
-            else:
-                print(f"❌ Unsupported Redis command: {load_or_export}")
-                return False
+            # load_or_export == "load":
+            return load_into_redis_local(location)
 
         else:
             # Docker mode
@@ -50,6 +48,7 @@ def run_redis_command(
             if IS_DEBUG:
                 print(f"✅ Redis command succeeded: {load_or_export} {location}")
             return True
+
 
     except Exception as e:
         print(f"❌ Error running Redis command: {load_or_export} {location}")
@@ -72,7 +71,6 @@ def copy_blank_redis_state_to_bm_redis_before(bookmark_path_slash_abs: str):
         bookmark_path_slash_abs, "friendly_redis_before.json")
 
     try:
-        import shutil
 
         if os.path.exists(initial_redis):
             shutil.copy2(initial_redis, current_before)
@@ -120,7 +118,6 @@ def handle_copy_redis_state_from_base_to_bookmark(
         return False
 
     try:
-        import shutil
         shutil.copy2(base_redis_after_state_path, target_redis_before_state_path)
         print(
             f"✅ Copied redis_after.json from '{base_bookmark_obj['bookmark_path_slash_rel']}' to '{target_bookmark_obj['bookmark_path_slash_rel']}' redis_before.json")

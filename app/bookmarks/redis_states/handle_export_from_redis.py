@@ -1,6 +1,7 @@
 import os
 import shutil
 import subprocess
+from typing import Literal
 
 from app.bookmarks.redis_states.redis_friendly_converter import (
     convert_redis_state_file_to_friendly_and_save,
@@ -12,8 +13,10 @@ from standalone_utils.redis.load_into_redis_local import load_into_redis_local
 
 IS_PRINT_DEF_NAME = True
 
-def get_temp_redis_state_name(before_or_after: Literal["before", "after"]) -> str:
-    return f"bookmark_temp{'_after' if before_or_after == 'after' else ''}"
+def get_temp_redis_state_name(before_or_after: Literal["before", "after"]) -> Literal["bookmark_temp", "bookmark_temp_after"]:
+    if before_or_after == "before":
+        return "bookmark_temp"
+    return "bookmark_temp_after"
 
 # TODO(MFB): Does this need separate params for the dump and the bookmark?
 @print_def_name(IS_PRINT_DEF_NAME)
@@ -58,25 +61,24 @@ def handle_export_from_redis_to_redis_dump(
         if IS_LOCAL_REDIS_DEV:
             return load_into_redis_local(temp_redis_state_name)
 
-        else:
-            # Docker mode
-            cmd = f"docker exec -it session_manager python -m utils.standalone.redis_load {temp_redis_state_name}"
-            result = subprocess.run(
-                cmd, shell=True, capture_output=True, text=True, check=False)
+        # Docker mode
+        cmd = f"docker exec -it session_manager python -m utils.standalone.redis_load {temp_redis_state_name}"
+        result = subprocess.run(
+            cmd, shell=True, capture_output=True, text=True, check=False)
 
-            if result.returncode != 0:
-                print(f"❌ Redis command failed: {cmd}")
-                print(f"   Error: {result.stderr}")
-                print(f"   Output: {result.stdout}")
-                return False
+        if result.returncode != 0:
+            print(f"❌ Redis command failed: {cmd}")
+            print(f"   Error: {result.stderr}")
+            print(f"   Output: {result.stdout}")
+            return False
 
-            if IS_DEBUG:
-                print(
-                    f"✅ Redis command succeeded: {cmd}")
-            return True
+        if IS_DEBUG:
+            print(
+                f"✅ Redis command succeeded: {cmd}")
+        return True
 
     except Exception as e:
-        print(f"❌ Error running Redis command: {cmd}")
+        print("❌ Error running Redis command")
         print(f"   Exception: {e}")
         return False
 

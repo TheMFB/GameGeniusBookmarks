@@ -5,7 +5,7 @@ from app.utils.decorators import print_def_name
 IS_PRINT_DEF_NAME = True
 
 @print_def_name(IS_PRINT_DEF_NAME)
-def open_video(args):
+def open_video(args) -> int:
     # Find the index of the open_video flag
     video_flags = ["--open-video", "-v"]
     video_path = None
@@ -32,8 +32,6 @@ def open_video(args):
     if open_video_in_obs(video_path):
         print("✅ Video opened successfully!")
         return 0
-    else:
-        print("❌ Failed to open video in OBS")
-        return 1
 
-    return video_path
+    print("❌ Failed to open video in OBS")
+    return 1

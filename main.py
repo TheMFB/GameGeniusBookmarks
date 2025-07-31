@@ -10,14 +10,11 @@ from app.bookmarks.handle_matched_bookmark_pre_processing import (
 from app.bookmarks.matching.bookmark_matching import find_best_bookmark_match_or_create
 from app.bookmarks_print import print_all_live_directories_and_bookmarks
 from app.flag_handlers import CurrentRunSettings, handle_main_process, process_flags
-from app.types import MatchedBookmarkObj
 from app.utils.printing_utils import print_color
 
 
 # TODO(MFB): There's got to be a better way to handle the return errors and exit codes.
 def main():
-    matched_bookmark_obj: MatchedBookmarkObj | None = None
-
     args = sys.argv[1:]
 
     # FLAGS
@@ -36,6 +33,9 @@ def main():
     )
     if isinstance(matched_bookmark_obj, int) or not matched_bookmark_obj:
         print_color("❌ Bookmark not found and user did not create a new bookmark", 'red')
+        return matched_bookmark_obj
+    if isinstance(matched_bookmark_obj, list):
+        print_color("❌ Multiple bookmarks matched", 'red')
         return matched_bookmark_obj
 
     # HANDLE MATCHED BOOKMARK PRE-PROCESSING
@@ -71,14 +71,14 @@ def main():
 
 
 if __name__ == "__main__":
-    exit_code = 0
+    exit_code = 0 # pylint: disable=C0103
     try:
         exit_code = main()
     except Exception:
         print_color('==== Exception: ====', 'red')
         traceback.print_exc()
-        exit_code = 1
+        exit_code = 1 # pylint: disable=C0103
     finally:
         # Print all folders and bookmarks with current one highlighted
         print_all_live_directories_and_bookmarks()
-        sys.exit(exit_code)
+        sys.exit(exit_code if isinstance(exit_code, (int, type(None))) else 1)

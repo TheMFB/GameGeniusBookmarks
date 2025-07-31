@@ -1,5 +1,3 @@
-from app.utils.printing_utils import *
-from app.bookmark_dir_processes import parse_cli_bookmark_args
 from app.bookmarks.matching.bookmark_matching import find_best_bookmark_match_or_create
 from app.utils.decorators import print_def_name
 from app.utils.printing_utils import pprint
@@ -25,7 +23,7 @@ def handle_which(args):
         print("Usage: bm <bookmark_path> --which")
         return 1
 
-    cli_bookmark_string = parse_cli_bookmark_args(args_copy[0])
+    cli_bookmark_string = args_copy[0]
     if not cli_bookmark_string:
         print(f"❌ No bookmark name provided before {which_flag}")
         print("Usage: bm <bookmark_path> --which")
@@ -34,23 +32,28 @@ def handle_which(args):
     bookmark_obj_matches = find_best_bookmark_match_or_create(
         cli_bookmark_string, is_prompt_user_for_selection=False)
 
-    if not bookmark_obj_matches:
+    if not bookmark_obj_matches or isinstance(bookmark_obj_matches, int):
         print(f"❌ No bookmarks matched for '{cli_bookmark_string}'")
         return 1
 
-    if len(bookmark_obj_matches) == 1:
-        bookmark_obj_match = bookmark_obj_matches[0]
-        if is_json:
-            pprint(bookmark_obj_match)
-        else:
-            print("✅ Match found:")
-            print(f"  • {bookmark_obj_match['bookmark_path_colon_rel']}")
-        return 0
+    if isinstance(bookmark_obj_matches, list):
+        if len(bookmark_obj_matches) == 1:
+            bookmark_obj_match = bookmark_obj_matches[0]
+            if is_json:
+                pprint(bookmark_obj_match)
+            else:
+                print(f"✅ Match (list) found for: '{cli_bookmark_string}':")
+                print(f"  • {bookmark_obj_match['bookmark_path_colon_rel']}")
+            return bookmark_obj_match
 
-    print(f"⚠️  Multiple bookmarks matched for '{cli_bookmark_string}':")
+        print(f"⚠️  Multiple bookmarks matched for '{cli_bookmark_string}':")
+        for bookmark_obj_match in bookmark_obj_matches:
+            print(f"  • {bookmark_obj_match['bookmark_path_colon_rel']}")
+        return 1
+
+    print(f"✅ Match found for: '{cli_bookmark_string}':")
     if is_json:
         pprint(bookmark_obj_matches)
     else:
-        for bookmark_obj_match in bookmark_obj_matches:
-            print(f"  • {bookmark_obj_match['bookmark_path_colon_rel']}")
+        print(f"  • {bookmark_obj_matches['bookmark_path_colon_rel']}")
     return 1

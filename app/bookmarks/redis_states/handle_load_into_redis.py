@@ -45,24 +45,23 @@ def handle_load_redis_dump_into_redis():
         if IS_LOCAL_REDIS_DEV:
             return load_into_redis_local("bookmark_temp")
 
-        else:
-            # Docker mode
-            cmd = "docker exec -it session_manager python -m utils.standalone.redis_load bookmark_temp"
-            result = subprocess.run(cmd, shell=True, capture_output=True, text=True, check=False)
+        # Docker mode
+        cmd = "docker exec -it session_manager python -m utils.standalone.redis_load bookmark_temp"
+        result = subprocess.run(cmd, shell=True, capture_output=True, text=True, check=False)
 
-            if result.returncode != 0:
-                print(f"❌ Redis command failed: {cmd}")
-                print(f"   Error: {result.stderr}")
-                print(f"   Output: {result.stdout}")
-                return False
+        if result.returncode != 0:
+            print(f"❌ Redis command failed: {cmd}")
+            print(f"   Error: {result.stderr}")
+            print(f"   Output: {result.stdout}")
+            return False
 
-            if IS_DEBUG:
-                print(
-                    f"✅ Redis command succeeded: {cmd}")
-            return True
+        if IS_DEBUG:
+            print(
+                f"✅ Redis command succeeded: {cmd}")
+        return True
 
     except Exception as e:
-        print(f"❌ Error running Redis command: {cmd}")
+        print("❌ Error running Redis command:")
         print(f"   Exception: {e}")
         return False
 
@@ -86,4 +85,3 @@ def handle_load_into_redis(matched_bookmark_obj: MatchedBookmarkObj):
         if IS_DEBUG:
             print(f"🧹 Cleaned up temp file: {temp_redis_path}")
     return True
-

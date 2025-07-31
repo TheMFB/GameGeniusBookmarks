@@ -16,11 +16,12 @@ def handle_bookmark_post_run_redis_states(
 
 
     """
-    matched_bookmark_path_rel = matched_bookmark_obj["bookmark_path_slash_rel"]
+    # TODO(MFB): Not Finished.
+    # matched_bookmark_path_rel = matched_bookmark_obj["bookmark_path_slash_rel"]
     matched_bookmark_path_abs = matched_bookmark_obj["bookmark_path_slash_abs"]
 
     is_overwrite_bm_redis_after = current_run_settings_obj["is_save_updates"] # Will overwrite existing redis_before.json
-    is_skip_redis_processing = current_run_settings_obj["is_no_docker_no_redis"]
+    # is_skip_redis_processing = current_run_settings_obj["is_no_docker_no_redis"]
 
     bm_redis_after_path = os.path.join(matched_bookmark_path_abs, "redis_after.json")
 

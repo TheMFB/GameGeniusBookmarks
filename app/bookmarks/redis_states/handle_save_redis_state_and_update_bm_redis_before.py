@@ -5,7 +5,7 @@ from app.bookmarks.redis_states.bookmarks_redis import run_redis_command
 from app.bookmarks.redis_states.redis_friendly_converter import (
     convert_redis_state_file_to_friendly_and_save,
 )
-from app.consts.bookmarks_consts import IS_DEBUG, REDIS_DUMP_DIR  # type: ignore
+from app.consts.bookmarks_consts import IS_DEBUG, REDIS_DUMP_DIR
 from app.utils.decorators import print_def_name
 from app.utils.printing_utils import pprint, print_color
 

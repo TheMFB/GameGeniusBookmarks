@@ -73,4 +73,3 @@ if IS_LOCAL_REDIS_DEV:
 else:
     GAME_GENIUS_DIR = os.environ.get('GAME_GENIUS_DIRECTORY', '')
     REDIS_DUMP_DIR = os.path.join(GAME_GENIUS_DIR, "game-genius/services/session_manager/utils/standalone/redis_dump")
-

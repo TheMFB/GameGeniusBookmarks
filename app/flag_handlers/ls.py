@@ -9,7 +9,7 @@ from app.utils.decorators import print_def_name
 IS_PRINT_DEF_NAME = True
 
 @print_def_name(IS_PRINT_DEF_NAME)
-def handle_ls(args):
+def handle_ls(_args):
     # Remove -ls so we can check what came before it
     # TODO(MFB): Redo this.
     return 0

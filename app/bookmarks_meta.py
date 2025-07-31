@@ -96,8 +96,8 @@ def create_directory_meta(
     dir_absolute_path,
     description="",
     tags=None,
-    is_patch_updates=False,
-    is_overwrite=False,
+    _is_patch_updates=False, # TODO(MFB): Implement or remove
+    _is_overwrite=False, # TODO(MFB): Implement or remove
 ):
     """Create or update folder_meta.json file"""
 
@@ -276,4 +276,3 @@ def update_missing_bookmark_meta_fields(
         json.dump(meta_data, f, indent=2)
     if IS_DEBUG:
         print(f"📋 Patched bookmark metadata with tags: {tags}")
-

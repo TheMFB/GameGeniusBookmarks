@@ -120,39 +120,10 @@ def create_new_bookmark_dir():
         if create_directory_meta(dir_abs_path, directory_name):
             print(f"✅ Created new folder: '{directory_name}'")
             return dir_abs_path
-        else:
-            print("❌ Failed to create folder metadata")
-            return None
+
+        print("❌ Failed to create folder metadata")
+        return None
 
     except Exception as e:
         print(f"❌ Error creating new folder: {e}")
         return None
-
-
-# TODO(MFB): This needs to be updated to pull the bookmark name from the end and the rest as the folder_path.
-
-@print_def_name(IS_PRINT_DEF_NAME)
-def parse_cli_bookmark_args(args_for_run_bookmarks):
-    """
-    Parses a bookmark path in the format 'folder:bookmark' or 'folder:subfolder:bookmark'
-    and returns (dir_colon_rel, bookmark_tail_name).
-
-    - Example: 'kerch:comp:m01:01-np' becomes:
-        dir_colon_rel: 'kerch:comp:m01'
-        bookmark_tail_name: '01-np'
-    - Example: 'respawn-allies:ra-00-main-screen' becomes:
-        dir_colon_rel: 'respawn-allies'
-        bookmark_tail_name: 'ra-00-main-screen'
-    """
-    if not args_for_run_bookmarks or ':' not in args_for_run_bookmarks:
-        return None, args_for_run_bookmarks  # no folder path
-
-    parts = args_for_run_bookmarks.split(':')
-    # Take the last entry as the bookmark name and the rest as the folder name
-    dir_colon_rel = ':'.join(parts[:-1])
-    bookmark_tail_name = parts[-1]
-
-    print(
-        f"🎯 Specified folder: '{dir_colon_rel}', bookmark path: '{bookmark_tail_name}'")
-
-    return dir_colon_rel, bookmark_tail_name

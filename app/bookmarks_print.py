@@ -33,7 +33,7 @@ def collect_all_bookmark_tags_recursive(node):
     """Recursively gather all tags from bookmarks inside a folder"""
     all_tags = []
 
-    for key, value in node.items():
+    for _key, value in node.items():
         if isinstance(value, dict):
             if value.get('type') == 'bookmark':
                 all_tags.append(set(value.get('tags', [])))
@@ -139,8 +139,7 @@ def print_all_live_directories_and_bookmarks(
             tree_bm_path_slash_rel = tree_bm_path_col_rel.replace(':', '/')
             tree_bm_path_slash_abs = os.path.join(ABS_OBS_BOOKMARKS_DIR, tree_bm_path_slash_rel)
 
-            is_current = parent_bm_dir_col_rel and current_bm_path_colon_rel.startswith(
-                tree_bm_path_col_rel)
+            is_current = parent_bm_dir_col_rel and current_bm_path_colon_rel and current_bm_path_colon_rel.startswith(tree_bm_path_col_rel)
 
             if is_print_just_current_directory_bookmarks and not is_parent_dir_current:
                 continue
