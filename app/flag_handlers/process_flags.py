@@ -1,6 +1,8 @@
 from typing import Callable, cast
 
-from app.bookmarks.navigation.find_bookmark_as_base import find_bookmark_as_base_match
+from app.bookmarks.navigation.find_alt_source_bookmark import (
+    find_alt_source_bookmark_match,
+)
 from app.consts.bookmarks_consts import IS_DEBUG
 from app.consts.cli_consts import OPTIONS_HELP
 from app.flag_handlers.help import handle_help
@@ -34,7 +36,7 @@ flag_route_handler_map: dict[ValidRoutedFlags, Callable] = {
 def process_flags(args) -> CurrentRunSettings | int:
     """Process command line flags and return a dictionary of flag values."""
     cli_nav_arg_string = None
-    base_bookmark_obj = None
+    source_bookmark_obj = None
     tags = []
 
     # Handle all flags that terminate the program afterwards (routed flags)
@@ -64,11 +66,12 @@ def process_flags(args) -> CurrentRunSettings | int:
         "--save-updates",
         "-s"
     ])
-    is_use_bookmark_as_base = is_flag_in_args([
+    # TODO(MFB): --continue
+    is_use_alt_source_bookmark = is_flag_in_args([
         "--use-preceding-bookmark",
         "-p",
-        "--bookmark-base",
-        "-bb"
+        "--bookmark-alt-source",
+        "-bs"
     ])
     is_blank_slate = is_flag_in_args([
         "--blank-slate",
@@ -107,15 +110,15 @@ def process_flags(args) -> CurrentRunSettings | int:
         print(f"🔍 Debug - is_no_docker: {is_no_docker}")
         # TODO(MFB): Print what this does (different f)
 
-    # Parse the source bookmark for --use-preceding-bookmark if specified
-    if is_use_bookmark_as_base:
-        base_match_results = find_bookmark_as_base_match(args)
-        if isinstance(base_match_results, int):
-            print(f"❌ find_bookmark_as_base_match Error: {base_match_results}")
-            return base_match_results
-        if isinstance(base_match_results, str):
-            cli_nav_arg_string = base_match_results
-        base_bookmark_obj = base_match_results
+    # Parse the alt source bookmark for --use-preceding-bookmark if specified
+    if is_use_alt_source_bookmark:
+        source_match_results = find_alt_source_bookmark_match(args)
+        if isinstance(source_match_results, int):
+            print(f"❌ find_alt_source_bookmark_match Error: {source_match_results}")
+            return source_match_results
+        if isinstance(source_match_results, str):
+            cli_nav_arg_string = source_match_results
+        source_bookmark_obj = source_match_results
 
 
     # Parse tags from command line
@@ -131,7 +134,7 @@ def process_flags(args) -> CurrentRunSettings | int:
 
     return cast(CurrentRunSettings, {
         **default_processed_flags,
-        "base_bookmark_obj": base_bookmark_obj,
+        "source_bookmark_obj": source_bookmark_obj,
         "cli_nav_arg_string": cli_nav_arg_string,
         # "is_add_bookmark": is_add_bookmark,
         "is_blank_slate": is_blank_slate,
@@ -140,9 +143,9 @@ def process_flags(args) -> CurrentRunSettings | int:
         "is_no_obs": is_no_obs,
         "is_no_saving_dry_run": is_no_saving_dry_run,
         "is_overwrite_redis_after": is_overwrite_redis_after,
-        # "is_overwrite_redis_before": is_overwrite_redis_before,
+        # "is_overwrite_bm_redis_before": is_overwrite_bm_redis_before,
         "is_save_updates": is_save_updates,
         "is_show_image": is_show_image,
-        "is_use_bookmark_as_base": is_use_bookmark_as_base,
+        "is_use_alt_source_bookmark": is_use_alt_source_bookmark,
         "tags": tags,
     })

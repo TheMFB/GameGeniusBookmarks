@@ -92,49 +92,49 @@ def copy_blank_redis_state_to_bm_redis_before(bookmark_path_slash_abs: str):
         return False
 
 
-def handle_copy_redis_state_from_base_to_bookmark(
-        base_bookmark_obj: MatchedBookmarkObj | None,
+def handle_copy_redis_state_from_alt_source_to_bookmark(
+        source_bookmark_obj: MatchedBookmarkObj | None,
         target_bookmark_obj: MatchedBookmarkObj | None
 ):
     """
     Copy redis_after.json from a specific bookmark to redis_before.json of target bookmark
-    If base_bookmark_obj is None, we will copy the initial_redis_before.json to redis_before.json of target bookmark
+    If source_bookmark_obj is None, we will copy the initial_redis_before.json to redis_before.json of target bookmark
     """
 
-    if base_bookmark_obj is None or target_bookmark_obj is None:
+    if source_bookmark_obj is None or target_bookmark_obj is None:
         return False
 
     # TODO(MFB): Does this need to load into redis, from here, or should
-    base_bm_path_abs = base_bookmark_obj.get("bookmark_path_slash_abs")
+    source_bm_path_abs = source_bookmark_obj.get("bookmark_path_slash_abs")
     target_bm_path_abs = target_bookmark_obj.get("bookmark_path_slash_abs")
 
-    # Copy redis_after.json from base to redis_before.json of target
-    base_redis_after_state_path = os.path.join(base_bm_path_abs, "redis_after.json")
+    # Copy redis_after.json from alt source to redis_before.json of target
+    source_redis_after_state_path = os.path.join(source_bm_path_abs, "redis_after.json")
     target_redis_before_state_path = os.path.join(target_bm_path_abs, "redis_before.json")
 
-    if not os.path.exists(base_redis_after_state_path):
+    if not os.path.exists(source_redis_after_state_path):
         print(
-            f"❌ Base bookmark redis state '{base_redis_after_state_path}' does not exist")
+            f"❌ alt source bookmark redis state '{source_redis_after_state_path}' does not exist")
         return False
 
     try:
-        shutil.copy2(base_redis_after_state_path, target_redis_before_state_path)
+        shutil.copy2(source_redis_after_state_path, target_redis_before_state_path)
         print(
-            f"✅ Copied redis_after.json from '{base_bookmark_obj['bookmark_path_slash_rel']}' to '{target_bookmark_obj['bookmark_path_slash_rel']}' redis_before.json")
+            f"✅ Copied redis_after.json from '{source_bookmark_obj['bookmark_path_slash_rel']}' to '{target_bookmark_obj['bookmark_path_slash_rel']}' redis_before.json")
 
         # Also copy friendly version if it exists
-        base_friendly_after_state_path = os.path.join(base_bm_path_abs, "friendly_redis_after.json")
+        source_friendly_after_state_path = os.path.join(source_bm_path_abs, "friendly_redis_after.json")
         target_friendly_before_state_path = os.path.join(target_bm_path_abs, "friendly_redis_before.json")
 
-        if os.path.exists(base_friendly_after_state_path):
-            shutil.copy2(base_friendly_after_state_path, target_friendly_before_state_path)
+        if os.path.exists(source_friendly_after_state_path):
+            shutil.copy2(source_friendly_after_state_path, target_friendly_before_state_path)
             print(
-                f"✅ Copied friendly_redis_after.json from '{base_bookmark_obj['bookmark_path_slash_rel']}' to '{target_bookmark_obj['bookmark_path_slash_rel']}' friendly_redis_before.json")
+                f"✅ Copied friendly_redis_after.json from '{source_bookmark_obj['bookmark_path_slash_rel']}' to '{target_bookmark_obj['bookmark_path_slash_rel']}' friendly_redis_before.json")
         else:
-            print("⚠️  base bookmark has no friendly_redis_after.json")
+            print("⚠️  alt source bookmark has no friendly_redis_after.json")
 
         return True
     except Exception as e:
         print(
-            f"❌ Error copying Redis state from '{base_redis_after_state_path}:{target_redis_before_state_path}': {e}")
+            f"❌ Error copying Redis state from '{source_redis_after_state_path}:{target_redis_before_state_path}': {e}")
         return False

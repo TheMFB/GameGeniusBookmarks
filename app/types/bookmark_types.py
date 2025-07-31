@@ -30,7 +30,7 @@ class MatchedBookmarkObj(BookmarkPathDictionary):
     bookmark_info: NotRequired[BookmarkInfo]
 
 class CurrentRunSettings(TypedDict):
-    base_bookmark_obj: MatchedBookmarkObj | None
+    source_bookmark_obj: MatchedBookmarkObj | None
     cli_nav_arg_string: list[str] | None
     is_add_bookmark: bool
     is_blank_slate: bool
@@ -39,11 +39,11 @@ class CurrentRunSettings(TypedDict):
     is_no_obs: bool
     is_no_saving_dry_run: bool
     is_overwrite_redis_after: bool
-    is_overwrite_redis_before: bool
+    is_overwrite_bm_redis_before: bool
     is_save_updates: bool
     is_save_obs: bool
     is_show_image: bool
-    is_use_bookmark_as_base: bool
+    is_use_alt_source_bookmark: bool
     tags: list[str] | None
 
 
@@ -67,11 +67,11 @@ VALID_FLAGS = [
     # Save last redis state
     "--save-last-redis",
     "-s",
-    # Use another bookmark as a base template
+    # Use another bookmark as a alt source template
     "--use-preceding-bookmark",
     "-p",
-    "--bookmark-base",
-    # Use a blank redis state as the base template
+    "--bookmark-alt-source",
+    # Use a blank redis state as the alt source template
     "--blank-slate",
     "-b",
     # Dry run (no saving) - nor will it run the main process
@@ -101,20 +101,20 @@ VALID_FLAGS = [
 ]
 
 default_processed_flags: CurrentRunSettings = {
-    "base_bookmark_obj": None,
+    "source_bookmark_obj": None,
     "cli_nav_arg_string": None,
-    "is_add_bookmark": True,
+    "is_add_bookmark": True, # TODO(MFB): Do we use this?
     "is_blank_slate": False,
     "is_no_docker": False,
     "is_no_docker_no_redis": False,
     "is_no_obs": False,
     "is_no_saving_dry_run": False,
     "is_overwrite_redis_after": False,
-    "is_overwrite_redis_before": False,
+    "is_overwrite_bm_redis_before": False,
     "is_save_updates": False,
     "is_save_obs": False,
     "is_show_image": False,
-    "is_use_bookmark_as_base": False,
+    "is_use_alt_source_bookmark": False,
     "tags": None,
 }
 

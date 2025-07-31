@@ -1,6 +1,8 @@
 import os
 
-from app.bookmarks.navigation.process_base_bookmark import process_base_bookmark
+from app.bookmarks.navigation.process_alt_source_bookmark import (
+    process_alt_source_bookmark,
+)
 from app.bookmarks.redis_states.handle_bookmark_pre_run_redis_states import (
     handle_bookmark_pre_run_redis_states,
 )
@@ -29,8 +31,9 @@ def handle_matched_bookmark_pre_processing(
         print(f"❌ Bookmark Path does not exist: '{matched_bookmark_path_abs}'")
         return 1
 
-    # NAV BASE BOOKMARK
-    process_base_bookmark(matched_bookmark_obj, current_run_settings_obj)
+    # NAV ALT SOURCE BOOKMARK
+
+    process_alt_source_bookmark(matched_bookmark_obj, current_run_settings_obj)
 
     # REDIS STATES
 

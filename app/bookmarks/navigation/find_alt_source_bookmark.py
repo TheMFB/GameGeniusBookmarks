@@ -6,10 +6,10 @@ from app.utils.decorators import print_def_name
 IS_PRINT_DEF_NAME = True
 
 @print_def_name(IS_PRINT_DEF_NAME)
-def find_bookmark_as_base_match(args) -> MatchedBookmarkObj | int | str | None: # NAVIGATION_COMMANDS
+def find_alt_source_bookmark_match(args) -> MatchedBookmarkObj | int | str | None: # NAVIGATION_COMMANDS
     # Find the index of the use_preceding_bookmark flag
     cli_nav_arg_string = None
-    preceding_flags = ["--use-preceding-bookmark", "-p", "--bookmark-base", "-bb"]
+    preceding_flags = ["--use-preceding-bookmark", "-p", "--bookmark-alt-source", "-bs"]
     for flag in preceding_flags:
         if flag in args:
             flag_index = args.index(flag)
@@ -17,11 +17,11 @@ def find_bookmark_as_base_match(args) -> MatchedBookmarkObj | int | str | None: 
             if flag_index + 1 < len(args) and not args[flag_index + 1].startswith("-"):
                 cli_nav_arg_string = args[flag_index + 1]
                 if IS_DEBUG:
-                    print(f"🔍 Found source bookmark argument: '{cli_nav_arg_string}'")
+                    print(f"🔍 Found alt source bookmark argument: '{cli_nav_arg_string}'")
             break
 
     if IS_DEBUG:
-        print(f"🔍 Debug - is_use_bookmark_as_base: {cli_nav_arg_string}")
+        print(f"🔍 Debug - is_use_alt_source_bookmark: {cli_nav_arg_string}")
 
     if not cli_nav_arg_string:
         return "previous"
@@ -36,7 +36,7 @@ def find_bookmark_as_base_match(args) -> MatchedBookmarkObj | int | str | None: 
                                 )
         if IS_DEBUG:
             print(
-                f"🔍 Debug - find_bookmark_as_base_match matching_bookmark_obj: {matching_bookmark_obj}")
+                f"🔍 Debug - find_alt_source_bookmark_match matching_bookmark_obj: {matching_bookmark_obj}")
         if not matching_bookmark_obj:
             print(f"❌ No bookmark found for '{cli_nav_arg_string}'")
             return None
