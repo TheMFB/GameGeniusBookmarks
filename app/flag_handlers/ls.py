@@ -2,7 +2,7 @@
 # import json
 # from app.consts.bookmarks_consts import IS_PRINT_JUST_CURRENT_DIRECTORY_BOOKMARKS_ON_LS
 # from app.bookmark_dir_processes import find_bookmark_dir_by_name
-# from app.bookmarks_print import print_all_live_directories_and_bookmarks
+# from app.bookmarks.bookmarks_print import print_all_live_directories_and_bookmarks
 # from app.bookmarks.matching.matching_utils import token_match_bookmarks
 from app.utils.decorators import print_def_name
 
@@ -44,7 +44,7 @@ def handle_ls(_args):
     # folder_path = find_bookmark_dir_by_name(folder_arg)
 
     # if folder_path:
-    #     from app.bookmarks_print import print_bookmarks_in_directory
+    #     from app.bookmarks.bookmarks_print import print_bookmarks_in_directory
     #     print_bookmarks_in_directory(folder_path)
     #     return 0
     # else:

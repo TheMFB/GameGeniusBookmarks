@@ -5,10 +5,8 @@ from app.bookmarks.redis_states.handle_bookmark_pre_run_redis_states import (
     handle_bookmark_pre_run_redis_states,
 )
 from app.obs.handle_bookmark_obs import (
-    save_obs_media_info_to_bookmark_meta,
-    save_obs_screenshot_to_bookmark_path,
+    handle_bookmark_obs_pre_run,
 )
-from app.obs.obs_utils import load_bookmark_into_obs
 from app.types.bookmark_types import CurrentRunSettings, MatchedBookmarkObj
 
 
@@ -40,17 +38,8 @@ def handle_matched_bookmark_pre_processing(
 
     # OBS
 
-    if current_run_settings_obj["is_no_obs"]:
-        print("📷 No-OBS mode: Skipping screenshot capture and metadata update")
-    else:
-        # Load the OBS bookmark using the matched name
-        is_obs_loaded = load_bookmark_into_obs(matched_bookmark_obj)
-        if not is_obs_loaded:
-            print("❌ Failed to load OBS bookmark")
-            return 1
-
-        # Save screenshot and metadata
-        save_obs_screenshot_to_bookmark_path(matched_bookmark_obj, current_run_settings_obj)
-        save_obs_media_info_to_bookmark_meta(matched_bookmark_obj, current_run_settings_obj)
+    obs_results = handle_bookmark_obs_pre_run(matched_bookmark_obj, current_run_settings_obj)
+    if obs_results != 0:
+        return obs_results
 
     return matched_bookmark_obj

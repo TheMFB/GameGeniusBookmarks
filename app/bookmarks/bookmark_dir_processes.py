@@ -1,6 +1,6 @@
 import os
 
-from app.bookmarks_meta import create_directory_meta
+from app.bookmarks.bookmarks_meta import create_directory_meta
 from app.consts.bookmarks_consts import ABS_OBS_BOOKMARKS_DIR, EXCLUDED_DIRS, IS_DEBUG
 from app.utils.decorators import memoize, print_def_name
 from app.utils.printing_utils import pprint, pprint_dev, print_dev

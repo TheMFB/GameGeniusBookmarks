@@ -1,6 +1,6 @@
 import os
 
-from app.bookmarks_meta import create_bookmark_meta, create_directory_meta
+from app.bookmarks.bookmarks_meta import create_bookmark_meta, create_directory_meta
 from app.consts.bookmarks_consts import ABS_OBS_BOOKMARKS_DIR, IS_DEBUG
 from app.types.bookmark_types import CurrentRunSettings, MatchedBookmarkObj
 from app.utils.bookmark_utils import convert_exact_bookmark_path_to_bm_obj

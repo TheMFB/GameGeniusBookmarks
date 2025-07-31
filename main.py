@@ -1,16 +1,16 @@
 import sys
 import traceback
 
-from app.bookmarks.handle_matched_bookmark_post_processing import (
+from app.bookmarks.bookmarks_print import print_all_live_directories_and_bookmarks
+from app.bookmarks.matching.bookmark_matching import find_best_bookmark_match_or_create
+from app.bookmarks.matching.handle_matched_bookmark_post_processing import (
     handle_matched_bookmark_post_processing,
 )
-from app.bookmarks.handle_matched_bookmark_pre_processing import (
+from app.bookmarks.matching.handle_matched_bookmark_pre_processing import (
     handle_matched_bookmark_pre_processing,
 )
-from app.bookmarks.matching.bookmark_matching import find_best_bookmark_match_or_create
-from app.bookmarks_print import print_all_live_directories_and_bookmarks
 from app.flag_handlers.process_flags import process_flags
-from app.flag_handlers.run_main_process import handle_main_process
+from app.run_main_process import handle_main_process
 from app.types.bookmark_types import CurrentRunSettings
 from app.utils.printing_utils import print_color
 

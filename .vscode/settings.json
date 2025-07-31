@@ -20,5 +20,5 @@
         "**/venv/**"
     ],
     "cursorpyright.analysis.stubPath": "./typings",
-    "cursorpyright.analysis.typeCheckingMode": "off"
+    "cursorpyright.analysis.typeCheckingMode": "off",
 }

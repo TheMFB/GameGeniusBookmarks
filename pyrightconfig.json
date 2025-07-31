@@ -17,5 +17,5 @@
   "reportUnknownParameterType": false,
   "reportMissingParameterType": false,
   "reportUnknownArgumentType": false,
-  "reportAny": false,
+  "reportAny": false
 }

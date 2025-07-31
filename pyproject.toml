@@ -48,7 +48,7 @@ disable = [
 
 [tool.pyright]
 # Disable type checking for this project
-typeCheckingMode = "off"
+# typeCheckingMode = "off"
 # Or if you want to keep some type checking but ignore specific errors:
 # reportUnknownArgumentType = false
 # reportUnknownVariableType = false

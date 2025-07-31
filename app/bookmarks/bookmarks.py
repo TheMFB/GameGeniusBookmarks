@@ -2,8 +2,8 @@ import json
 import os
 import shutil
 
-from app.bookmark_dir_processes import get_all_valid_root_dir_names
-from app.bookmarks_meta import (
+from app.bookmarks.bookmark_dir_processes import get_all_valid_root_dir_names
+from app.bookmarks.bookmarks_meta import (
     load_bookmark_meta_from_abs,
     load_bookmark_meta_from_rel,
     load_folder_meta,
