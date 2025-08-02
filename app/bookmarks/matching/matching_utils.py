@@ -175,10 +175,16 @@ def build_bookmark_token_map(include_tags_and_descriptions=True):
 
 # TODO(MFB): Pull out, and then add a "create new bookmark" option.
 @print_def_name(IS_PRINT_DEF_NAME)
-def interactive_choose_bookmark(matched_bookmark_strings: list[str], context: str | None = None) -> str | None:
+def interactive_choose_bookmark(
+    matched_bookmark_strings: list[str],
+    current_run_settings_obj: CurrentRunSettings | None = None,
+    context: str | None = None
+) -> str | None:
     """
     Ask the user to choose a bookmark fr om a list of matches.
     """
+    is_add_bookmark = current_run_settings_obj.get("is_add_bookmark", False)
+
     if len(matched_bookmark_strings) > 1:
         if context == "bookmark_template":
             print("🤔 Multiple results found for the bookmark template.")
@@ -191,6 +197,8 @@ def interactive_choose_bookmark(matched_bookmark_strings: list[str], context: st
         print(f"✅ One result found: {matched_bookmark_strings[0]}")
         print(f"  {matched_bookmark_strings[0]}")
     else:
+        if is_add_bookmark:
+            return "create_new_bookmark"
         print("❌ No matches found. Create a new bookmark?")
         # TODO(KERCH): Have an option to list the current live bookmarks and re-prompt the user for action.
         # TODO(KERCH): Print out the cli string here for reference.
@@ -246,7 +254,7 @@ def handle_bookmark_matches(
 
     # If there are multiple matches, or we're prompting to create a new bookmark, prompt the user to choose a bookmark
     if is_prompt_user_for_selection:
-        chosen_bookmark_string = interactive_choose_bookmark(matched_bookmark_strings, context)
+        chosen_bookmark_string = interactive_choose_bookmark(matched_bookmark_strings, current_run_settings_obj, context)
         if chosen_bookmark_string:
             if chosen_bookmark_string == "create_new_bookmark":
                 if not current_run_settings_obj:

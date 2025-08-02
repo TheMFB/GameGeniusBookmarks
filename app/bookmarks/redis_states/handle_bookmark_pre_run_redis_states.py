@@ -6,10 +6,10 @@ from app.bookmarks.redis_states.file_copy_handlers.handle_copy_redis_dump_state_
 from app.bookmarks.redis_states.file_copy_handlers.handle_copy_source_bm_redis_state_to_redis_dump import (
     handle_copy_source_bm_redis_state_to_redis_dump,
 )
-from app.bookmarks.redis_states.handle_export_from_redis import (
+from app.bookmarks.redis_states.redis_state_handlers.handle_export_from_redis_to_redis_dump import (
     handle_export_from_redis_to_redis_dump,
 )
-from app.bookmarks.redis_states.handle_load_into_redis import (
+from app.bookmarks.redis_states.redis_state_handlers.handle_load_redis_dump_into_redis import (
     handle_load_redis_dump_into_redis,
 )
 from app.consts.bookmarks_consts import (
@@ -105,7 +105,7 @@ def handle_bookmark_pre_run_redis_states(
     # Origin : Redis -> Export Redis state to the temp file.
     if origin_bm_redis_state_path == 'redis':
         result = handle_export_from_redis_to_redis_dump(
-            before_or_after="before"
+            filename="bookmark_temp"
         )
         if result != 0:
             return result

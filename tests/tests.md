@@ -14,6 +14,8 @@ __ handle_export_from_redis_to_redis_dump __
 __ create_bookmark_symlinks __
 ✅ Integrated workflow completed successfully!
 
+- TODO(MFB): redis friendly converters
+
 
 # Minimal Success:
 - ls bookmarks
@@ -24,3 +26,6 @@ __ create_bookmark_symlinks __
 - load old bookmarks states
 
 
+- TODO(MFB): If we are not local, our dump should be the session_manager dump.
+
+- TODO(MFB): Is there an issue with dry-run and then still trying to pull/save from Redis (if we are not local?)

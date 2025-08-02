@@ -103,7 +103,7 @@ VALID_FLAGS = [
 default_processed_flags: CurrentRunSettings = {
     "source_bookmark_obj": None,
     "cli_nav_arg_string": None,
-    "is_add_bookmark": True, # TODO(MFB): Do we use this?
+    "is_add_bookmark": True,
     "is_blank_slate": False,
     "is_no_docker": False,
     "is_no_docker_no_redis": False,

@@ -98,7 +98,7 @@ def process_flags(args) -> CurrentRunSettings | int:
     is_show_image = is_flag_in_args([
         "--show-image"
     ])
-    # is_add_bookmark = "--add" in args or "-a" in args
+    is_add_bookmark = "--add" in args or "-a" in args
 
     if is_no_docker_no_redis:
         print("💧 NO DOCKER NO REDIS: Will skip Redis operations and Docker commands.")
@@ -136,7 +136,7 @@ def process_flags(args) -> CurrentRunSettings | int:
         **default_processed_flags,
         "source_bookmark_obj": source_bookmark_obj,
         "cli_nav_arg_string": cli_nav_arg_string,
-        # "is_add_bookmark": is_add_bookmark,
+        "is_add_bookmark": is_add_bookmark,
         "is_blank_slate": is_blank_slate,
         "is_no_docker": is_no_docker,
         "is_no_docker_no_redis": is_no_docker_no_redis,

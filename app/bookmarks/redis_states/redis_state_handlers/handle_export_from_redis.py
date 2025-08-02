@@ -6,10 +6,12 @@ from typing import Literal
 from app.bookmarks.redis_states.redis_friendly_converter import (
     convert_redis_state_file_to_friendly_and_save,
 )
+from app.bookmarks.redis_states.redis_state_handlers.local_load_redis_dump_into_redis import (
+    local_load_redis_dump_into_redis,
+)
 from app.consts.bookmarks_consts import IS_DEBUG, IS_LOCAL_REDIS_DEV, REDIS_DUMP_DIR
 from app.types.bookmark_types import MatchedBookmarkObj
 from app.utils.decorators import print_def_name
-from standalone_utils.redis.load_into_redis_local import load_into_redis_local
 
 IS_PRINT_DEF_NAME = True
 
@@ -60,11 +62,11 @@ def handle_export_from_redis_to_redis_dump(
 
     try:
         if IS_LOCAL_REDIS_DEV:
-            load_into_redis_local(temp_redis_state_name)
+            local_load_redis_dump_into_redis(temp_redis_state_name)
             return 0
 
         # Docker mode
-        cmd = f"docker exec -it session_manager python -m utils.standalone.redis_load {temp_redis_state_name}"
+        cmd = f"docker exec -it session_manager python -m utils.standalone.redis_export {temp_redis_state_name}"
         result = subprocess.run(
             cmd, shell=True, capture_output=True, text=True, check=False)
 
@@ -80,7 +82,7 @@ def handle_export_from_redis_to_redis_dump(
         return 0
 
     except Exception as e:
-        print("❌ Error running Redis command")
+        print("❌ Error running Redis Export to Redis Dump")
         print(f"   Exception: {e}")
         return 1
 

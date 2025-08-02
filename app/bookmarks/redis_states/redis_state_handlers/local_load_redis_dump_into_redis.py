@@ -10,9 +10,16 @@ from app.consts.bookmarks_consts import (
     LOCAL_REDIS_SESSIONS_PORT,
     REDIS_DUMP_DIR,
 )
+from app.utils.decorators import print_def_name
+
+IS_PRINT_DEF_NAME = True
 
 
-def load_into_redis_local(filename:Literal["bookmark_temp", "bookmark_temp_after"]) -> int:
+@print_def_name(IS_PRINT_DEF_NAME)
+def local_load_redis_dump_into_redis(filename:Literal["bookmark_temp", "bookmark_temp_after"]) -> int:
+    """
+    This function is used to load the redis state from the redis dump directory into the redis database.
+    """
 
     json_filepath = f"{REDIS_DUMP_DIR}/{filename}.json"
 

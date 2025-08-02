@@ -3,12 +3,14 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
+from app.utils.printing_utils import pprint_dev, print_dev
+
 load_dotenv()
 
 ## DEV CONSTANTS ##
 
-# IS_DEBUG = True
-IS_DEBUG = False
+IS_DEBUG = True
+# IS_DEBUG = False
 # IS_DEBUG_FULL = True
 IS_DEBUG_FULL = False
 IS_DEBUG_PRINT_ALL_BOOKMARKS_JSON = False
@@ -66,3 +68,5 @@ if IS_LOCAL_REDIS_DEV:
 else:
     GAME_GENIUS_PARENT_DIR = str(Path(REPO_ROOT).resolve().parents[0])
     REDIS_DUMP_DIR = os.path.join(GAME_GENIUS_PARENT_DIR, "game-genius/services/session_manager/utils/standalone/redis_dump")
+    print_dev('---- REDIS_DUMP_DIR:', 'magenta')
+    pprint_dev(REDIS_DUMP_DIR)
