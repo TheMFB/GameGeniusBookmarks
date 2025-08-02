@@ -197,9 +197,9 @@ def interactive_choose_bookmark(matched_bookmark_strings: list[str], context: st
         # TODO(MFB): When creating a new bookmark, we should look to see if the dir matches any valid dir names and then prompt the user to select a directory / create a new one.
 
     print('')
-    print("  0. Cancel")
     if context != "bookmark_template":
         print("  c. Create new bookmark")
+    print("  0. Cancel")
 
     while True:
         try:

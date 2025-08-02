@@ -37,7 +37,7 @@ def handle_copy_bm_redis_before_to_redis_dump(
 
 
 @print_def_name(IS_PRINT_DEF_NAME)
-def handle_load_redis_dump_into_redis():
+def handle_load_redis_dump_into_redis() -> int:
     """
     This function is used to load the redis state from the redis dump directory into the redis database.
     """
@@ -53,17 +53,17 @@ def handle_load_redis_dump_into_redis():
             print(f"❌ Redis command failed: {cmd}")
             print(f"   Error: {result.stderr}")
             print(f"   Output: {result.stdout}")
-            return False
+            return 1
 
         if IS_DEBUG:
             print(
                 f"✅ Redis command succeeded: {cmd}")
-        return True
+        return 0
 
     except Exception as e:
         print("❌ Error running Redis command:")
         print(f"   Exception: {e}")
-        return False
+        return 1
 
 
 @print_def_name(IS_PRINT_DEF_NAME)

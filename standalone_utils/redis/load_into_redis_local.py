@@ -1,6 +1,5 @@
 import json
 import os
-import sys
 from typing import Literal
 
 import redis
@@ -13,7 +12,7 @@ from app.consts.bookmarks_consts import (
 )
 
 
-def load_into_redis_local(filename:Literal["bookmark_temp", "bookmark_temp_after"]):
+def load_into_redis_local(filename:Literal["bookmark_temp", "bookmark_temp_after"]) -> int:
 
     json_filepath = f"{REDIS_DUMP_DIR}/{filename}.json"
 
@@ -35,7 +34,7 @@ def load_into_redis_local(filename:Literal["bookmark_temp", "bookmark_temp_after
 
     if data is None:
         print("No backup file found or failed to load.")
-        sys.exit(1)
+        return 1
 
     session_ids = set()
 
@@ -53,3 +52,4 @@ def load_into_redis_local(filename:Literal["bookmark_temp", "bookmark_temp_after
 
 
     print("Redis data restored!")
+    return 0

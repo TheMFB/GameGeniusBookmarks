@@ -6,7 +6,7 @@ from typing import Literal
 IS_PRINT_DEV = True
 
 # TODO(): Pull out the dev log printing into a separate file, so that we don't have to import everything when we *.
-def get_embedded_bookmark_file_link(dir_abs_slash_path, text):
+def get_embedded_bookmark_file_link(dir_abs_slash_path: str, text: str):
     if text == "📁":
         file_path = os.path.join(dir_abs_slash_path, "folder_meta.json")
     else:

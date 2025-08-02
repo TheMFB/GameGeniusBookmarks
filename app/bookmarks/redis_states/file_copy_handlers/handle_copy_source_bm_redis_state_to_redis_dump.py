@@ -11,7 +11,7 @@ IS_PRINT_DEF_NAME = True
 def handle_copy_source_bm_redis_state_to_redis_dump(
     source_bookmark_path_slash_abs: str,
     redis_temp_state_filename: Literal["bookmark_temp", "bookmark_temp_after"]
-):
+) -> int:
     """
     Handles saving the final Redis state (bookmark_temp or bookmark_temp_after) to redis_after.json or redis_before.json
     Returns: True if redis_after was saved, False otherwise
@@ -24,7 +24,7 @@ def handle_copy_source_bm_redis_state_to_redis_dump(
     if not os.path.exists(source_bookmark_path_slash_abs):
         print(
             f"❌ Bookmark Redis state file does not exist: {source_bookmark_path_slash_abs}")
-        return False
+        return 1
 
 
     if IS_DEBUG:
@@ -42,4 +42,4 @@ def handle_copy_source_bm_redis_state_to_redis_dump(
             f"💾 Saved final Redis state to: {source_bookmark_path_slash_abs}")
 
 
-    return False
+    return 0

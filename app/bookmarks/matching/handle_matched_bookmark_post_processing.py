@@ -19,8 +19,9 @@ def handle_matched_bookmark_post_processing(
     """
 
     # Run Redis Post-Processing
-    if not handle_bookmark_post_run_redis_states(matched_bookmark_obj, current_run_settings_obj):
-        return 1
+    result = handle_bookmark_post_run_redis_states(matched_bookmark_obj, current_run_settings_obj)
+    if result != 0:
+        return result
 
     # Save the last used bookmark at the end of successful operations
     if matched_bookmark_obj["bookmark_dir_slash_abs"]:
