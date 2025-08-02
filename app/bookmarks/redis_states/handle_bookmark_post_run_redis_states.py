@@ -3,9 +3,6 @@ import os
 from app.bookmarks.redis_states.file_copy_handlers.handle_copy_redis_dump_state_to_target_bm_redis_state import (
     handle_copy_redis_dump_state_to_target_bm_redis_state,
 )
-from app.bookmarks.redis_states.file_copy_handlers.handle_copy_source_bm_redis_state_to_redis_dump import (
-    handle_copy_source_bm_redis_state_to_redis_dump,
-)
 from app.bookmarks.redis_states.handle_export_from_redis import (
     handle_export_from_redis_to_redis_dump,
 )
@@ -48,28 +45,15 @@ def handle_bookmark_post_run_redis_states(
 
     ## SAVE REDIS STATE TO TEMP FILE ##
 
-    # Origin : Redis -> Export Redis state to the temp file.
-    if origin_bm_redis_state_path == 'redis':
-        handle_export_from_redis_to_redis_dump(
-            before_or_after="before"
-        )
+    # We never pull the redis after from another bookmark (atm), so always export from Redis unless dry run.
+    handle_export_from_redis_to_redis_dump(
+        before_or_after="after"
+    )
 
-    # Origin: bookmark/initial state -> Copy to the temp file.
-    else:
-        handle_copy_source_bm_redis_state_to_redis_dump(
-            origin_bm_redis_state_path,
-            redis_temp_state_filename="bookmark_temp"
-        )
-
-    ### LOAD TEMP TO REDIS ###
-
-    # For all cases other than is_skip_redis_processing and when the state is already in redis, we will load the temp file into redis.
-    if origin_bm_redis_state_path != 'redis':
-        handle_load_redis_dump_into_redis()  # TODO(MFB): Should this be awaited?
 
     ### SAVING TEMP TO BOOKMARK ###
 
-    if is_bm_match_redis_before_state_exist and not is_save_updates and not is_overwrite_bm_redis_before:
+    if is_bm_match_redis_after_state_exist and (not is_save_updates or not is_overwrite_bm_redis_after):
         # We do not want to save the temp file to the bookmark directory if it already exists,
         # unless we are in is_save_updates mode.
         pass

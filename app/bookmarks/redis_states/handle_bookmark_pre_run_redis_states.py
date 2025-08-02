@@ -91,7 +91,9 @@ def handle_bookmark_pre_run_redis_states(
         "is_no_docker_no_redis"] or is_no_saving_dry_run
     if is_skip_redis_processing:
         print("Skipping all Redis operations (no Docker/Redis mode).")
-        return 0
+        return
+
+    # TODO(MFB): Break these on error.
 
     ## ALT SOURCE REDIS STATE PATH ##
     origin_bm_redis_state_path = determine_origin_bm_redis_state_path_from_context(
@@ -101,9 +103,11 @@ def handle_bookmark_pre_run_redis_states(
 
     # Origin : Redis -> Export Redis state to the temp file.
     if origin_bm_redis_state_path == 'redis':
-        handle_export_from_redis_to_redis_dump(
+        handle_export_results = handle_export_from_redis_to_redis_dump(
             before_or_after="before"
         )
+
+
 
     # Origin: bookmark/initial state -> Copy to the temp file.
     else:
@@ -120,10 +124,10 @@ def handle_bookmark_pre_run_redis_states(
 
     ### SAVING TEMP TO BOOKMARK ###
 
-    if is_bm_match_redis_before_state_exist and not is_save_updates and not is_overwrite_bm_redis_before:
+    if is_bm_match_redis_before_state_exist and (not is_save_updates or not is_overwrite_bm_redis_before):
         # We do not want to save the temp file to the bookmark directory if it already exists,
         # unless we are in is_save_updates mode.
-        pass
+        return
 
     # Copy the temp file to the bookmark directory.
     handle_copy_redis_dump_state_to_target_bm_redis_state(
@@ -132,4 +136,4 @@ def handle_bookmark_pre_run_redis_states(
         redis_temp_state_filename="bookmark_temp"
     )
 
-    return 1
+    return

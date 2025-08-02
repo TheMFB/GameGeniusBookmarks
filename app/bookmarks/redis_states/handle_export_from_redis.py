@@ -60,7 +60,8 @@ def handle_export_from_redis_to_redis_dump(
 
     try:
         if IS_LOCAL_REDIS_DEV:
-            return load_into_redis_local(temp_redis_state_name)
+            load_into_redis_local(temp_redis_state_name)
+            return True
 
         # Docker mode
         cmd = f"docker exec -it session_manager python -m utils.standalone.redis_load {temp_redis_state_name}"
