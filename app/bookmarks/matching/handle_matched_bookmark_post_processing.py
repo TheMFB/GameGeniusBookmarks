@@ -17,7 +17,6 @@ def handle_matched_bookmark_post_processing(
     - Copy the redis_after.json to the bookmark's redis_after.json
     - Update the last_used_bookmark.json
     """
-    # TODO(MFB): If dry-run, we should not push to redis.
 
     # Run Redis Post-Processing
     if not handle_bookmark_post_run_redis_states(matched_bookmark_obj, current_run_settings_obj):

@@ -58,7 +58,7 @@ def process_flags(args) -> CurrentRunSettings | int:
         return any(flag in args for flag in flags)
 
     # TODO(MFB): Clean this up.
-    is_overwrite_redis_after = is_flag_in_args([
+    is_overwrite_bm_redis_after = is_flag_in_args([
         "--save-last-redis",
         "-s"
     ])
@@ -127,7 +127,7 @@ def process_flags(args) -> CurrentRunSettings | int:
 
     if IS_DEBUG:
         print(
-            f"🔍 Debug - is_overwrite_redis_after: {is_overwrite_redis_after}")
+            f"🔍 Debug - is_overwrite_bm_redis_after: {is_overwrite_bm_redis_after}")
         print(f"🔍 Debug - is_save_updates: {is_save_updates}")
         print(f"🔍 Debug - is_blank_slate: {is_blank_slate}")
         print(f"🔍 Debug - is_no_obs: {is_no_obs}")
@@ -142,7 +142,7 @@ def process_flags(args) -> CurrentRunSettings | int:
         "is_no_docker_no_redis": is_no_docker_no_redis,
         "is_no_obs": is_no_obs,
         "is_no_saving_dry_run": is_no_saving_dry_run,
-        "is_overwrite_redis_after": is_overwrite_redis_after,
+        "is_overwrite_bm_redis_after": is_overwrite_bm_redis_after,
         # "is_overwrite_bm_redis_before": is_overwrite_bm_redis_before,
         "is_save_updates": is_save_updates,
         "is_show_image": is_show_image,

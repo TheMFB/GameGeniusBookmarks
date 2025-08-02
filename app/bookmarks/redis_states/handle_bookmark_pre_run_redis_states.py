@@ -18,6 +18,43 @@ from app.consts.bookmarks_consts import (
 from app.types.bookmark_types import CurrentRunSettings, MatchedBookmarkObj
 
 
+def determine_origin_bm_redis_state_path_from_context(
+    matched_bookmark_obj: MatchedBookmarkObj,
+    current_run_settings_obj: CurrentRunSettings,
+):
+    """
+    This function is used to get the origin bookmark redis state path.
+    """
+    # Matched Bookmark
+    matched_bookmark_path_abs = matched_bookmark_obj["bookmark_path_slash_abs"]
+    is_bm_match_redis_before_state_exist = os.path.exists(
+        os.path.join(matched_bookmark_path_abs, "redis_before.json"))
+
+    # Alt Source Bookmark
+    source_bookmark_obj = current_run_settings_obj.get(
+        "source_bookmark_obj", None)
+    is_use_alt_source_bookmark = current_run_settings_obj.get(
+        "is_use_alt_source_bookmark", None)
+
+    # Behavioral Flags
+    is_blank_slate = current_run_settings_obj["is_blank_slate"]
+
+    # Blank Slate: copy the initial_redis_before.json to the temp file.
+    if is_blank_slate:
+        return os.path.join(INITIAL_REDIS_STATE_DIR, "initial_redis_before.json")
+
+    # Alt Source: copy the redis_after.json from the alt source bookmark to the temp file.
+    if is_use_alt_source_bookmark and source_bookmark_obj:
+        return os.path.join(source_bookmark_obj["bookmark_path_slash_abs"], "redis_after.json")
+
+    # Bookmark with existing redis_before.json: copy the redis_before.json to the temp file.
+    if is_bm_match_redis_before_state_exist:
+        return os.path.join(matched_bookmark_path_abs, "redis_before.json")
+
+    # Else: Pull state directly from Redis.
+    return 'redis'
+
+
 def handle_bookmark_pre_run_redis_states(
     matched_bookmark_obj: MatchedBookmarkObj,
     current_run_settings_obj: CurrentRunSettings,
@@ -42,17 +79,13 @@ def handle_bookmark_pre_run_redis_states(
     """
     # Matched Bookmark
     matched_bookmark_path_abs = matched_bookmark_obj["bookmark_path_slash_abs"]
-    is_bm_match_redis_before_state_exist = os.path.exists(os.path.join(matched_bookmark_path_abs, "redis_before.json"))
-
-    # Alt Source Bookmark
-    source_bookmark_obj = current_run_settings_obj.get("source_bookmark_obj", None)
-    is_use_alt_source_bookmark = current_run_settings_obj.get("is_use_alt_source_bookmark", None)
+    is_bm_match_redis_before_state_exist = os.path.exists(
+        os.path.join(matched_bookmark_path_abs, "redis_before.json"))
 
     # Behavioral Flags
     is_save_updates = current_run_settings_obj["is_save_updates"]
     is_overwrite_bm_redis_before = current_run_settings_obj["is_overwrite_bm_redis_before"]
     is_no_saving_dry_run = current_run_settings_obj["is_no_saving_dry_run"]
-    is_blank_slate = current_run_settings_obj["is_blank_slate"]
 
     is_skip_redis_processing = current_run_settings_obj[
         "is_no_docker_no_redis"] or is_no_saving_dry_run
@@ -60,49 +93,30 @@ def handle_bookmark_pre_run_redis_states(
         print("Skipping all Redis operations (no Docker/Redis mode).")
         return 0
 
-
     ## ALT SOURCE REDIS STATE PATH ##
-
-
-    if is_blank_slate:
-        # If we are using is_blank_slate, we are copying the initial_redis_before.json to the temp file.
-        origin_bm_redis_state_path = os.path.join(
-            INITIAL_REDIS_STATE_DIR, "initial_redis_before.json")
-
-    elif is_use_alt_source_bookmark and source_bookmark_obj:
-        # Note that if we are using is_use_alt_source_bookmark, we are copying the redis_after.json from the alt source bookmark to the temp file.
-        origin_bm_redis_state_path = os.path.join(
-            source_bookmark_obj["bookmark_path_slash_abs"], "redis_after.json")
-
-    elif is_bm_match_redis_before_state_exist:
-        # If we have an existing bookmark, we are copying the redis_before.json to the temp file.
-        origin_bm_redis_state_path = os.path.join(matched_bookmark_path_abs, "redis_before.json")
-
-    else:
-        # If no redis_before.json exists for our bookmark, we are pulling from redis to the temp file.
-        origin_bm_redis_state_path = 'redis'
-
+    origin_bm_redis_state_path = determine_origin_bm_redis_state_path_from_context(
+        matched_bookmark_obj, current_run_settings_obj)
 
     ## SAVE REDIS STATE TO TEMP FILE ##
 
-
+    # Origin : Redis -> Export Redis state to the temp file.
     if origin_bm_redis_state_path == 'redis':
-        # Pull from Redis to the temp file.
         handle_export_from_redis_to_redis_dump(
             before_or_after="before"
         )
+
+    # Origin: bookmark/initial state -> Copy to the temp file.
     else:
-        # Pull from the origin bookmark/initial state to the temp file.
         handle_copy_source_bm_redis_state_to_redis_dump(
             origin_bm_redis_state_path,
             redis_temp_state_filename="bookmark_temp"
         )
 
+    ### LOAD TEMP TO REDIS ###
 
-    ## #LOAD TEMP TO REDIS ###
-
-    # For all cases other than is_skip_redis_processing, we will load the temp file into redis.
-    handle_load_redis_dump_into_redis() # TODO(MFB): Should this be awaited?
+    # For all cases other than is_skip_redis_processing and when the state is already in redis, we will load the temp file into redis.
+    if origin_bm_redis_state_path != 'redis':
+        handle_load_redis_dump_into_redis()  # TODO(MFB): Should this be awaited?
 
     ### SAVING TEMP TO BOOKMARK ###
 
@@ -119,4 +133,3 @@ def handle_bookmark_pre_run_redis_states(
     )
 
     return 1
-

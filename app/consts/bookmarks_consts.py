@@ -37,7 +37,6 @@ RESERVED_BOOKMARK_NAMES = [
     "tags",
     "description",
     "video_filename",
-    "timestamp",
     "type",
     "previous",
     "next",
