@@ -9,15 +9,15 @@ from app.bookmarks.redis_states.file_copy_handlers.handle_copy_source_bm_redis_s
 from app.bookmarks.redis_states.redis_state_handlers.handle_export_from_redis import (
     handle_export_from_redis,
 )
-from app.bookmarks.redis_states.redis_state_handlers.handle_load_dump_into_docker_redis import (
-    handle_load_dump_into_docker_redis,
+from app.bookmarks.redis_states.redis_state_handlers.handle_load_into_redis import (
+    handle_load_into_redis,
 )
-from app.bookmarks.redis_states.redis_state_handlers.handle_load_into_redis import handle_load_into_redis
 from app.consts.bookmarks_consts import (
     INITIAL_REDIS_STATE_DIR,
 )
 from app.types.bookmark_types import CurrentRunSettings, MatchedBookmarkObj
 from app.utils.decorators import print_def_name
+from app.utils.printing_utils import pprint_dev, print_dev
 
 IS_PRINT_DEF_NAME = True
 
@@ -36,10 +36,13 @@ def determine_origin_bm_redis_state_path_from_context(
         os.path.join(matched_bookmark_path_abs, "redis_before.json"))
 
     # Alt Source Bookmark
-    source_bookmark_obj = current_run_settings_obj.get(
-        "source_bookmark_obj", None)
+    alt_source_bookmark_obj = current_run_settings_obj.get(
+        "alt_source_bookmark_obj", None)
     is_use_alt_source_bookmark = current_run_settings_obj.get(
         "is_use_alt_source_bookmark", None)
+
+    print_dev('---- alt_source_bookmark_obj:', 'magenta')
+    pprint_dev(alt_source_bookmark_obj)
 
     # Behavioral Flags
     is_blank_slate = current_run_settings_obj["is_blank_slate"]
@@ -49,8 +52,8 @@ def determine_origin_bm_redis_state_path_from_context(
         return os.path.join(INITIAL_REDIS_STATE_DIR, "initial_redis_before.json")
 
     # Alt Source: copy the redis_after.json from the alt source bookmark to the temp file.
-    if is_use_alt_source_bookmark and source_bookmark_obj:
-        return os.path.join(source_bookmark_obj["bookmark_path_slash_abs"], "redis_after.json")
+    if is_use_alt_source_bookmark and alt_source_bookmark_obj:
+        return os.path.join(alt_source_bookmark_obj["bookmark_path_slash_abs"], "redis_after.json")
 
     # Bookmark with existing redis_before.json: copy the redis_before.json to the temp file.
     if is_bm_match_redis_before_state_exist:

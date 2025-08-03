@@ -12,7 +12,7 @@ from app.utils.printing_utils import print_color
 def handle_bookmark_obs_pre_run(
     matched_bookmark_obj: MatchedBookmarkObj,
     current_run_settings_obj: CurrentRunSettings,
-):
+) -> int:
     """
     This function is used to handle the pre-run of a bookmark.
 
@@ -20,7 +20,7 @@ def handle_bookmark_obs_pre_run(
     """
 
     if current_run_settings_obj["is_no_obs"]:
-        return
+        return 0
 
     if not os.path.exists(matched_bookmark_obj["bookmark_path_slash_abs"]):
         print_color(f"❌ Could not create bookmark metadata - bookmark directory doesn't exist: {matched_bookmark_obj['bookmark_path_slash_abs']}", 'red')

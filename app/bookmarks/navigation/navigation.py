@@ -3,7 +3,7 @@ from typing import Literal
 from app.bookmarks.bookmarks import get_all_shallow_bookmark_abs_paths_in_dir
 from app.bookmarks.last_used import get_last_used_bookmark
 from app.consts.bookmarks_consts import IS_DEBUG
-from app.types.bookmark_types import MatchedBookmarkObj
+from app.types.bookmark_types import MatchedBookmarkObj, NavigationCommand
 from app.utils.bookmark_utils import convert_exact_bookmark_path_to_bm_obj
 from app.utils.decorators import print_def_name
 
@@ -121,3 +121,37 @@ def resolve_navigation_bookmark_from_last_used(
     print(
         f"🎯 Navigating to: {target_bookmark_obj['bookmark_path_colon_rel']}")
     return target_bookmark_obj
+
+
+@print_def_name(IS_PRINT_DEF_NAME)
+def resolve_navigation_bookmark_from_current_matched_bookmark(
+    matched_bookmark_obj: MatchedBookmarkObj,
+    navigation_command: NavigationCommand,
+)-> MatchedBookmarkObj | int | None:
+    """Resolve navigation commands (next, previous, first, last) to a matched bookmark object."""
+
+    bookmark_dir_slash_abs = matched_bookmark_obj.get(
+        "bookmark_dir_slash_abs")
+    bookmark_dir_colon_rel = matched_bookmark_obj.get(
+        "bookmark_dir_colon_rel")
+
+    if not bookmark_dir_slash_abs:
+        print(
+            f"❌ Could not find folder directory for '{bookmark_dir_slash_abs}'")
+        return 1
+
+    alt_source_bookmark = None
+
+    alt_source_bookmark = find_sibling_bookmark_in_folder(
+        matched_bookmark_obj, navigation_command)
+
+    if not alt_source_bookmark:
+        print(
+            f"❌ No next bookmark found after '{bookmark_dir_colon_rel}'")
+        return None
+
+
+    alt_source_bookmark_obj = convert_exact_bookmark_path_to_bm_obj(alt_source_bookmark)
+    print(
+        f"🎯 Navigating to: {alt_source_bookmark_obj['bookmark_path_colon_rel']}")
+    return alt_source_bookmark_obj

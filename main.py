@@ -51,29 +51,30 @@ def main():
 
     # HANDLE MATCHED BOOKMARK PRE-PROCESSING
 
-    result = handle_matched_bookmark_pre_processing(
+    results = handle_matched_bookmark_pre_processing(
         matched_bookmark_obj,
         current_run_settings_obj
     )
-    if isinstance(result, int):
+    if results != 0:
         print_color("❌ Error in handle_matched_bookmark_pre_processing", 'red')
-        return result
+        return results
 
 
     # MAIN PROCESS
 
-    result = handle_main_process(current_run_settings=current_run_settings_obj)
-    if result == 1:
+    results = handle_main_process(
+        current_run_settings=current_run_settings_obj)
+    if results == 1:
         print_color("❌ Main process failed", 'red')
-        return result
+        return results
 
     # HANDLE BOOKMARK POST-PROCESSING
 
-    result = handle_matched_bookmark_post_processing(
+    results = handle_matched_bookmark_post_processing(
         matched_bookmark_obj, current_run_settings_obj)
-    if result == 1:
+    if results == 1:
         print_color("❌ Error in handle_matched_bookmark_post_processing", 'red')
-        return result
+        return results
 
     # SUCCESS!
 

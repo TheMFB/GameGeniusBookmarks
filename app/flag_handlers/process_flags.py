@@ -1,7 +1,7 @@
 from typing import Callable, cast
 
-from app.bookmarks.navigation.find_alt_source_bookmark import (
-    find_alt_source_bookmark_match,
+from app.bookmarks.navigation.get_alt_source_cli_nav_string_from_args import (
+    get_alt_source_cli_nav_string_from_args,
 )
 from app.consts.bookmarks_consts import IS_DEBUG
 from app.consts.cli_consts import OPTIONS_HELP
@@ -35,8 +35,8 @@ flag_route_handler_map: dict[ValidRoutedFlags, Callable] = {
 @print_def_name(IS_PRINT_DEF_NAME)
 def process_flags(args) -> CurrentRunSettings | int:
     """Process command line flags and return a dictionary of flag values."""
-    cli_nav_arg_string = None
-    source_bookmark_obj = None
+    alt_source_cli_nav_string = None
+    alt_source_bookmark_obj = None
     tags = []
 
     # Handle all flags that terminate the program afterwards (routed flags)
@@ -110,15 +110,16 @@ def process_flags(args) -> CurrentRunSettings | int:
         print(f"🔍 Debug - is_no_docker: {is_no_docker}")
         # TODO(MFB): Print what this does (different f)
 
-    # Parse the alt source bookmark for --use-preceding-bookmark if specified
+    # Parse the alt source bookmark cli string for --use-preceding-bookmark if specified
     if is_use_alt_source_bookmark:
-        source_match_results = find_alt_source_bookmark_match(args)
-        if isinstance(source_match_results, int):
-            print(f"❌ find_alt_source_bookmark_match Error: {source_match_results}")
-            return source_match_results
-        if isinstance(source_match_results, str):
-            cli_nav_arg_string = source_match_results
-        source_bookmark_obj = source_match_results
+        alt_source_cli_nav_string = get_alt_source_cli_nav_string_from_args(args)
+        # source_match_results = find_alt_source_bookmark_match(args)
+        # if isinstance(source_match_results, int):
+        #     print(f"❌ find_alt_source_bookmark_match Error: {source_match_results}")
+        #     return source_match_results
+        # if isinstance(source_match_results, str):
+        #     alt_source_cli_nav_string = source_match_results
+        # alt_source_bookmark_obj = source_match_results
 
 
     # Parse tags from command line
@@ -134,8 +135,8 @@ def process_flags(args) -> CurrentRunSettings | int:
 
     return cast(CurrentRunSettings, {
         **default_processed_flags,
-        "source_bookmark_obj": source_bookmark_obj,
-        "cli_nav_arg_string": cli_nav_arg_string,
+        "alt_source_bookmark_obj": alt_source_bookmark_obj,
+        "alt_source_cli_nav_string": alt_source_cli_nav_string,
         "is_add_bookmark": is_add_bookmark,
         "is_blank_slate": is_blank_slate,
         "is_no_docker": is_no_docker,

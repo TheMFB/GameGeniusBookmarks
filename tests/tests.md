@@ -21,6 +21,8 @@ __ create_bookmark_symlinks __
 - ls bookmarks (ALL search logic sound)
 - track last used bookmark
 - create bookmark from -p
+    - navigational commands
+    - bookmark search
 - create bookmark from -b
 - create bookmark from redis
 - load old bookmarks states

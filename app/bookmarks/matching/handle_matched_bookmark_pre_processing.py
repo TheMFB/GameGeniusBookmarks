@@ -1,5 +1,8 @@
 import os
 
+from app.bookmarks.navigation.process_alt_source_bookmark import (
+    process_alt_source_bookmark,
+)
 from app.bookmarks.redis_states.handle_bookmark_pre_run_redis_states import (
     handle_bookmark_pre_run_redis_states,
 )
@@ -16,7 +19,7 @@ IS_PRINT_DEF_NAME = True
 def handle_matched_bookmark_pre_processing(
     matched_bookmark_obj: MatchedBookmarkObj,
     current_run_settings_obj: CurrentRunSettings,
-):
+) -> int:
     """
     This function is used to handle the pre-processing of a matched bookmark.
 
@@ -32,14 +35,26 @@ def handle_matched_bookmark_pre_processing(
         print(f"❌ Bookmark Path does not exist: '{matched_bookmark_path_abs}'")
         return 1
 
+    # RESOLVE SOURCE BOOKMARK
+
+    is_use_alt_source_bookmark = current_run_settings_obj.get("is_use_alt_source_bookmark", False)
+    if is_use_alt_source_bookmark:
+        alt_source_bookmark_results = process_alt_source_bookmark(
+            matched_bookmark_obj,
+            current_run_settings_obj
+        )
+        if isinstance(alt_source_bookmark_results, int):
+            print("❌ No source bookmark found")
+            return alt_source_bookmark_results
+        current_run_settings_obj = alt_source_bookmark_results
+
     # REDIS STATES
 
-    handle_bookmark_pre_run_redis_states(matched_bookmark_obj, current_run_settings_obj)
+    results = handle_bookmark_pre_run_redis_states(matched_bookmark_obj, current_run_settings_obj)
+    if results != 0:
+        print("❌ Error in handle_bookmark_pre_run_redis_states")
+        return results
 
     # OBS
 
-    obs_results = handle_bookmark_obs_pre_run(matched_bookmark_obj, current_run_settings_obj)
-    if obs_results != 0:
-        return obs_results
-
-    return matched_bookmark_obj
+    return handle_bookmark_obs_pre_run(matched_bookmark_obj, current_run_settings_obj)

@@ -30,8 +30,8 @@ class MatchedBookmarkObj(BookmarkPathDictionary):
     bookmark_info: NotRequired[BookmarkInfo]
 
 class CurrentRunSettings(TypedDict):
-    source_bookmark_obj: MatchedBookmarkObj | None
-    cli_nav_arg_string: list[str] | None
+    alt_source_bookmark_obj: MatchedBookmarkObj | None
+    alt_source_cli_nav_string: str | None
     is_add_bookmark: bool
     is_blank_slate: bool
     is_no_docker: bool
@@ -104,8 +104,8 @@ VALID_FLAGS = [
 ]
 
 default_processed_flags: CurrentRunSettings = {
-    "source_bookmark_obj": None,
-    "cli_nav_arg_string": None,
+    "alt_source_bookmark_obj": None,
+    "alt_source_cli_nav_string": None,
     "is_add_bookmark": True,
     "is_blank_slate": False,
     "is_no_docker": False,
@@ -122,3 +122,4 @@ default_processed_flags: CurrentRunSettings = {
 }
 
 NAVIGATION_COMMANDS = ["next", "previous", "first", "last", "last_used"]
+NavigationCommand = Literal["next", "previous", "first", "last", "last_used"]
