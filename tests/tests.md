@@ -18,12 +18,13 @@ __ create_bookmark_symlinks __
 
 
 # Minimal Success:
-- ls bookmarks
+- ls bookmarks (ALL search logic sound)
 - track last used bookmark
 - create bookmark from -p
 - create bookmark from -b
 - create bookmark from redis
 - load old bookmarks states
+- adding tags
 
 
 - TODO(MFB): If we are not local, our dump should be the session_manager dump.

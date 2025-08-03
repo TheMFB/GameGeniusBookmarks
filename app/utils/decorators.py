@@ -1,4 +1,5 @@
 import os
+import threading
 from functools import wraps
 from typing import Callable, TypeVar, cast
 
@@ -17,6 +18,10 @@ def get_embedded_file_link(func):
         '/') else f"file:///{file_path}"
     return f"\033]8;;{uri}\033\\{func.__name__}\033]8;;\033\\"
 
+# Thread-local storage to track depth
+_local = threading.local()
+_local.depth = 0  # Default value
+
 def print_def_name(should_print: bool = True) -> Callable[[F], F]:
     """
     This will print the function name and the file path.
@@ -32,45 +37,33 @@ def print_def_name(should_print: bool = True) -> Callable[[F], F]:
     """
     def decorator(func: F) -> F:
         if not should_print:
-            # If we shouldn't print, just return the original function unchanged
             return func
 
-        if IS_ADJUST_TO_STACK:
-            import functools
-            import inspect
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            depth = getattr(_local, 'depth', 0)
 
-            @functools.wraps(func)
-            def wrapper(*args, **kwargs):
-                # Subtract 1 to not count the wrapper itself
-                depth = max(1, len(inspect.stack()) - 9)
-                print('')
-                if IS_PRINT_FILE_LINK:
-                    real_func = inspect.unwrap(func)
-                    print(
-                        f"{'_' * depth * 2} {get_embedded_file_link(real_func)} {'_' * depth * 2}")
-                else:
-                    real_func = inspect.unwrap(func)
-                    print(f"{'_' * depth * 2} {real_func.__name__} {'_' * depth * 2}")
+            # Print header
+            print()
+            if IS_PRINT_FILE_LINK:
+                real_func = func
+                print(f"{'_' * (depth * 2)} {get_embedded_file_link(real_func)} {'_' * (depth * 2)}")
+            else:
+                print(f"{'_' * (depth * 2)} {func.__name__} {'_' * (depth * 2)}")
 
+            # Increment depth before calling
+            _local.depth = depth + 1
+            try:
                 return func(*args, **kwargs)
-            return cast(F, wrapper)
-        else:
-            @wraps(func)
-            def wrapper(*args, **kwargs):
-                print('')
-                if IS_PRINT_FILE_LINK:
-                    print(f"______{get_embedded_file_link(func)}______")
-                else:
-                    print(f"______{func.__name__}______")
-                return func(*args, **kwargs)
-            return cast(F, wrapper)
+            finally:
+                # Decrement after call completes
+                _local.depth = depth
 
-    # Handle the case where the decorator is used without parentheses
-    # e.g., @print_def_name instead of @print_def_name()
+        return cast(F, wrapper)
+
     if callable(should_print):
-        func = should_print
-        should_print = True
-        return decorator(func)  # type: ignore
+        # Decorator used without parentheses
+        return decorator(should_print)  # type: ignore
 
     return decorator
 

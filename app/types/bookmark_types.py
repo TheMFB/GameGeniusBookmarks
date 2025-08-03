@@ -61,6 +61,9 @@ ValidRoutedFlags = Literal[
 ]
 
 VALID_FLAGS = [
+    # Add a new bookmark
+    "--add-bookmark",
+    "-a",
     # Overwrite existing bookmark data
     "--save-updates",
     "-s",

@@ -200,9 +200,7 @@ def get_bookmark_info(cli_bookmark_obj: BookmarkPathDictionary) -> MatchedBookma
     meta_file = os.path.join(bookmark_path_slash_abs, "bookmark_meta.json")
 
     if not os.path.exists(meta_file):
-        print(f"❌ Bookmark metadata file not found: {meta_file}")
-        # TODO(MFB): Should we be creating it here if it doesn't exist?
-        print_dev('++++ DO WE NEED TO CREATE IT HERE? +++', 'red')
+        print(f"⚠️ Bookmark metadata file not found: {meta_file}")
         return None
 
     try:
