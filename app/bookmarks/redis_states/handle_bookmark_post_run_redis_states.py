@@ -49,13 +49,8 @@ def handle_bookmark_post_run_redis_states(
     # We never pull the redis-after state from another bookmark (atm), so always export from Redis unless dry run.
     # TODO(MFB): Figure our which of the two we should be using here.
     handle_export_from_redis(
-        matched_bookmark_obj=matched_bookmark_obj,
         before_or_after="after"
     )
-
-    # handle_export_from_redis_to_redis_dump(
-    #     filename="bookmark_temp_after"
-    # )
 
     ### SAVING TEMP TO BOOKMARK ###
 

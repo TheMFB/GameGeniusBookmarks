@@ -12,6 +12,7 @@ from app.utils.printing_utils import print_dev
 IS_PRINT_DEF_NAME = True
 
 @print_def_name(IS_PRINT_DEF_NAME)
+
 def handle_copy_redis_dump_state_to_target_bm_redis_state(
     target_bookmark_path_slash_abs: str,
     target_bm_redis_state_before_or_after: Literal["before", "after"],

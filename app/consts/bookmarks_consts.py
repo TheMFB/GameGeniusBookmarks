@@ -58,7 +58,8 @@ ABS_OBS_BOOKMARKS_DIR = os.path.join(REPO_ROOT, "obs_bookmark_saves")
 # REDIS #
 INITIAL_REDIS_STATE_DIR = os.path.join(REPO_ROOT, "app", "bookmarks", "redis_states")
 
-IS_LOCAL_REDIS_DEV = os.environ.get('IS_LOCAL_REDIS_DEV', False)
+IS_LOCAL_REDIS_DEV = os.environ.get('IS_LOCAL_REDIS_DEV', False) == "True" or os.environ.get(
+    'IS_LOCAL_REDIS_DEV', False) == "true"
 LOCAL_REDIS_SESSIONS_HOST = "localhost"
 LOCAL_REDIS_SESSIONS_PORT = 6379
 LOCAL_REDIS_SESSIONS_DB = 0

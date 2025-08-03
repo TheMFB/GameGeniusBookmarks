@@ -6,12 +6,13 @@ from app.bookmarks.redis_states.file_copy_handlers.handle_copy_redis_dump_state_
 from app.bookmarks.redis_states.file_copy_handlers.handle_copy_source_bm_redis_state_to_redis_dump import (
     handle_copy_source_bm_redis_state_to_redis_dump,
 )
-from app.bookmarks.redis_states.redis_state_handlers.handle_export_from_redis_to_redis_dump import (
-    handle_export_from_redis_to_redis_dump,
+from app.bookmarks.redis_states.redis_state_handlers.handle_export_from_redis import (
+    handle_export_from_redis,
 )
 from app.bookmarks.redis_states.redis_state_handlers.handle_load_dump_into_docker_redis import (
     handle_load_dump_into_docker_redis,
 )
+from app.bookmarks.redis_states.redis_state_handlers.handle_load_into_redis import handle_load_into_redis
 from app.consts.bookmarks_consts import (
     INITIAL_REDIS_STATE_DIR,
 )
@@ -109,8 +110,8 @@ def handle_bookmark_pre_run_redis_states(
 
     # Origin : Redis -> Export Redis state to the temp file.
     if origin_bm_redis_state_path == 'redis':
-        result = handle_export_from_redis_to_redis_dump(
-            filename="bookmark_temp"
+        result = handle_export_from_redis(
+            before_or_after="before"
         )
         if result != 0:
             return result
@@ -129,7 +130,9 @@ def handle_bookmark_pre_run_redis_states(
 
     # For all cases other than is_skip_redis_processing and when the state is already in redis, we will load the temp file into redis.
     if origin_bm_redis_state_path != 'redis':
-        handle_load_dump_into_docker_redis()  # TODO(MFB): Should this be awaited?
+        handle_load_into_redis(
+            before_or_after="before"
+        )
 
     ### SAVING TEMP TO BOOKMARK ###
 
