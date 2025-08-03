@@ -62,8 +62,8 @@ def handle_bookmark_post_run_redis_states(
     # Copy the temp file to the bookmark directory.
     handle_copy_redis_dump_state_to_target_bm_redis_state(
         target_bookmark_path_slash_abs=matched_bookmark_path_abs,
-        target_bm_redis_state_before_or_after="before",
-        redis_temp_state_filename="bookmark_temp"
+        target_bm_redis_state_before_or_after="after",
+        redis_temp_state_filename="bookmark_temp_after"
     )
 
     return 0

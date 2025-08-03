@@ -49,10 +49,6 @@ def handle_copy_redis_dump_state_to_target_bm_redis_state(
         print(
             f"💾 Saved final Redis state to: {target_bm_redis_state_filepath}")
 
-    print_dev(
-        '---- convert_redis_state_file_to_friendly_and_save target_bm_redis_state_filepath:', 'magenta')
-    print_dev(target_bm_redis_state_filepath)
-
     # Convert to friendly
     results = convert_redis_state_file_to_friendly_and_save(
         target_bm_redis_state_filepath)
