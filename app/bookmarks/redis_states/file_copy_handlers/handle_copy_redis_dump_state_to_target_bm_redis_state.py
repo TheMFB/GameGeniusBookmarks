@@ -2,8 +2,12 @@ import os
 import shutil
 from typing import Literal
 
+from app.bookmarks.redis_states.redis_friendly_converter import (
+    convert_redis_state_file_to_friendly_and_save,
+)
 from app.consts.bookmarks_consts import IS_DEBUG, REDIS_DUMP_DIR
 from app.utils.decorators import print_def_name
+from app.utils.printing_utils import print_dev
 
 IS_PRINT_DEF_NAME = True
 
@@ -12,7 +16,7 @@ def handle_copy_redis_dump_state_to_target_bm_redis_state(
     target_bookmark_path_slash_abs: str,
     target_bm_redis_state_before_or_after: Literal["before", "after"],
     redis_temp_state_filename: Literal["bookmark_temp", "bookmark_temp_after"],
-):
+) -> int:
     """
     Handles saving the final Redis state (bookmark_temp or bookmark_temp_after) to redis_after.json or redis_before.json
     Returns: True if redis_after was saved, False otherwise
@@ -27,7 +31,7 @@ def handle_copy_redis_dump_state_to_target_bm_redis_state(
     if not os.path.exists(redis_dump_state_filepath):
         print(
             f"❌ Redis dump state file does not exist: {redis_dump_state_filepath}")
-        return False
+        return 1
 
     # Target bookmark redis state
     target_bm_redis_state_filename_json = f"redis_{target_bm_redis_state_before_or_after}.json"
@@ -44,6 +48,14 @@ def handle_copy_redis_dump_state_to_target_bm_redis_state(
         print(
             f"💾 Saved final Redis state to: {target_bm_redis_state_filepath}")
 
-    # TODO(MFB): Create the friendly json file for the bookmark.
+    print_dev(
+        '---- convert_redis_state_file_to_friendly_and_save target_bm_redis_state_filepath:', 'magenta')
+    print_dev(target_bm_redis_state_filepath)
 
-    return False
+    # Convert to friendly
+    results = convert_redis_state_file_to_friendly_and_save(
+        target_bm_redis_state_filepath)
+    if results == 1:
+        return 1
+
+    return 0

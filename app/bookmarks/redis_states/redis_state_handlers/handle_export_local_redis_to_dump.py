@@ -5,6 +5,7 @@ from typing import Literal
 
 import redis
 
+from app.bookmarks.redis_states.redis_state_utils import get_temp_redis_state_name
 from app.consts.bookmarks_consts import (
     LOCAL_REDIS_SESSIONS_DB,
     LOCAL_REDIS_SESSIONS_HOST,
@@ -18,14 +19,16 @@ IS_PRINT_DEF_NAME = True
 
 # TODO(MFB): ++ These aren't hitting the docker redis databases. AND we have a name conflict. See <---
 @print_def_name(IS_PRINT_DEF_NAME)
-def handle_export_local_redis_to_dump(filename: Literal["bookmark_temp", "bookmark_temp_after"]) -> int:
+def handle_export_local_redis_to_dump(before_or_after: Literal["before", "after"]) -> int:
     """
     Export the current Redis database to redis backup or redis backup after into a temp folder.
     - Export the current redis database
     """
 
-    json_filepath = f"{REDIS_DUMP_DIR}/{filename}.json"
-    pkl_filepath = f"{REDIS_DUMP_DIR}/{filename}.pkl"
+    temp_redis_state_name = get_temp_redis_state_name(before_or_after)
+
+    json_filepath = f"{REDIS_DUMP_DIR}/{temp_redis_state_name}.json"
+    pkl_filepath = f"{REDIS_DUMP_DIR}/{temp_redis_state_name}.pkl"
 
     try:
         r = redis.Redis(host=LOCAL_REDIS_SESSIONS_HOST,

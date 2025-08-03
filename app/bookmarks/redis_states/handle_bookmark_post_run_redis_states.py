@@ -3,8 +3,8 @@ import os
 from app.bookmarks.redis_states.file_copy_handlers.handle_copy_redis_dump_state_to_target_bm_redis_state import (
     handle_copy_redis_dump_state_to_target_bm_redis_state,
 )
-from app.bookmarks.redis_states.redis_state_handlers.handle_export_from_redis_to_redis_dump import (
-    handle_export_from_redis_to_redis_dump,
+from app.bookmarks.redis_states.redis_state_handlers.handle_export_from_redis import (
+    handle_export_from_redis,
 )
 from app.types.bookmark_types import CurrentRunSettings, MatchedBookmarkObj
 from app.utils.decorators import print_def_name
@@ -47,9 +47,15 @@ def handle_bookmark_post_run_redis_states(
         return 0
 
     # We never pull the redis-after state from another bookmark (atm), so always export from Redis unless dry run.
-    handle_export_from_redis_to_redis_dump(
-        filename="bookmark_temp_after"
+    # TODO(MFB): Figure our which of the two we should be using here.
+    handle_export_from_redis(
+        matched_bookmark_obj=matched_bookmark_obj,
+        before_or_after="after"
     )
+
+    # handle_export_from_redis_to_redis_dump(
+    #     filename="bookmark_temp_after"
+    # )
 
     ### SAVING TEMP TO BOOKMARK ###
 

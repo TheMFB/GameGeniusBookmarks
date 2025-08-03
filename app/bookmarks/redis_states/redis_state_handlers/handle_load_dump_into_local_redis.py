@@ -4,6 +4,7 @@ from typing import Literal
 
 import redis
 
+from app.bookmarks.redis_states.redis_state_utils import get_temp_redis_state_name
 from app.consts.bookmarks_consts import (
     LOCAL_REDIS_SESSIONS_DB,
     LOCAL_REDIS_SESSIONS_HOST,
@@ -16,10 +17,12 @@ IS_PRINT_DEF_NAME = True
 
 
 @print_def_name(IS_PRINT_DEF_NAME)
-def handle_load_dump_into_local_redis(filename:Literal["bookmark_temp", "bookmark_temp_after"]) -> int:
+def handle_load_dump_into_local_redis(before_or_after: Literal["before", "after"]) -> int:
     """
     This function is used to load the redis state from the redis dump directory into the redis database.
     """
+    filename = get_temp_redis_state_name(before_or_after)
+
 
     json_filepath = f"{REDIS_DUMP_DIR}/{filename}.json"
 

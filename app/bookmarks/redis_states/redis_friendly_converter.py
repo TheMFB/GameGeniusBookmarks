@@ -7,7 +7,10 @@ import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-IS_DEBUG = False
+from app.consts.bookmarks_consts import IS_DEBUG
+from app.utils.decorators import print_def_name
+
+IS_PRINT_DEF_NAME = True
 
 
 def set_nested_value(nested_dict: Dict[str, Any], key_parts: List[str], value: Any) -> None:
@@ -57,6 +60,7 @@ def convert_redis_to_friendly(redis_data: Dict[str, Any]) -> Dict[str, Any]:
     return friendly_data
 
 
+@print_def_name(IS_PRINT_DEF_NAME)
 def convert_redis_state_file_to_friendly_and_save(input_file_path: str, output_file_path: Optional[str] = None) -> bool:
     """
     Convert a Redis JSON export file to friendly format
