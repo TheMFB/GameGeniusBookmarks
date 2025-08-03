@@ -16,7 +16,7 @@ IS_PRINT_DEF_NAME = True
 
 
 @print_def_name(IS_PRINT_DEF_NAME)
-def local_load_redis_dump_into_redis(filename:Literal["bookmark_temp", "bookmark_temp_after"]) -> int:
+def handle_load_dump_into_local_redis(filename:Literal["bookmark_temp", "bookmark_temp_after"]) -> int:
     """
     This function is used to load the redis state from the redis dump directory into the redis database.
     """

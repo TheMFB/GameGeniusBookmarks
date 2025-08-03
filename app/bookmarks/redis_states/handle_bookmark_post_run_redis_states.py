@@ -7,8 +7,12 @@ from app.bookmarks.redis_states.redis_state_handlers.handle_export_from_redis_to
     handle_export_from_redis_to_redis_dump,
 )
 from app.types.bookmark_types import CurrentRunSettings, MatchedBookmarkObj
+from app.utils.decorators import print_def_name
+
+IS_PRINT_DEF_NAME = True
 
 
+@print_def_name(IS_PRINT_DEF_NAME)
 def handle_bookmark_post_run_redis_states(
     matched_bookmark_obj: MatchedBookmarkObj,
     current_run_settings_obj: CurrentRunSettings,

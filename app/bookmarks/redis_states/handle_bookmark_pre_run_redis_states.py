@@ -9,15 +9,19 @@ from app.bookmarks.redis_states.file_copy_handlers.handle_copy_source_bm_redis_s
 from app.bookmarks.redis_states.redis_state_handlers.handle_export_from_redis_to_redis_dump import (
     handle_export_from_redis_to_redis_dump,
 )
-from app.bookmarks.redis_states.redis_state_handlers.handle_load_redis_dump_into_redis import (
-    handle_load_redis_dump_into_redis,
+from app.bookmarks.redis_states.redis_state_handlers.handle_load_dump_into_docker_redis import (
+    handle_load_dump_into_docker_redis,
 )
 from app.consts.bookmarks_consts import (
     INITIAL_REDIS_STATE_DIR,
 )
 from app.types.bookmark_types import CurrentRunSettings, MatchedBookmarkObj
+from app.utils.decorators import print_def_name
+
+IS_PRINT_DEF_NAME = True
 
 
+@print_def_name(IS_PRINT_DEF_NAME)
 def determine_origin_bm_redis_state_path_from_context(
     matched_bookmark_obj: MatchedBookmarkObj,
     current_run_settings_obj: CurrentRunSettings,
@@ -55,6 +59,7 @@ def determine_origin_bm_redis_state_path_from_context(
     return 'redis'
 
 
+@print_def_name(IS_PRINT_DEF_NAME)
 def handle_bookmark_pre_run_redis_states(
     matched_bookmark_obj: MatchedBookmarkObj,
     current_run_settings_obj: CurrentRunSettings,
@@ -124,7 +129,7 @@ def handle_bookmark_pre_run_redis_states(
 
     # For all cases other than is_skip_redis_processing and when the state is already in redis, we will load the temp file into redis.
     if origin_bm_redis_state_path != 'redis':
-        handle_load_redis_dump_into_redis()  # TODO(MFB): Should this be awaited?
+        handle_load_dump_into_docker_redis()  # TODO(MFB): Should this be awaited?
 
     ### SAVING TEMP TO BOOKMARK ###
 

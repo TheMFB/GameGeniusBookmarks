@@ -6,8 +6,8 @@ from typing import Literal
 from app.bookmarks.redis_states.redis_friendly_converter import (
     convert_redis_state_file_to_friendly_and_save,
 )
-from app.bookmarks.redis_states.redis_state_handlers.local_load_redis_dump_into_redis import (
-    local_load_redis_dump_into_redis,
+from app.bookmarks.redis_states.redis_state_handlers.handle_load_dump_into_local_redis import (
+    handle_load_dump_into_local_redis,
 )
 from app.consts.bookmarks_consts import IS_DEBUG, IS_LOCAL_REDIS_DEV, REDIS_DUMP_DIR
 from app.types.bookmark_types import MatchedBookmarkObj
@@ -62,7 +62,7 @@ def handle_export_from_redis_to_redis_dump(
 
     try:
         if IS_LOCAL_REDIS_DEV:
-            local_load_redis_dump_into_redis(temp_redis_state_name)
+            handle_load_dump_into_local_redis(temp_redis_state_name)
             return 0
 
         # Docker mode

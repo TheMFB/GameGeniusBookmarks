@@ -1,7 +1,7 @@
 import subprocess
 
-from app.bookmarks.redis_states.redis_state_handlers.local_load_redis_dump_into_redis import (
-    local_load_redis_dump_into_redis,
+from app.bookmarks.redis_states.redis_state_handlers.handle_load_dump_into_local_redis import (
+    handle_load_dump_into_local_redis,
 )
 from app.consts.bookmarks_consts import IS_DEBUG, IS_LOCAL_REDIS_DEV
 from app.utils.decorators import print_def_name
@@ -11,7 +11,7 @@ IS_PRINT_DEF_NAME = True
 
 
 @print_def_name(IS_PRINT_DEF_NAME)
-def handle_load_redis_dump_into_redis() -> int:
+def handle_load_dump_into_docker_redis() -> int:
     """
     This function is used to load the redis state from the redis dump directory into the redis database.
     """
@@ -21,7 +21,7 @@ def handle_load_redis_dump_into_redis() -> int:
             print_dev(str(IS_LOCAL_REDIS_DEV))
             print_dev(str(type(IS_LOCAL_REDIS_DEV)))
 
-            return local_load_redis_dump_into_redis("bookmark_temp")
+            return handle_load_dump_into_local_redis("bookmark_temp")
 
         # Docker mode
         cmd = "docker exec -it session_manager python -m utils.standalone.redis_load bookmark_temp"
