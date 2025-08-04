@@ -28,5 +28,11 @@ standalone_utils/obs_bookmarks_app/obs_bookmark_saves/temp*
 last_bookmark_state.json
 
 shortcuts/
+.vscfavoriterc
+.vscode/
 
 obs_bookmark_saves/
+
+standalone_utils/redis/redis_dump/*
+!standalone_utils/redis/redis_dump/.gitkeep
+notes/

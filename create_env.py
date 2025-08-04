@@ -4,6 +4,7 @@ Helper script to create the .env file with VIDEO_PATH configuration.
 """
 import os
 
+
 def create_env_file():
     """Create the .env file with VIDEO_PATH configuration."""
     env_content = '''VIDEO_PATH="/Volumes/Extreme_Pro/PS5/CREATE/Video Clips/Marvel Rivals/"
@@ -19,7 +20,7 @@ def create_env_file():
     try:
         with open(env_file, 'w') as f:
             f.write(env_content)
-        print(f"✅ Created .env file with VIDEO_PATH configuration")
+        print("✅ Created .env file with VIDEO_PATH configuration")
         print(f"📁 File: {os.path.abspath(env_file)}")
         print("Please edit the VIDEO_PATH to match your actual video directory")
     except Exception as e:

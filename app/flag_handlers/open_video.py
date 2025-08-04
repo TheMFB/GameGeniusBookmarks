@@ -1,6 +1,12 @@
-from app.bookmarks_consts import IS_DEBUG, OPTIONS_HELP
+from app.consts.bookmarks_consts import IS_DEBUG
+from app.consts.cli_consts import OPTIONS_HELP
+from app.obs.obs_utils import open_video_in_obs
+from app.utils.decorators import print_def_name
 
-def open_video(args):
+IS_PRINT_DEF_NAME = True
+
+@print_def_name(IS_PRINT_DEF_NAME)
+def open_video(args) -> int:
     # Find the index of the open_video flag
     video_flags = ["--open-video", "-v"]
     video_path = None
@@ -15,20 +21,17 @@ def open_video(args):
             break
 
     if not video_path:
-        print(f"❌ Video path required for --open-video flag")
+        print("❌ Video path required for --open-video flag")
         print(OPTIONS_HELP)
         return 1
 
     print(f"🎬 Opening video in OBS: {video_path}")
 
     # Import the open_video_in_obs function
-    from app.utils import open_video_in_obs
 
     if open_video_in_obs(video_path):
-        print(f"✅ Video opened successfully!")
+        print("✅ Video opened successfully!")
         return 0
-    else:
-        print(f"❌ Failed to open video in OBS")
-        return 1
 
-    return video_path
+    print("❌ Failed to open video in OBS")
+    return 1

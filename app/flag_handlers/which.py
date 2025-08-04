@@ -1,10 +1,20 @@
-import os
-from app.bookmarks import find_matching_bookmark
-from app.bookmarks_folders import parse_folder_bookmark_arg
+from app.bookmarks.matching.bookmark_matching import find_best_bookmark_match_or_create
+from app.utils.decorators import print_def_name
+from app.utils.printing_utils import pprint
 
-def which(args):
+IS_PRINT_DEF_NAME = True
+
+@print_def_name(IS_PRINT_DEF_NAME)
+def handle_which(args):
     which_flag = '--which' if '--which' in args else '-w'
     args_copy = args.copy()
+
+    # Detect --json flag
+    is_json = False
+    if '--json' in args_copy:
+        is_json = True
+        args_copy.remove('--json')
+
     if which_flag in args_copy:
         args_copy.remove(which_flag)
 
@@ -13,40 +23,37 @@ def which(args):
         print("Usage: bm <bookmark_path> --which")
         return 1
 
-    specified_folder_path, fuzzy_input = parse_folder_bookmark_arg(args_copy[0])
-    print(f"🎯 Specified folder: '{specified_folder_path}', bookmark path: '{fuzzy_input}'")
-
-    matches = []
-
-    if specified_folder_path:
-        folder_path = os.path.join("obs_bookmark_saves", specified_folder_path)
-        folder_matches = find_matching_bookmark(fuzzy_input, folder_path)
-        if folder_matches:
-            matches = [m for m in folder_matches if isinstance(m, str)]
-
-    # Fallback to search entire tree
-    if not matches:
-        folder_matches = find_matching_bookmark(fuzzy_input, "obs_bookmark_saves")
-        matches = [m for m in folder_matches if isinstance(m, str)]
-
-    if not matches:
-        print(f"❌ No bookmarks matched '{fuzzy_input}'")
+    cli_bookmark_string = args_copy[0]
+    if not cli_bookmark_string:
+        print(f"❌ No bookmark name provided before {which_flag}")
+        print("Usage: bm <bookmark_path> --which")
         return 1
 
-    if len(matches) == 1:
-        match_path = matches[0]
-        if match_path.startswith("obs_bookmark_saves/"):
-            relative_match = match_path[len("obs_bookmark_saves/"):]
-        else:
-            relative_match = match_path
-        colon_path = relative_match.replace(os.sep, ":")
-        print("✅ Match found:")
-        print(f"  • {colon_path}")
-        return 0
+    bookmark_obj_matches = find_best_bookmark_match_or_create(
+        cli_bookmark_string, is_prompt_user_for_selection=False)
 
+    if not bookmark_obj_matches or isinstance(bookmark_obj_matches, int):
+        print(f"❌ No bookmarks matched for '{cli_bookmark_string}'")
+        return 1
 
-    print(f"⚠️  Multiple bookmarks matched '{fuzzy_input}':")
-    for m in matches:
-        print(f"  • {m}")
-    print("Please be more specific.")
+    if isinstance(bookmark_obj_matches, list):
+        if len(bookmark_obj_matches) == 1:
+            bookmark_obj_match = bookmark_obj_matches[0]
+            print(f"✅ Match found for: '{cli_bookmark_string}':")
+            if is_json:
+                pprint(bookmark_obj_match)
+            else:
+                print(f"  • {bookmark_obj_match['bookmark_path_colon_rel']}")
+            return bookmark_obj_match
+
+        print(f"⚠️  Multiple bookmarks matched for '{cli_bookmark_string}':")
+        for bookmark_obj_match in bookmark_obj_matches:
+            print(f"  • {bookmark_obj_match['bookmark_path_colon_rel']}")
+        return 1
+
+    print(f"✅ Match found for: '{cli_bookmark_string}':")
+    if is_json:
+        pprint(bookmark_obj_matches)
+    else:
+        print(f"  • {bookmark_obj_matches['bookmark_path_colon_rel']}")
     return 1

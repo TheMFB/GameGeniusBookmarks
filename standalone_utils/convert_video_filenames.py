@@ -1,6 +1,7 @@
 import os
 import re
 from pathlib import Path
+
 from codename import codename
 
 VIDEO_DIR = Path(
@@ -29,7 +30,7 @@ def generate_friendly_name(index, file: Path):
     # Check for date id and optional text
     match = DATE_ID_REGEX.match(name)
     if match:
-        date_id, extra = match.groups()
+        _date_id, extra = match.groups()
         if extra:
             friendly = extra.replace(' ', '_')
         else:
@@ -76,10 +77,11 @@ def rename_videos(directory: Path):
     # Save conversions to file
     conversions_file = directory / "filename_conversions.txt"
     # Read existing conversions if file exists
-    existing_lines = []
-    if conversions_file.exists():
-        with open(conversions_file, "r") as f:
-            existing_lines = f.readlines()
+    # TODO(?): These lines were unused...
+    # existing_lines = []
+    # if conversions_file.exists():
+    #     with open(conversions_file, "r") as f:
+    #         existing_lines = f.readlines()
     # Prepare new lines
     new_lines = [f"{old} -> {new}\n" for old, new in renamed]
     # Write all lines back (existing + new)

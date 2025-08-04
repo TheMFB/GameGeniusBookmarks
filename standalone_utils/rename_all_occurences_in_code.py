@@ -1,5 +1,5 @@
-import os
 import json
+import os
 from pathlib import Path
 
 CONVERSIONS_FILE = Path("/Volumes/Extreme_Pro/PS5/CREATE/Video Clips/Marvel Rivals/filename_conversions.txt")
@@ -30,9 +30,9 @@ def update_json_file(json_path, conversion_map):
         nonlocal changed
         if isinstance(obj, dict):
             return {k: replace_in_obj(v, f"{path}.{k}" if path else k) for k, v in obj.items()}
-        elif isinstance(obj, list):
+        if isinstance(obj, list):
             return [replace_in_obj(x, f"{path}[{i}]") for i, x in enumerate(obj)]
-        elif isinstance(obj, str):
+        if isinstance(obj, str):
             orig = obj
             for old, new in conversion_map.items():
                 if old in obj:
@@ -58,7 +58,8 @@ def update_json_file(json_path, conversion_map):
 
 def main():
     conversion_map = load_conversion_map(CONVERSIONS_FILE)
-    for root, dirs, files in os.walk(BOOKMARKS_ROOT):
+    # TODO(MFB): Check out "os.walk"
+    for root, _dirs, files in os.walk(BOOKMARKS_ROOT):
         for file in files:
             if file.endswith(".json"):
                 json_path = Path(root) / file
