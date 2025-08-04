@@ -83,7 +83,12 @@ def convert_exact_bookmark_path_to_bm_obj(
         if ':' in value:
             parts = value.split(':')
         elif '/' in value:
-            parts = Path(value).parts
+            # If absolute, strip ABS_OBS_BOOKMARKS_DIR
+            if value.startswith(ABS_OBS_BOOKMARKS_DIR):
+                rel_value = value[len(ABS_OBS_BOOKMARKS_DIR):].lstrip(os.sep)
+                parts = Path(rel_value).parts
+            else:
+                parts = Path(value).parts
         else:
             parts = [value]
     else:
@@ -92,15 +97,16 @@ def convert_exact_bookmark_path_to_bm_obj(
     if not parts:
         raise ValueError("Could not parse bookmark bookmark_dir.")
 
+    # Remove any parts that are empty
+    parts = [part for part in parts if (part and part != "/" and part != ":")]
     bookmark_tail_name = parts[-1]
     path_parts = parts[:-1]
 
-
     # Relative
-    bookmark_dir_colon_rel = ':'.join(path_parts)
-    bookmark_path_colon_rel = ':'.join(parts)
     bookmark_dir_slash_rel = '/'.join(path_parts)
     bookmark_path_slash_rel = '/'.join(parts)
+    bookmark_dir_colon_rel = ':'.join(path_parts)
+    bookmark_path_colon_rel = ':'.join(parts)
 
     # Absolute
     # if not bookmark_dir:

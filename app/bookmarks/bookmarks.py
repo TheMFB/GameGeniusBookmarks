@@ -73,6 +73,7 @@ def get_all_shallow_bookmark_abs_paths_in_dir(parent_bookmark_dir_abs: str) -> l
     Returns a list of immediate absolute bookmark paths inside `parent_bookmark_dir_abs` that contain a 'bookmark_meta.json' file.
     """
     if not os.path.exists(parent_bookmark_dir_abs):
+        print(f"⚠️  Could not find {parent_bookmark_dir_abs}")
         return []
 
     result = []
