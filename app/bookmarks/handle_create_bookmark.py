@@ -5,7 +5,7 @@ from app.consts.bookmarks_consts import ABS_OBS_BOOKMARKS_DIR, IS_DEBUG
 from app.types.bookmark_types import CurrentRunSettings, MatchedBookmarkObj
 from app.utils.bookmark_utils import convert_exact_bookmark_path_to_bm_obj
 from app.utils.decorators import print_def_name
-from app.utils.printing_utils import pprint, print_dev
+from app.utils.printing_utils import pprint
 
 IS_PRINT_DEF_NAME = True
 
@@ -43,8 +43,6 @@ def handle_create_bookmark_and_parent_dirs(
             create_directory_meta(current_path, description="", tags=None)
             if IS_DEBUG:
                 print(f"📋 Created directory metadata for: {dir_name}")
-
-        print_dev('===== CREATE BOOKMARK METADATA:', 'magenta')
 
         # CREATE BOOKMARK FOLDER #
         os.makedirs(bookmark_path_slash_abs, exist_ok=True)

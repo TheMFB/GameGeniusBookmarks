@@ -3,13 +3,11 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-from app.utils.printing_utils import pprint_dev, print_dev
-
 load_dotenv()
 
 ## DEV CONSTANTS ##
 
-IS_DEBUG = True
+IS_DEBUG = False
 # IS_DEBUG = False
 # IS_DEBUG_FULL = True
 IS_DEBUG_FULL = False
@@ -27,10 +25,7 @@ HIDDEN_COLOR = "\033[38;2;13;42;52m"
 RESET_COLOR = "\033[0m"
 SCREENSHOT_SAVE_SCALE = 0.5
 
-# EXCLUDED_DIRS = {"archive", "archive_temp", "temp"}
-EXCLUDED_DIRS = {"archive", "archive_temp", "temp", "videos"} # # TODO(MFB): DELETE AFTER TESTING
-# EXCLUDED_DIRS = {"archive", "archive_temp", "temp", "videos", "grand-parent", "grand-parent-2"}
-
+EXCLUDED_DIRS = {"archive", "archive_temp", "temp"}
 
 NON_NAME_BOOKMARK_KEYS = ["tags", "description", "video_filename", "timestamp", "type"]
 # TODO(KERCH): On creation, we should not allow these to be used as directory names. If they exist, we should raise an error.
@@ -69,5 +64,3 @@ if IS_LOCAL_REDIS_DEV:
 else:
     GAME_GENIUS_PARENT_DIR = str(Path(REPO_ROOT).resolve().parents[0])
     REDIS_DUMP_DIR = os.path.join(GAME_GENIUS_PARENT_DIR, "game-genius/services/session_manager/utils/standalone/redis_dump")
-    print_dev('---- REDIS_DUMP_DIR:', 'magenta')
-    pprint_dev(REDIS_DUMP_DIR)

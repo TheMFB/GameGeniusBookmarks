@@ -3,7 +3,6 @@ import os
 from app.bookmarks.bookmarks_meta import create_directory_meta
 from app.consts.bookmarks_consts import ABS_OBS_BOOKMARKS_DIR, EXCLUDED_DIRS, IS_DEBUG
 from app.utils.decorators import memoize, print_def_name
-from app.utils.printing_utils import pprint, pprint_dev, print_dev
 
 IS_PRINT_DEF_NAME = True
 
@@ -17,11 +16,6 @@ def get_all_valid_root_dir_names() -> list[str]:
             print(f"🔍 Scanning for folders inside: {ABS_OBS_BOOKMARKS_DIR}")
 
         if not os.path.exists(ABS_OBS_BOOKMARKS_DIR):
-            print('---- ABS_OBS_BOOKMARKS_DIR:')
-            print(ABS_OBS_BOOKMARKS_DIR)
-            pprint(ABS_OBS_BOOKMARKS_DIR)
-            print_dev('---- ABS_OBS_BOOKMARKS_DIR:')
-            pprint_dev(ABS_OBS_BOOKMARKS_DIR)
             print(f"❌ Bookmarks directory does not exist: {ABS_OBS_BOOKMARKS_DIR}")
             return []
 

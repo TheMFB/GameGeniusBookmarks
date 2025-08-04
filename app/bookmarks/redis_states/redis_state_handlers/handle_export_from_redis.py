@@ -8,7 +8,6 @@ from app.bookmarks.redis_states.redis_state_handlers.handle_export_local_redis_t
 )
 from app.consts.bookmarks_consts import IS_LOCAL_REDIS_DEV
 from app.utils.decorators import print_def_name
-from app.utils.printing_utils import print_dev
 
 IS_PRINT_DEF_NAME = True
 
@@ -24,7 +23,6 @@ def handle_export_from_redis(
     """
     # Export from redis to redis dump
     if IS_LOCAL_REDIS_DEV:
-        print_dev('---- !!!! handle_export_from_redis IS_LOCAL_REDIS_DEV', 'red')
         results =  handle_export_local_redis_to_dump(before_or_after)
         if results == 1:
             return 1

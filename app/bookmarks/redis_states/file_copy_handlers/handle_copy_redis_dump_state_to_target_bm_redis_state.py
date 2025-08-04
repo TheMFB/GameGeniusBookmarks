@@ -7,7 +7,6 @@ from app.bookmarks.redis_states.redis_friendly_converter import (
 )
 from app.consts.bookmarks_consts import IS_DEBUG, REDIS_DUMP_DIR
 from app.utils.decorators import print_def_name
-from app.utils.printing_utils import print_dev
 
 IS_PRINT_DEF_NAME = True
 

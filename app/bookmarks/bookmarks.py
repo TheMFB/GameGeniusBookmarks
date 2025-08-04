@@ -19,7 +19,7 @@ from app.types.bookmark_types import (
     MatchedBookmarkObj,
 )
 from app.utils.decorators import memoize, print_def_name
-from app.utils.printing_utils import pprint, print_color, print_dev
+from app.utils.printing_utils import pprint, print_color
 
 IS_AGGREGATE_TAGS_AND_HOIST_GROUPED = True
 IS_PRINT_DEF_NAME = True
@@ -213,9 +213,6 @@ def get_bookmark_info(cli_bookmark_obj: BookmarkPathDictionary) -> MatchedBookma
             }
     except Exception as e:
         print(f"❌ Error loading bookmark metadata: {e}")
-        # return cli_bookmark_obj
-        # TODO(MFB): Should we be creating it here if it doesn't exist?
-        print_dev('++++ 2 DO WE NEED TO CREATE IT HERE? +++', 'red')
         return None
 
 

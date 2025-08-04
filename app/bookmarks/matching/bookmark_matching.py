@@ -16,7 +16,7 @@ from app.types.bookmark_types import (
     MatchedBookmarkObj,
 )
 from app.utils.decorators import print_def_name
-from app.utils.printing_utils import print_color, print_dev
+from app.utils.printing_utils import print_color
 
 IS_PRINT_DEF_NAME = True
 
@@ -33,7 +33,6 @@ def find_best_bookmark_match_or_create(
     Example Target: `GRANDPARENT:PARENT:BOOKMARK -t comp domination`
 
     """
-    print_dev('---- 0 : Reserved Command ----')
     # 1. Does the string match a reserved command?
     if cli_bookmark_string in NAVIGATION_COMMANDS:
         # TODO(MFB): Other than return bookmark, is there anything else with this one?
@@ -53,7 +52,6 @@ def find_best_bookmark_match_or_create(
     # TODO(): Pull all of these into their own functions to clean up the code and be able to more easily show documentation for each.
 
 
-    print_dev('---- 1 : Exact Match (full path) ----')
     # 2. Exact match (full path)
     # Match: `GRANDPARENT:PARENT:BOOKMARK`
     if cli_bookmark_string_slash in all_live_bookmark_path_slash_rels:
@@ -67,7 +65,6 @@ def find_best_bookmark_match_or_create(
             context=context
         )
 
-    print_dev('---- 2 : Exact Match (without some parents) ----')
     # 3. Exact match (without some parents)
     # Match: `PARENT:BOOKMARK`
     matches = find_bookmarks_by_exact_trailing_live_bm_path_parts(cli_bookmark_string, all_live_bookmark_path_slash_rels)
@@ -81,7 +78,6 @@ def find_best_bookmark_match_or_create(
             context=context
         )
 
-    print_dev('---- 3 : Substring Match (with full path) ----')
     # 4. Substring match (with full path)
     # Match: `GRAND:PAR:MARK`
     matches = find_bookmarks_by_substring_with_all_live_bm_path_parts(
@@ -96,7 +92,6 @@ def find_best_bookmark_match_or_create(
             context=context
         )
 
-    print_dev('---- 4 : Substring Match (without some parents) ----')
     # 5. Substring match (without some parents)
     # Match: `PAR:MARK`
     matches = find_bookmarks_by_substring_with_trailing_live_bm_path_parts(
@@ -111,8 +106,6 @@ def find_best_bookmark_match_or_create(
             context=context
         )
 
-    # TODO(MFB): DONE UP TO HERE
-    print_dev('---- 5 : Tag/description match ----')
     # 6. Tag/description match
     # Searches through all names, directories, tags and descriptions -- and does not take order into consideration. Looks for exact matches.
     matches = find_exact_matches_by_bookmark_tokens(
@@ -127,7 +120,6 @@ def find_best_bookmark_match_or_create(
             context=context
         )
 
-    print_dev('---- 6 : Tag/description match ----')
     # 7. Tag/description partial matches
     # Searches through all names, directories, tags and descriptions -- and does not take order into consideration. Looks for exact matches.
     matches = find_partial_substring_matches_by_bookmark_tokens(
@@ -143,9 +135,8 @@ def find_best_bookmark_match_or_create(
         )
 
     # TODO(MFB): Implement fuzzy matching
-    # print_dev('---- 6 : Fuzzy Match ----')
     # # 8. Fuzzy match across names, directories, tags and descriptions
-    print_dev('---- X : No matches - Prompt to create new bookmark ----')
+    
     # X. Handle no matches - prompt to create new bookmark
     if is_prompt_user_for_selection:
         return handle_bookmark_matches(

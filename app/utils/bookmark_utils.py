@@ -5,7 +5,6 @@ from app.bookmarks.bookmarks import get_bookmark_info
 from app.consts.bookmarks_consts import ABS_OBS_BOOKMARKS_DIR
 from app.types.bookmark_types import MatchedBookmarkObj
 from app.utils.decorators import memoize, print_def_name
-from app.utils.printing_utils import print_dev
 
 IS_PRINT_DEF_NAME = True
 
@@ -57,8 +56,6 @@ def convert_exact_bookmark_path_to_bm_obj(
             if ':' in value:
                 parts = value.split(':')
             elif '/' in value or value.startswith(ABS_OBS_BOOKMARKS_DIR):
-                print_dev(
-                    f"++++ value value or value.startswith(ABS_OBS_BOOKMARKS_DIR: '{value}'", 'red')
                 parts = Path(value).parts
             parts = [value]
         else:

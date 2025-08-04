@@ -17,7 +17,6 @@ from app.consts.bookmarks_consts import (
 )
 from app.types.bookmark_types import CurrentRunSettings, MatchedBookmarkObj
 from app.utils.decorators import print_def_name
-from app.utils.printing_utils import pprint_dev, print_dev
 
 IS_PRINT_DEF_NAME = True
 
