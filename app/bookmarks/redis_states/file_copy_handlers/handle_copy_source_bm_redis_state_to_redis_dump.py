@@ -9,37 +9,31 @@ IS_PRINT_DEF_NAME = True
 
 @print_def_name(IS_PRINT_DEF_NAME)
 def handle_copy_source_bm_redis_state_to_redis_dump(
-    source_bookmark_path_slash_abs: str,
+    origin_bm_redis_state_path: str,
     redis_temp_state_filename: Literal["bookmark_temp", "bookmark_temp_after"]
 ) -> int:
     """
-    Handles saving the final Redis state (bookmark_temp or bookmark_temp_after) to redis_after.json or redis_before.json
-    Returns: True if redis_after was saved, False otherwise
+    Handles moving the source bookmark's Redis state to the Redis dump directory.
+    Returns: 0 if successful, 1 if error.
     """
 
     redis_temp_state_filename_json = redis_temp_state_filename + ".json"
-    redis_dump_state_path = os.path.join(REDIS_DUMP_DIR, redis_temp_state_filename)
+    redis_dump_state_path_json = os.path.join(REDIS_DUMP_DIR, redis_temp_state_filename_json)
 
     # Make sure the source file exists
-    if not os.path.exists(source_bookmark_path_slash_abs):
+    if not os.path.exists(origin_bm_redis_state_path):
         print(
-            f"❌ Bookmark Redis state file does not exist: {source_bookmark_path_slash_abs}")
+            f"❌ Bookmark Redis state file does not exist: {origin_bm_redis_state_path}")
         return 1
 
-
     if IS_DEBUG:
         print(
-            f"💾 Saving {source_bookmark_path_slash_abs} to Redis Temp as {redis_temp_state_filename_json}...")
+            f"💾 Saving {origin_bm_redis_state_path} to Redis Temp as {redis_temp_state_filename_json}...")
 
-    # if not run_redis_command('export', 'bookmark_temp_after'):
-    #     print("❌ Failed to export final Redis state")
-    #     return False
-
-    # Move the final Redis export to the bookmark directory
-    shutil.move(redis_dump_state_path, source_bookmark_path_slash_abs)
+    # Move the source file to the dump directory
+    shutil.move(origin_bm_redis_state_path, redis_dump_state_path_json)
     if IS_DEBUG:
         print(
-            f"💾 Saved final Redis state to: {source_bookmark_path_slash_abs}")
-
+            f"💾 Saved the target final Redis state \n {origin_bm_redis_state_path} \n to dump directory: \n {redis_dump_state_path_json}")
 
     return 0

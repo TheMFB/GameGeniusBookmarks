@@ -30,6 +30,7 @@ def determine_origin_bm_redis_state_path_from_context(
     """
     This function is used to get the origin bookmark redis state path.
     """
+
     # Matched Bookmark
     matched_bookmark_path_abs = matched_bookmark_obj["bookmark_path_slash_abs"]
     is_bm_match_redis_before_state_exist = os.path.exists(
@@ -40,9 +41,6 @@ def determine_origin_bm_redis_state_path_from_context(
         "alt_source_bookmark_obj", None)
     is_use_alt_source_bookmark = current_run_settings_obj.get(
         "is_use_alt_source_bookmark", None)
-
-    print_dev('---- alt_source_bookmark_obj:', 'magenta')
-    pprint_dev(alt_source_bookmark_obj)
 
     # Behavioral Flags
     is_blank_slate = current_run_settings_obj["is_blank_slate"]
