@@ -5,6 +5,7 @@ from typing import Callable, TypeVar, cast
 
 from app.utils.printing_utils import pprint
 
+IS_SILENCE_PRINT_DEF_NAME = True
 IS_PRINT_FILE_LINK= True
 IS_ADJUST_TO_STACK = True
 
@@ -36,7 +37,7 @@ def print_def_name(should_print: bool = True) -> Callable[[F], F]:
     Note that if you want to get it to open through Cursor, you may need to `brew install duti`, and select Cursor as the default app for .py files.
     """
     def decorator(func: F) -> F:
-        if not should_print:
+        if not should_print or IS_SILENCE_PRINT_DEF_NAME:
             return func
 
         @wraps(func)
