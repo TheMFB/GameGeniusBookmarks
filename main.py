@@ -92,5 +92,6 @@ if __name__ == "__main__":
         exit_code = 1 # pylint: disable=C0103
     finally:
         # Print all folders and bookmarks with current one highlighted
-        print_all_live_directories_and_bookmarks()
+        print_all_live_directories_and_bookmarks(
+            is_print_just_current_directory_bookmarks=True)
         sys.exit(exit_code if isinstance(exit_code, (int, type(None))) else 1)

@@ -3,7 +3,6 @@ from app.bookmarks.redis_states.handle_bookmark_post_run_redis_states import (
     handle_bookmark_post_run_redis_states,
 )
 from app.types.bookmark_types import CurrentRunSettings, MatchedBookmarkObj
-from app.utils.printing_utils import print_color
 
 
 def handle_matched_bookmark_post_processing(
@@ -25,7 +24,6 @@ def handle_matched_bookmark_post_processing(
 
     # Save the last used bookmark at the end of successful operations
     if matched_bookmark_obj["bookmark_dir_slash_abs"]:
-        print_color('saving last used bookmark', 'red')
         # TODO(?): If dry-run, should we not save the last used bookmark?
         save_last_used_bookmark(matched_bookmark_obj)
 

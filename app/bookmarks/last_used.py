@@ -12,7 +12,6 @@ IS_PRINT_DEF_NAME = True
 @print_def_name(IS_PRINT_DEF_NAME)
 def save_last_used_bookmark(matched_bookmark_obj: MatchedBookmarkObj):
     """Save the last used bookmark to a global state file."""
-    print('Saving last used bookmark:')
     state_file = os.path.join(ABS_OBS_BOOKMARKS_DIR, "last_bookmark_state.json")
 
     with open(state_file, 'w') as f:

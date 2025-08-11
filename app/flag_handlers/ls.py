@@ -8,6 +8,7 @@ from app.utils.decorators import print_def_name
 
 IS_PRINT_DEF_NAME = True
 
+# TODO(MFB): We may want to consider that the print_all_live_directories_and_bookmarks only prints the current directory bookmarks when we hit the end of the file. We should make sure that if we LS, that it prints all of the applicable bookmarks (all).
 @print_def_name(IS_PRINT_DEF_NAME)
 def handle_ls(_args):
     # Remove -ls so we can check what came before it
