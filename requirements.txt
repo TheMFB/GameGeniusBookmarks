@@ -4,4 +4,4 @@ python-dotenv
 codename
 redis
 # pickle
-
+pydantic

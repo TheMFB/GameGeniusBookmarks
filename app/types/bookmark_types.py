@@ -40,8 +40,8 @@ class CurrentRunSettings(TypedDict):
     is_no_saving_dry_run: bool
     is_overwrite_bm_redis_after: bool
     is_overwrite_bm_redis_before: bool
-    is_save_updates: bool
     is_save_obs: bool
+    is_save_updates: bool
     is_show_image: bool
     is_use_alt_source_bookmark: bool
     tags: list[str] | None
@@ -114,8 +114,8 @@ default_processed_flags: CurrentRunSettings = {
     "is_no_saving_dry_run": False,
     "is_overwrite_bm_redis_after": False,
     "is_overwrite_bm_redis_before": False,
-    "is_save_updates": False,
     "is_save_obs": False,
+    "is_save_updates": False,
     "is_show_image": False,
     "is_use_alt_source_bookmark": False,
     "tags": None,

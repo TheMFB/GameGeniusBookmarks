@@ -154,13 +154,15 @@ def load_bookmark_into_obs(matched_bookmark_obj: MatchedBookmarkObj) -> int:
         cl = obs.ReqClient(host="localhost", port=4455, password="", timeout=3)
 
         # Load the media file if different
-        current_settings = cl.send(
-            "GetInputSettings", {"inputName": "Media Source"})
-        current_file = current_settings.input_settings.get("local_file", "") # type: ignore
+        # current_settings = cl.send(
+            # "GetInputSettings", {"inputName": "Media Source"})
+        # current_file = current_settings.input_settings.get("local_file", "")
 
         # Construct the full video file path from env variable
         video_filename = bookmark_info.get('video_filename', '')
         video_file_path = construct_full_video_file_path(video_filename)
+
+
 
         if not video_filename:
             print("❌ No file path found in bookmark_path_slash_rel metadata")
@@ -169,31 +171,70 @@ def load_bookmark_into_obs(matched_bookmark_obj: MatchedBookmarkObj) -> int:
                     f"🔍 Debug - Available keys in bookmark_info: {list(bookmark_info.keys())}")
             return 1
 
-        if current_file != video_file_path:
-            print(f"📁 Loading video file: {video_file_path}")
+        # if current_file != video_file_path:
+        if True:
+            print(f"\U0001F4C1 Loading video file: {video_file_path}")
             cl.send("SetInputSettings", {
                 "inputName": "Media Source",
                 "inputSettings": {
                     "local_file": video_file_path
                 }
             })
-            # Wait longer for the media to load before trying to set cursor
-            time.sleep(2)  # Increased from 1 to 2 seconds
+            # Always restart the media to ensure it's not in a stopped state
+            cl.send("TriggerMediaInputAction", {
+                "inputName": "Media Source",
+                "mediaAction": "OBS_WEBSOCKET_MEDIA_INPUT_ACTION_RESTART"
+            })
+            # Wait a bit for the media to load and restart
+            time.sleep(1)
 
-        # Start playing the media first
-        cl.send("TriggerMediaInputAction", {
-            "inputName": "Media Source",
-            "mediaAction": "OBS_WEBSOCKET_MEDIA_INPUT_ACTION_PLAY"
-        })
+        # Ensure the media is in a valid state (playing or paused) before setting the cursor
+        max_wait = 1.0  # seconds
+        poll_interval = 0.2
+        waited = 0.0
+        media_state = None
+        while waited < max_wait:
+            try:
+                status = cl.send("GetMediaInputStatus", {"inputName": "Media Source"})
+                media_state = getattr(status, 'media_state', None)
+                if IS_DEBUG:
+                    print(f"\U0001F50D Media state: {media_state}")
+                if media_state in ("OBS_MEDIA_STATE_PLAYING", "OBS_MEDIA_STATE_PAUSED"):
+                    break
+            except Exception as poll_err:
+                if IS_DEBUG:
+                    print(f"\u26A0\uFE0F Error polling media state: {poll_err}")
+            time.sleep(poll_interval)
+            waited += poll_interval
+        else:
+            print(f"❌ Media source did not reach a playable state (state: {media_state}) after {max_wait} seconds.")
+            return 1
 
-        # Wait a moment for playback to start
-        time.sleep(0.5)
+        # Smartly determine if timestamp is ms or s by comparing to timestamp_formatted
+        timestamp = bookmark_info.get('timestamp', 0)
+        timestamp_formatted = bookmark_info.get('timestamp_formatted', '')
+        parsed_seconds = _parse_formatted_timestamp_to_seconds(timestamp_formatted)
+        delta = 2  # seconds tolerance
+        # Check both interpretations
+        if abs(timestamp - parsed_seconds) <= delta:
+            # timestamp is in seconds
+            media_cursor = int(timestamp * 1000)
+            if IS_DEBUG:
+                print(f"\U0001F50D Interpreting timestamp as seconds: {timestamp}s")
+        elif abs((timestamp / 1000) - parsed_seconds) <= delta:
+            # timestamp is in ms
+            media_cursor = int(timestamp)
+            if IS_DEBUG:
+                print(f"\U0001F50D Interpreting timestamp as milliseconds: {timestamp}ms")
+        else:
+            # Default to ms, but warn
+            media_cursor = int(timestamp)
+            print(f"⚠️  Could not confidently determine timestamp units. Using as ms. Parsed: {parsed_seconds}s, Raw: {timestamp}")
 
         # Set the timestamp
         cl.send("SetMediaInputCursor", {
             "inputName": "Media Source",
-            # Convert seconds to milliseconds
-            "mediaCursor": int(bookmark_info['timestamp'] * 1000)
+            "mediaCursor": media_cursor
         })
 
         # Pause the media
@@ -370,3 +411,25 @@ def save_obs_media_info_to_bookmark_meta(
                         f"📋 Updated missing bookmark obs metadata with tags: {current_run_settings_obj['tags']}")
 
     return 0
+
+
+def _parse_formatted_timestamp_to_seconds(formatted: str) -> int:
+    """Parse a formatted timestamp string like '5:08' or '01:05:08' to seconds."""
+    try:
+        parts = [int(p) for p in formatted.strip().split(":")]
+        if len(parts) == 3:
+            hours, minutes, seconds = parts
+        elif len(parts) == 2:
+            hours = 0
+            minutes, seconds = parts
+        elif len(parts) == 1:
+            hours = 0
+            minutes = 0
+            seconds = parts[0]
+        else:
+            return 0
+        return hours * 3600 + minutes * 60 + seconds
+    except Exception as e:
+        if IS_DEBUG:
+            print(f"❌ Failed to parse timestamp_formatted '{formatted}': {e}")
+        return 0

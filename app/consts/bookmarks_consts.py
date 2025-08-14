@@ -59,8 +59,5 @@ LOCAL_REDIS_SESSIONS_HOST = "localhost"
 LOCAL_REDIS_SESSIONS_PORT = 6379
 LOCAL_REDIS_SESSIONS_DB = 0
 
-if IS_LOCAL_REDIS_DEV:
-    REDIS_DUMP_DIR = os.path.join(REPO_ROOT, "standalone_utils", "redis", "redis_dump")
-else:
-    GAME_GENIUS_PARENT_DIR = str(Path(REPO_ROOT).resolve().parents[0])
-    REDIS_DUMP_DIR = os.path.join(GAME_GENIUS_PARENT_DIR, "game-genius/services/session_manager/utils/standalone/redis_dump")
+GAME_GENIUS_PARENT_DIR = str(Path(REPO_ROOT).resolve().parents[0])
+REDIS_DUMP_DIR = os.path.join(REPO_ROOT, "standalone_utils", "redis", "redis_dump") if IS_LOCAL_REDIS_DEV else os.path.join(GAME_GENIUS_PARENT_DIR, "game-genius/services/session_manager/utils/standalone/redis_dump")

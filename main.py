@@ -33,7 +33,7 @@ def main():
     current_run_settings_obj: CurrentRunSettings | int = process_flags(args)
     if isinstance(current_run_settings_obj, int):
         # If the user sent a "routed flag" that terminates the program after use
-        return current_run_settings_obj
+        return current_run_settings_obj, False
 
     # FIND/CREATE BOOKMARK
 
@@ -44,10 +44,10 @@ def main():
     )
     if isinstance(matched_bookmark_obj, int) or not matched_bookmark_obj:
         print_color("❌ Bookmark not found and user did not create a new bookmark", 'red')
-        return matched_bookmark_obj
+        return matched_bookmark_obj, False
     if isinstance(matched_bookmark_obj, list):
         print_color("❌ Multiple bookmarks matched", 'red')
-        return matched_bookmark_obj
+        return matched_bookmark_obj, False
 
     # HANDLE MATCHED BOOKMARK PRE-PROCESSING
 
@@ -57,7 +57,7 @@ def main():
     )
     if results != 0:
         print_color("❌ Error in handle_matched_bookmark_pre_processing", 'red')
-        return results
+        return results, False
 
 
     # MAIN PROCESS
@@ -66,7 +66,7 @@ def main():
         current_run_settings=current_run_settings_obj)
     if results == 1:
         print_color("❌ Main process failed", 'red')
-        return results
+        return results, False
 
     # HANDLE BOOKMARK POST-PROCESSING
 
@@ -74,18 +74,19 @@ def main():
         matched_bookmark_obj, current_run_settings_obj)
     if results == 1:
         print_color("❌ Error in handle_matched_bookmark_post_processing", 'red')
-        return results
+        return results, False
 
     # SUCCESS!
 
     print("✅ Integrated workflow completed successfully!")
-    return 0
+    return 0, current_run_settings_obj.get("is_print_just_current_directory_bookmarks", True)
 
 
 if __name__ == "__main__":
     exit_code = 0 # pylint: disable=C0103
+    is_print_just_current_directory_bookmarks = False
     try:
-        exit_code = main()
+        exit_code, is_print_just_current_directory_bookmarks = main()
     except Exception:
         print_color('==== Exception: ====', 'red')
         traceback.print_exc()
@@ -93,5 +94,5 @@ if __name__ == "__main__":
     finally:
         # Print all folders and bookmarks with current one highlighted
         print_all_live_directories_and_bookmarks(
-            is_print_just_current_directory_bookmarks=True)
+            is_print_just_current_directory_bookmarks=is_print_just_current_directory_bookmarks)
         sys.exit(exit_code if isinstance(exit_code, (int, type(None))) else 1)
