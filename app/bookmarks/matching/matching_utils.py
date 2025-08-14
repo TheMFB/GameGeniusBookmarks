@@ -33,7 +33,9 @@ def is_exact_bookmark_path_in_live_bookmarks(bookmark_obj):
 
     return does_path_exist_in_bookmarks(all_bookmarks_object, cli_bookmark_path_rel)
 
+
 # TODO(MFB): Bugfix
+
 
 @print_def_name(IS_PRINT_DEF_NAME)
 @memoize
@@ -45,8 +47,7 @@ def token_match_bookmarks(query_string, folder_dir):
     if not all_bookmark_objects:
         return []
 
-    query_tokens = set(query_string.lower().replace(
-        ":", " ").replace("/", " ").split())
+    query_tokens = set(query_string.lower().replace(":", " ").replace("/", " ").split())
     matches = []
 
     for path in all_bookmark_objects:
@@ -55,6 +56,7 @@ def token_match_bookmarks(query_string, folder_dir):
             matches.append(path)
 
     return matches
+
 
 # TODO(MFB): Bugfix
 
@@ -74,18 +76,18 @@ def build_bookmark_token_map(include_tags_and_descriptions=True):
         # Gather tags and description at this node
         tags = set(ancestor_tags)
         descriptions = list(ancestor_descriptions)
-        if 'tags' in node:
-            tags.update([t.lower() for t in node['tags']])
-        if 'description' in node and node['description']:
-            descriptions.append(node['description'].lower())
+        if "tags" in node:
+            tags.update([t.lower() for t in node["tags"]])
+        if "description" in node and node["description"]:
+            descriptions.append(node["description"].lower())
 
         # If this is a bookmark node
-        if node.get('type') == 'bookmark':
-            bookmark_path = '/'.join(path_parts)
+        if node.get("type") == "bookmark":
+            bookmark_path = "/".join(path_parts)
             tokens = set()
             # Path parts (split on / and -)
             for part in path_parts:
-                tokens.update(part.lower().split('-'))
+                tokens.update(part.lower().split("-"))
             # Tags
             if include_tags_and_descriptions:
                 tokens.update(tags)
@@ -99,7 +101,13 @@ def build_bookmark_token_map(include_tags_and_descriptions=True):
         else:
             # Recurse into children
             for key, child in node.items():
-                if key in ('tags', 'description', 'type', 'timestamp', 'video_filename'):
+                if key in (
+                    "tags",
+                    "description",
+                    "type",
+                    "timestamp",
+                    "video_filename",
+                ):
                     continue
                 walk(child, path_parts + [key], tags, descriptions)
 
@@ -107,6 +115,7 @@ def build_bookmark_token_map(include_tags_and_descriptions=True):
         walk(root_node, [root_name], set(), [])
 
     return bookmark_token_map
+
 
 # @print_def_name(IS_PRINT_DEF_NAME)
 # def fuzzy_match_bookmark_tokens(cli_bookmark_string: str, include_tags_and_descriptions: bool = True, top_n: int = 5):
@@ -178,12 +187,14 @@ def build_bookmark_token_map(include_tags_and_descriptions=True):
 def interactive_choose_bookmark(
     matched_bookmark_strings: list[str],
     current_run_settings_obj: CurrentRunSettings | None = None,
-    context: str | None = None
+    context: str | None = None,
 ) -> str | None:
     """
-    Ask the user to choose a bookmark fr om a list of matches.
+    Ask the user to choose a bookmark from a list of matches.
     """
-    is_add_bookmark = current_run_settings_obj and current_run_settings_obj.get("is_add_bookmark", False)
+    is_add_bookmark = current_run_settings_obj and current_run_settings_obj.get(
+        "is_add_bookmark", False
+    )
 
     if len(matched_bookmark_strings) > 1:
         if context == "bookmark_template":
@@ -194,8 +205,30 @@ def interactive_choose_bookmark(
         for idx, match in enumerate(matched_bookmark_strings):
             print(f"  {idx + 1}. {match}")
     elif len(matched_bookmark_strings) == 1:
-        print(f"✅ One result found: {matched_bookmark_strings[0]}")
-        print(f"  {matched_bookmark_strings[0]}")
+        print("✅ One result found:")
+        print(f"  1. {matched_bookmark_strings[0]}")
+        print("")
+        if context != "bookmark_template":
+            print("  a. Add new bookmark")
+        print("  0. Cancel")
+
+        while True:
+            try:
+                choice = input("Enter your choice: ").strip()
+                if choice in {"0", "c", "q", "x"}:
+                    print("❌ Cancelled.")
+                    return None
+                if choice.lower() == "a":
+                    print("🆕 Creating new bookmark...")
+                    return "create_new_bookmark"
+                if choice == "1":
+                    selected = matched_bookmark_strings[0]
+                    print(f"✅ Selected: {selected}")
+                    return selected
+                print("❌ Invalid input. Type 1 to select, or 0/a/c/q/x to cancel/add.")
+            except ValueError:
+                print("❌ Please enter a number or valid command.")
+
     else:
         if is_add_bookmark:
             return "create_new_bookmark"
@@ -204,31 +237,31 @@ def interactive_choose_bookmark(
         # TODO(KERCH): Print out the cli string here for reference.
         # TODO(MFB): When creating a new bookmark, we should look to see if the dir matches any valid dir names and then prompt the user to select a directory / create a new one.
 
-    print('')
+    # Shared prompt for multiple matches
+    print("")
     if context != "bookmark_template":
-        print("  c. Create new bookmark")
+        print("  a. Add new bookmark")
     print("  0. Cancel")
 
     while True:
         try:
             choice = input("Enter your choice: ").strip()
-            if choice == "0":
+            if choice in {"0", "c", "q", "x"}:
                 print("❌ Cancelled.")
                 return None
-            if choice.lower() == "c" and context != "bookmark_template":
+            if choice.lower() == "a":
                 print("🆕 Creating new bookmark...")
                 return "create_new_bookmark"
-
             choice_num = int(choice)
             if 1 <= choice_num <= len(matched_bookmark_strings):
                 selected = matched_bookmark_strings[choice_num - 1]
                 print(f"✅ Selected: {selected}")
                 return selected
             print(
-                f"❌ Invalid input. Choose between 0 and {len(matched_bookmark_strings)}.")
-
+                f"❌ Invalid input. Choose between 1 and {len(matched_bookmark_strings)}, or 0/a/c/q/x to cancel/add."
+            )
         except ValueError:
-            print("❌ Please enter a number.")
+            print("❌ Please enter a number or valid command.")
 
 
 @print_def_name(IS_PRINT_DEF_NAME)
@@ -239,7 +272,7 @@ def handle_bookmark_matches(
     is_prompt_user_for_selection: bool = False,
     is_prompt_user_for_create_bm_option: bool = False,
     context: str | None = None,
-    ) -> MatchedBookmarkObj | int |  List[MatchedBookmarkObj] | None:
+) -> MatchedBookmarkObj | int | List[MatchedBookmarkObj] | None:
     """
     Handle the results of a bookmark match.
     """
@@ -254,23 +287,31 @@ def handle_bookmark_matches(
 
     # If there are multiple matches, or we're prompting to create a new bookmark, prompt the user to choose a bookmark
     if is_prompt_user_for_selection:
-        chosen_bookmark_string = interactive_choose_bookmark(matched_bookmark_strings, current_run_settings_obj, context)
+        chosen_bookmark_string = interactive_choose_bookmark(
+            matched_bookmark_strings, current_run_settings_obj, context
+        )
         if chosen_bookmark_string:
             if chosen_bookmark_string == "create_new_bookmark":
                 if not current_run_settings_obj:
-                    print_color('❌ Cannot create a bookmark in this mode', 'red')
+                    print_color("❌ Cannot create a bookmark in this mode", "red")
                     return 1
-                return handle_create_bookmark_and_parent_dirs(cli_bookmark_string, current_run_settings_obj)
+                return handle_create_bookmark_and_parent_dirs(
+                    cli_bookmark_string, current_run_settings_obj
+                )
             return convert_exact_bookmark_path_to_bm_obj(chosen_bookmark_string)
         return 1
 
     # If we just want all matches and no user interaction, return the matched bookmark objects
-    return [convert_exact_bookmark_path_to_bm_obj(matched_bookmark_string) for matched_bookmark_string in matched_bookmark_strings]
-
+    return [
+        convert_exact_bookmark_path_to_bm_obj(matched_bookmark_string)
+        for matched_bookmark_string in matched_bookmark_strings
+    ]
 
 
 @print_def_name(IS_PRINT_DEF_NAME)
-def find_bookmarks_by_exact_trailing_live_bm_path_parts(cli_bookmark_string, all_live_bookmark_path_slash_rels):
+def find_bookmarks_by_exact_trailing_live_bm_path_parts(
+    cli_bookmark_string, all_live_bookmark_path_slash_rels
+):
     """
     Find all bookmarks where the last N path parts match the input, in order.
     Example:
@@ -282,15 +323,19 @@ def find_bookmarks_by_exact_trailing_live_bm_path_parts(cli_bookmark_string, all
     cli_input_parts = cli_bookmark_string.replace(":", "/").split("/")
     matches = []
     for path in all_live_bookmark_path_slash_rels:
-
         live_bm_path_parts = path.split("/")
-        if len(live_bm_path_parts) >= len(cli_input_parts) and live_bm_path_parts[-len(cli_input_parts):] == cli_input_parts:
+        if (
+            len(live_bm_path_parts) >= len(cli_input_parts)
+            and live_bm_path_parts[-len(cli_input_parts) :] == cli_input_parts
+        ):
             matches.append(path)
     return matches
 
 
 @print_def_name(IS_PRINT_DEF_NAME)
-def find_bookmarks_by_substring_with_all_live_bm_path_parts(cli_bookmark_string, all_live_bookmark_path_slash_rels):
+def find_bookmarks_by_substring_with_all_live_bm_path_parts(
+    cli_bookmark_string, all_live_bookmark_path_slash_rels
+):
     """
     Find all bookmarks where the input is a substring of the path.
     Example:
@@ -314,12 +359,18 @@ def find_bookmarks_by_substring_with_all_live_bm_path_parts(cli_bookmark_string,
     for live_bm_path in all_live_bookmark_path_slash_rels:
         live_bm_path_parts = live_bm_path.split("/")
         if len(live_bm_path_parts) == len(cli_input_parts):
-            if all(cli_input_parts[i] in live_bm_path_parts[i] for i in range(len(live_bm_path_parts))):
+            if all(
+                cli_input_parts[i] in live_bm_path_parts[i]
+                for i in range(len(live_bm_path_parts))
+            ):
                 matches.append(live_bm_path)
     return matches
 
+
 @print_def_name(IS_PRINT_DEF_NAME)
-def find_bookmarks_by_substring_with_trailing_live_bm_path_parts(cli_bookmark_string, all_live_bookmark_path_slash_rels):
+def find_bookmarks_by_substring_with_trailing_live_bm_path_parts(
+    cli_bookmark_string, all_live_bookmark_path_slash_rels
+):
     """
     Find all bookmarks where the input is a substring of the path.
     Example:
@@ -340,7 +391,6 @@ def find_bookmarks_by_substring_with_trailing_live_bm_path_parts(cli_bookmark_st
     # Convert input to list of parts
     cli_input_parts = cli_bookmark_string.replace(":", "/").split("/")
     matches = []
-
 
     for live_bm_path in all_live_bookmark_path_slash_rels:
         live_bm_path_parts = live_bm_path.split("/")
@@ -377,7 +427,7 @@ def find_exact_matches_by_bookmark_tokens(
     token_map = build_bookmark_token_map(include_tags_and_descriptions)
     # TODO(MFB): Add an option to be case-(in)sensitive
 
-    query_tokens = set(cli_bookmark_string.lower().split(':'))
+    query_tokens = set(cli_bookmark_string.lower().split(":"))
     matches = []
 
     for live_bm_path_slash_rel, live_bm_token_data in token_map.items():
@@ -390,6 +440,7 @@ def find_exact_matches_by_bookmark_tokens(
             matches.append(live_bm_path_slash_rel)
 
     return matches
+
 
 @print_def_name(IS_PRINT_DEF_NAME)
 def find_partial_substring_matches_by_bookmark_tokens(
@@ -406,9 +457,9 @@ def find_partial_substring_matches_by_bookmark_tokens(
 
     """
     token_map = build_bookmark_token_map(include_tags_and_descriptions)
-        # TODO(MFB): Add an option to be case-(in)sensitive
+    # TODO(MFB): Add an option to be case-(in)sensitive
 
-    query_tokens = set(cli_bookmark_string.lower().split(':'))
+    query_tokens = set(cli_bookmark_string.lower().split(":"))
     matches = []
 
     for live_bm_path_slash_rel, live_bm_token_data in token_map.items():
@@ -421,6 +472,7 @@ def find_partial_substring_matches_by_bookmark_tokens(
             matches.append(live_bm_path_slash_rel)
 
     return matches
+
 
 # @print_def_name(IS_PRINT_DEF_NAME)
 # def find_fuzzy_matches_by_bookmark_tokens(
