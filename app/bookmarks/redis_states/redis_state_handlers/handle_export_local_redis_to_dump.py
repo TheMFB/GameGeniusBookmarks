@@ -122,7 +122,6 @@ def handle_export_local_redis_to_dump(before_or_after: Literal["before", "after"
 #                     data[key.decode("utf-8")] = try_json_load(decoded)
 #             else:
 #                 print(
-#                     # type: ignore
 #                     f"Skipping key {key.decode('utf-8')} of type {key_type.decode('utf-8')}")
 #     except Exception as e:
 #         print(f"❌ Error exporting from Redis to Redis Dump: {e}")

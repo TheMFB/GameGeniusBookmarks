@@ -43,7 +43,8 @@ def handle_copy_redis_dump_state_to_target_bm_redis_state(
             f"💾 Saving Redis dump state:\n{redis_dump_state_filepath}\nto target bookmark:\n{target_bm_redis_state_filepath}...")
 
     # Move the final Redis export to the bookmark directory
-    shutil.move(redis_dump_state_filepath, target_bm_redis_state_filepath)
+    # shutil.move(redis_dump_state_filepath, target_bm_redis_state_filepath)
+    shutil.copy(redis_dump_state_filepath, target_bm_redis_state_filepath)
     if IS_DEBUG:
         print(
             f"💾 Saved final Redis state to: {target_bm_redis_state_filepath}")

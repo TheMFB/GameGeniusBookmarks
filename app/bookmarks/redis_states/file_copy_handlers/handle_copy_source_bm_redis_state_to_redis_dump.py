@@ -31,7 +31,7 @@ def handle_copy_source_bm_redis_state_to_redis_dump(
             f"💾 Saving {origin_bm_redis_state_path} to Redis Temp as {redis_temp_state_filename_json}...")
 
     # Move the source file to the dump directory
-    shutil.move(origin_bm_redis_state_path, redis_dump_state_path_json)
+    shutil.copy(origin_bm_redis_state_path, redis_dump_state_path_json)
     if IS_DEBUG:
         print(
             f"💾 Saved the target final Redis state \n {origin_bm_redis_state_path} \n to dump directory: \n {redis_dump_state_path_json}")

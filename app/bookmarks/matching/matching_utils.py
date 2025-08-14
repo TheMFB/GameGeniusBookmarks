@@ -183,7 +183,7 @@ def interactive_choose_bookmark(
     """
     Ask the user to choose a bookmark fr om a list of matches.
     """
-    is_add_bookmark = current_run_settings_obj.get("is_add_bookmark", False)
+    is_add_bookmark = current_run_settings_obj and current_run_settings_obj.get("is_add_bookmark", False)
 
     if len(matched_bookmark_strings) > 1:
         if context == "bookmark_template":
