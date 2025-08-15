@@ -231,17 +231,23 @@ def load_bookmark_into_obs(matched_bookmark_obj: MatchedBookmarkObj) -> int:
             media_cursor = int(timestamp)
             print(f"⚠️  Could not confidently determine timestamp units. Using as ms. Parsed: {parsed_seconds}s, Raw: {timestamp}")
 
+        # Pause the media
+        cl.send("TriggerMediaInputAction", {
+            "inputName": "Media Source",
+            "mediaAction": "OBS_WEBSOCKET_MEDIA_INPUT_ACTION_PAUSE"
+        })
+
         # Set the timestamp
         cl.send("SetMediaInputCursor", {
             "inputName": "Media Source",
             "mediaCursor": media_cursor
         })
 
-        # Pause the media
-        cl.send("TriggerMediaInputAction", {
-            "inputName": "Media Source",
-            "mediaAction": "OBS_WEBSOCKET_MEDIA_INPUT_ACTION_PAUSE"
-        })
+        # # Pause the media
+        # cl.send("TriggerMediaInputAction", {
+        #     "inputName": "Media Source",
+        #     "mediaAction": "OBS_WEBSOCKET_MEDIA_INPUT_ACTION_PAUSE"
+        # })
 
         print(
             f"✅ Loaded OBS to timestamp from bookmark: {bookmark_info['timestamp_formatted']}")
