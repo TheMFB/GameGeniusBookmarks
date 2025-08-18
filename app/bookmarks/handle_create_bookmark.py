@@ -17,11 +17,10 @@ def handle_create_bookmark_and_parent_dirs(
 ) -> MatchedBookmarkObj | int | None:
     """
     This function creates the bookmark directory and its parent directories, and creates the bookmark and directory metadata.
-    
+
     """
     # Create bookmark directory
-    cli_bookmark_obj = convert_exact_bookmark_path_to_bm_obj(
-        cli_bookmark_string)
+    cli_bookmark_obj = convert_exact_bookmark_path_to_bm_obj(cli_bookmark_string)
     bookmark_dir_slash_abs = cli_bookmark_obj["bookmark_dir_slash_abs"]
     bookmark_dir_slash_rel = cli_bookmark_obj["bookmark_dir_slash_rel"]
     bookmark_path_slash_abs = cli_bookmark_obj["bookmark_path_slash_abs"]
@@ -32,9 +31,11 @@ def handle_create_bookmark_and_parent_dirs(
         # CREATE DIRECTORY METADATA #
 
         # Create directory metadata for nested bookmarks
-        path_parts = bookmark_dir_slash_rel.split('/')
+        path_parts = bookmark_dir_slash_rel.split("/")
         current_path = ABS_OBS_BOOKMARKS_DIR
-        for _i, dir_name in enumerate(path_parts[:-1]): # Take all but the last part (the bookmark name itself)
+        for _i, dir_name in enumerate(
+            path_parts[:-1]
+        ):  # Take all but the last part (the bookmark name itself)
             current_path = os.path.join(current_path, dir_name)
 
             # TODO(KERCH): We would add in here the description and tags for when we have the -t# flags. https://app.clickup.com/t/86aaat28f
@@ -53,9 +54,10 @@ def handle_create_bookmark_and_parent_dirs(
             {},
             current_run_settings_obj["tags"],
         )
+
     else:
         print("💧 DRY RUN: Skipping bookmark metadata creation")
-        print('💧 DRY RUN: Would have created bookmark metadata for:')
+        print("💧 DRY RUN: Would have created bookmark metadata for:")
         pprint(cli_bookmark_obj)
 
     return cli_bookmark_obj

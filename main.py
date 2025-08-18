@@ -2,6 +2,7 @@ import sys
 import traceback
 
 from app.bookmarks.bookmarks_print import print_all_live_directories_and_bookmarks
+from app.bookmarks.last_used import get_last_used_bookmark
 from app.bookmarks.matching.bookmark_matching import find_best_bookmark_match_or_create
 from app.bookmarks.matching.handle_matched_bookmark_post_processing import (
     handle_matched_bookmark_post_processing,
@@ -16,7 +17,7 @@ from app.utils.printing_utils import print_color
 
 
 # TODO(MFB): There's got to be a better way to handle the return errors and exit codes.
-def main():
+def main() -> tuple[int, CurrentRunSettings | None]:
     """
     This is the main entry point for the bookmark CLI. See --help for more information. README.md has more information.
     """
@@ -33,66 +34,87 @@ def main():
     current_run_settings_obj: CurrentRunSettings | int = process_flags(args)
     if isinstance(current_run_settings_obj, int):
         # If the user sent a "routed flag" that terminates the program after use
-        return current_run_settings_obj, False
+        return current_run_settings_obj, None
 
     # FIND/CREATE BOOKMARK
 
-    matched_bookmark_obj = find_best_bookmark_match_or_create(
-        args[0], # cli_bookmark_string
+    find_best_results = find_best_bookmark_match_or_create(
+        args[0],  # cli_bookmark_string
         current_run_settings_obj=current_run_settings_obj,
-        is_prompt_user_for_selection=True
+        is_prompt_user_for_selection=True,
     )
-    if isinstance(matched_bookmark_obj, int) or not matched_bookmark_obj:
-        print_color("❌ Bookmark not found and user did not create a new bookmark", 'red')
-        return matched_bookmark_obj, False
-    if isinstance(matched_bookmark_obj, list):
-        print_color("❌ Multiple bookmarks matched", 'red')
-        return matched_bookmark_obj, False
+    if isinstance(find_best_results, int) or not find_best_results:
+        print_color(
+            "❌ Bookmark not found and user did not create a new bookmark", "red"
+        )
+        return find_best_results, current_run_settings_obj  # type: ignore
+    elif isinstance(find_best_results, list):
+        print_color("❌ Multiple bookmarks matched", "red")
+        return find_best_results, current_run_settings_obj  # type: ignore
+    else:
+        matched_bookmark_obj = find_best_results
+
+    current_run_settings_obj["current_bookmark_obj"] = matched_bookmark_obj
 
     # HANDLE MATCHED BOOKMARK PRE-PROCESSING
 
     results = handle_matched_bookmark_pre_processing(
-        matched_bookmark_obj,
-        current_run_settings_obj
+        matched_bookmark_obj, current_run_settings_obj
     )
     if results != 0:
-        print_color("❌ Error in handle_matched_bookmark_pre_processing", 'red')
-        return results, False
-
+        print_color("❌ Error in handle_matched_bookmark_pre_processing", "red")
+        return results, current_run_settings_obj
 
     # MAIN PROCESS
 
-    results = handle_main_process(
-        current_run_settings=current_run_settings_obj)
+    results = handle_main_process(current_run_settings=current_run_settings_obj)
     if results == 1:
-        print_color("❌ Main process failed", 'red')
-        return results, False
+        print_color("❌ Main process failed", "red")
+        return results, current_run_settings_obj
 
     # HANDLE BOOKMARK POST-PROCESSING
 
     results = handle_matched_bookmark_post_processing(
-        matched_bookmark_obj, current_run_settings_obj)
+        matched_bookmark_obj, current_run_settings_obj
+    )
     if results == 1:
-        print_color("❌ Error in handle_matched_bookmark_post_processing", 'red')
-        return results, False
+        print_color("❌ Error in handle_matched_bookmark_post_processing", "red")
+        return results, current_run_settings_obj
 
     # SUCCESS!
 
     print("✅ Integrated workflow completed successfully!")
-    return 0, current_run_settings_obj.get("is_print_just_current_directory_bookmarks", True)
+    return (
+        0,
+        current_run_settings_obj,
+    )
 
 
 if __name__ == "__main__":
-    exit_code = 0 # pylint: disable=C0103
+    exit_code = 0  # pylint: disable=C0103
     is_print_just_current_directory_bookmarks = False
+    current_run_settings_obj = None
     try:
-        exit_code, is_print_just_current_directory_bookmarks = main()
+        (
+            exit_code,
+            current_run_settings_obj,
+        ) = main()
     except Exception:
-        print_color('==== Exception: ====', 'red')
+        print_color("==== Exception: ====", "red")
         traceback.print_exc()
-        exit_code = 1 # pylint: disable=C0103
+        exit_code = 1  # pylint: disable=C0103
     finally:
+        # 🆕 If we created a bookmark, re-read current bookmark file
+        if current_run_settings_obj and current_run_settings_obj.get(
+            "was_bookmark_created", False
+        ):
+            print_color("🔄 Re-reading current bookmark after creation...", "yellow")
+            get_last_used_bookmark(is_override_run_once=True)
+
         # Print all folders and bookmarks with current one highlighted
         print_all_live_directories_and_bookmarks(
-            is_print_just_current_directory_bookmarks=is_print_just_current_directory_bookmarks)
-        sys.exit(exit_code if isinstance(exit_code, (int, type(None))) else 1)
+            is_print_just_current_directory_bookmarks=is_print_just_current_directory_bookmarks,
+            current_run_settings_obj=current_run_settings_obj,
+        )
+
+    sys.exit(exit_code if isinstance(exit_code, (int, type(None))) else 1)  # type: ignore

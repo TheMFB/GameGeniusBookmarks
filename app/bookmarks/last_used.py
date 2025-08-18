@@ -14,7 +14,7 @@ def save_last_used_bookmark(matched_bookmark_obj: MatchedBookmarkObj):
     """Save the last used bookmark to a global state file."""
     state_file = os.path.join(ABS_OBS_BOOKMARKS_DIR, "last_bookmark_state.json")
 
-    with open(state_file, 'w') as f:
+    with open(state_file, "w") as f:
         json.dump(matched_bookmark_obj, f, indent=2)
 
     # Create symlinks in shortcuts directory
@@ -23,13 +23,15 @@ def save_last_used_bookmark(matched_bookmark_obj: MatchedBookmarkObj):
 
 @print_def_name(False)
 @memoize
-def get_last_used_bookmark() -> MatchedBookmarkObj | None:
+def get_last_used_bookmark(
+    is_override_run_once: bool = False,
+) -> MatchedBookmarkObj | None:
     """Get the last used bookmark from the global state file."""
     state_file = os.path.join(ABS_OBS_BOOKMARKS_DIR, "last_bookmark_state.json")
 
     if os.path.exists(state_file):
         try:
-            with open(state_file, 'r') as f:
+            with open(state_file, "r") as f:
                 return json.load(f)
         except json.JSONDecodeError:
             return None
