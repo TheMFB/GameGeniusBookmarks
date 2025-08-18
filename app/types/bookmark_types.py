@@ -6,15 +6,19 @@ class BookmarkPathDictionary(TypedDict):
 
     # Colon-separated
     bookmark_dir_colon_rel: str  # grand-parent:parent
-    bookmark_path_colon_rel: str # grand-parent:parent:01
+    bookmark_path_colon_rel: str  # grand-parent:parent:01
     # Note that we will never colon-separate absolute paths, as colon-syntax is for our internal use.
 
     # Slash-separated
-    bookmark_dir_slash_abs: str # /Users/mfb/Desktop/obs_bookmark_saves/grand-parent/parent
-    bookmark_dir_slash_rel: str # grand-parent/parent
+    bookmark_dir_slash_abs: (
+        str  # /Users/mfb/Desktop/obs_bookmark_saves/grand-parent/parent
+    )
+    bookmark_dir_slash_rel: str  # grand-parent/parent
 
-    bookmark_path_slash_abs: str # /Users/mfb/Desktop/obs_bookmark_saves/grand-parent/parent/01
-    bookmark_path_slash_rel: str # grand-parent/parent/01
+    bookmark_path_slash_abs: (
+        str  # /Users/mfb/Desktop/obs_bookmark_saves/grand-parent/parent/01
+    )
+    bookmark_path_slash_rel: str  # grand-parent/parent/01
 
 
 class BookmarkInfo(TypedDict):
@@ -26,12 +30,15 @@ class BookmarkInfo(TypedDict):
     created_at: str
     description: NotRequired[str]
 
+
 class MatchedBookmarkObj(BookmarkPathDictionary):
     bookmark_info: NotRequired[BookmarkInfo]
+
 
 class CurrentRunSettings(TypedDict):
     alt_source_bookmark_obj: MatchedBookmarkObj | None
     alt_source_cli_nav_string: str | None
+    current_bookmark_obj: MatchedBookmarkObj | None
     is_add_bookmark: bool
     is_blank_slate: bool
     is_no_docker: bool
@@ -50,14 +57,7 @@ class CurrentRunSettings(TypedDict):
 # CLI FLAGS #
 
 ValidRoutedFlags = Literal[
-    "--help",
-    "-h",
-    "--ls",
-    "-ls",
-    "--which",
-    "-w",
-    "--open-video",
-    "-v"
+    "--help", "-h", "--ls", "-ls", "--which", "-w", "--open-video", "-v"
 ]
 
 VALID_FLAGS = [
@@ -106,6 +106,7 @@ VALID_FLAGS = [
 default_processed_flags: CurrentRunSettings = {
     "alt_source_bookmark_obj": None,
     "alt_source_cli_nav_string": None,
+    "current_bookmark_obj": None,
     "is_add_bookmark": True,
     "is_blank_slate": False,
     "is_no_docker": False,
