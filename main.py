@@ -2,7 +2,6 @@ import sys
 import traceback
 
 from app.bookmarks.bookmarks_print import print_all_live_directories_and_bookmarks
-from app.bookmarks.last_used import get_last_used_bookmark
 from app.bookmarks.matching.bookmark_matching import find_best_bookmark_match_or_create
 from app.bookmarks.matching.handle_matched_bookmark_post_processing import (
     handle_matched_bookmark_post_processing,
@@ -92,7 +91,6 @@ def main() -> tuple[int, CurrentRunSettings | None]:
 
 if __name__ == "__main__":
     exit_code = 0  # pylint: disable=C0103
-    is_print_just_current_directory_bookmarks = False
     current_run_settings_obj = None
     try:
         (
@@ -104,12 +102,11 @@ if __name__ == "__main__":
         traceback.print_exc()
         exit_code = 1  # pylint: disable=C0103
     finally:
-        # 🆕 If we created a bookmark, re-read current bookmark file
-        if current_run_settings_obj and current_run_settings_obj.get(
-            "was_bookmark_created", False
-        ):
-            print_color("🔄 Re-reading current bookmark after creation...", "yellow")
-            get_last_used_bookmark(_is_override_run_once=True)
+        is_print_just_current_directory_bookmarks = bool(
+            current_run_settings_obj.get("current_bookmark_obj", False)
+            if current_run_settings_obj
+            else False
+        )
 
         # Print all folders and bookmarks with current one highlighted
         print_all_live_directories_and_bookmarks(
