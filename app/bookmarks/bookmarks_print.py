@@ -56,7 +56,7 @@ def print_all_live_directories_and_bookmarks(
         "bookmark_path_colon_rel", None
     )
 
-    all_bookmarks = get_all_live_bookmarks_in_json_format()
+    all_bookmarks = get_all_live_bookmarks_in_json_format(is_override_run_once=True)
 
     def print_tree_recursive(
         indent_level,
