@@ -59,14 +59,24 @@ def process_flags(args) -> CurrentRunSettings | int:
 
     # TODO(MFB): Clean this up.
     is_overwrite_bm_redis_after = is_flag_in_args([
-        "--save-last-redis",
+        "--save-redis-after",
+        "-sa",
         "-s"
     ])
+    is_overwrite_bm_redis_before = is_flag_in_args([
+        "--save-redis-before",
+        "-sb",
+        "-s"
+    ])
+    # Saves both before and after states, and OBS info. (may want more)
+    # TODO(): May want a "save-obs" flag as well.
+    # TODO(): If we have individual settings for each of these, we don't need the save updates setting.
     is_save_updates = is_flag_in_args([
         "--save-updates",
         "-s"
     ])
-    # TODO(MFB): --continue
+
+    # TODO(MFB): --continue / rum the rest of them in the directory, only stopping if there's an error.
     is_use_alt_source_bookmark = is_flag_in_args([
         "--use-preceding-bookmark",
         "-p",
@@ -144,7 +154,7 @@ def process_flags(args) -> CurrentRunSettings | int:
         "is_no_obs": is_no_obs,
         "is_no_saving_dry_run": is_no_saving_dry_run,
         "is_overwrite_bm_redis_after": is_overwrite_bm_redis_after,
-        # "is_overwrite_bm_redis_before": is_overwrite_bm_redis_before,
+        "is_overwrite_bm_redis_before": is_overwrite_bm_redis_before,
         "is_save_updates": is_save_updates,
         "is_show_image": is_show_image,
         "is_use_alt_source_bookmark": is_use_alt_source_bookmark,
