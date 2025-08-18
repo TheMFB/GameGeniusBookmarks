@@ -122,5 +122,15 @@ default_processed_flags: CurrentRunSettings = {
     "tags": None,
 }
 
-NAVIGATION_COMMANDS = ["next", "previous", "first", "last", "last_used"]
-NavigationCommand = Literal["next", "previous", "first", "last", "last_used"]
+NAVIGATION_COMMANDS = [
+    "next",
+    "previous",
+    "first",
+    "last",
+    "last_used",
+    "current",
+    "again",
+]
+NavigationCommand = Literal[
+    "next", "previous", "first", "last", "last_used", "current", "again"
+]

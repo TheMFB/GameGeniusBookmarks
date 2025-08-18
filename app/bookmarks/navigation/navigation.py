@@ -38,11 +38,14 @@ IS_PRINT_DEF_NAME = True
 
 #     return None
 
+
 @print_def_name(IS_PRINT_DEF_NAME)
-def find_nav_sibling_bookmark_obj_in_folder(bookmark_obj: MatchedBookmarkObj, mode: str = "previous") -> MatchedBookmarkObj | None:
+def find_nav_sibling_bookmark_obj_in_folder(
+    bookmark_obj: MatchedBookmarkObj, mode: str = "previous"
+) -> MatchedBookmarkObj | None:
     """
     Find a sibling bookmark relative to the given one, in the same folder.
-    Mode can be: 'first', 'previous', 'next', 'last', 'last_used'.
+    Mode can be: 'first', 'previous', 'next', 'last', 'last_used/again/current'.
     """
     bookmark_obj_dir_slash_abs = bookmark_obj.get("bookmark_dir_slash_abs")
     bookmark_obj_path_slash_abs = bookmark_obj.get("bookmark_path_slash_abs")
@@ -50,7 +53,8 @@ def find_nav_sibling_bookmark_obj_in_folder(bookmark_obj: MatchedBookmarkObj, mo
         return None
 
     sibling_paths = get_all_shallow_bookmark_abs_paths_in_dir(
-        bookmark_obj_dir_slash_abs)
+        bookmark_obj_dir_slash_abs
+    )
     if not sibling_paths:
         return None
 
@@ -61,7 +65,8 @@ def find_nav_sibling_bookmark_obj_in_folder(bookmark_obj: MatchedBookmarkObj, mo
     except ValueError:
         if IS_DEBUG:
             print(
-                f"⚠️ Current bookmark not found in sibling list: {bookmark_obj_dir_slash_abs}")
+                f"⚠️ Current bookmark not found in sibling list: {bookmark_obj_dir_slash_abs}"
+            )
         return None
 
     selected_index = None
@@ -76,7 +81,7 @@ def find_nav_sibling_bookmark_obj_in_folder(bookmark_obj: MatchedBookmarkObj, mo
     elif mode == "next":
         if index < len(sibling_paths) - 1:
             selected_index = index + 1
-    elif mode == "last_used":
+    elif mode == "last_used" or mode == "again" or mode == "current":
         return get_last_used_bookmark()
     else:
         if IS_DEBUG:
@@ -88,7 +93,9 @@ def find_nav_sibling_bookmark_obj_in_folder(bookmark_obj: MatchedBookmarkObj, mo
             print(f"❌ Selected index out of bounds: {selected_index}")
             return None
         if selected_index == index:
-            print(f"❌ Selected index is the same as the current index: {selected_index}")
+            print(
+                f"❌ Selected index is the same as the current index: {selected_index}"
+            )
             return None
         selected_path = sibling_paths[selected_index]
 
@@ -97,37 +104,40 @@ def find_nav_sibling_bookmark_obj_in_folder(bookmark_obj: MatchedBookmarkObj, mo
     return None
 
 
-
 @print_def_name(IS_PRINT_DEF_NAME)
 def resolve_navigation_bookmark_from_last_used(
-    navigation_command: Literal["next", "previous", "first", "last", "last_used"],
-)-> MatchedBookmarkObj | int | None:
+    navigation_command: Literal[
+        "next", "previous", "first", "last", "last_used", "current", "again"
+    ],
+) -> MatchedBookmarkObj | int | None:
     """Resolve navigation commands (next, previous, first, last) to actual bookmark names."""
     # Get the last used bookmark to determine the current position
     last_used_bookmark_obj = get_last_used_bookmark()
     if not last_used_bookmark_obj:
         print(
-            f"❌ No last used bookmark found. Cannot navigate with '{navigation_command}'")
+            f"❌ No last used bookmark found. Cannot navigate with '{navigation_command}'"
+        )
         return None
 
     last_used_bm_dir_slash_abs = last_used_bookmark_obj.get("bookmark_dir_slash_abs")
     last_used_bm_dir_colon_rel = last_used_bookmark_obj.get("bookmark_dir_colon_rel")
 
     if not last_used_bm_dir_slash_abs:
-        print(
-            f"❌ Could not find folder directory for '{last_used_bm_dir_slash_abs}'")
+        print(f"❌ Could not find folder directory for '{last_used_bm_dir_slash_abs}'")
         return 1
 
     target_bookmark_obj = find_nav_sibling_bookmark_obj_in_folder(
-        last_used_bookmark_obj, navigation_command)
+        last_used_bookmark_obj, navigation_command
+    )
     if not target_bookmark_obj:
         print(
-            f"❌ No sibling bookmark found to the '{navigation_command}' of last_used_bookmark: '{last_used_bm_dir_colon_rel}'")
+            f"❌ No sibling bookmark found to the '{navigation_command}' of last_used_bookmark: '{last_used_bm_dir_colon_rel}'"
+        )
         return None
 
-
     print(
-        f"🎯 Navigating to last_used_bookmark's '{navigation_command}' sibling: {target_bookmark_obj['bookmark_path_colon_rel']}")
+        f"🎯 Navigating to last_used_bookmark's '{navigation_command}' sibling: {target_bookmark_obj['bookmark_path_colon_rel']}"
+    )
     return target_bookmark_obj
 
 
@@ -135,28 +145,27 @@ def resolve_navigation_bookmark_from_last_used(
 def resolve_navigation_bookmark_from_current_matched_bookmark(
     matched_bookmark_obj: MatchedBookmarkObj,
     navigation_command: NavigationCommand,
-)-> MatchedBookmarkObj | int | None:
+) -> MatchedBookmarkObj | int | None:
     """Resolve navigation commands (next, previous, first, last) to a matched bookmark object."""
 
-    bookmark_dir_slash_abs = matched_bookmark_obj.get(
-        "bookmark_dir_slash_abs")
-    bookmark_dir_colon_rel = matched_bookmark_obj.get(
-        "bookmark_dir_colon_rel")
+    bookmark_dir_slash_abs = matched_bookmark_obj.get("bookmark_dir_slash_abs")
+    bookmark_dir_colon_rel = matched_bookmark_obj.get("bookmark_dir_colon_rel")
 
     if not bookmark_dir_slash_abs:
-        print(
-            f"❌ Could not find folder directory for '{bookmark_dir_slash_abs}'")
+        print(f"❌ Could not find folder directory for '{bookmark_dir_slash_abs}'")
         return 1
 
-
     alt_source_bookmark_obj = find_nav_sibling_bookmark_obj_in_folder(
-        matched_bookmark_obj, navigation_command)
+        matched_bookmark_obj, navigation_command
+    )
 
     if not alt_source_bookmark_obj:
         print(
-            f"❌ No sibling bookmark found to the '{navigation_command}' of '{bookmark_dir_colon_rel}'")
+            f"❌ No sibling bookmark found to the '{navigation_command}' of '{bookmark_dir_colon_rel}'"
+        )
         return None
 
     print(
-        f"🎯 Found alt source bookmark: {alt_source_bookmark_obj['bookmark_path_colon_rel']}")
+        f"🎯 Found alt source bookmark: {alt_source_bookmark_obj['bookmark_path_colon_rel']}"
+    )
     return alt_source_bookmark_obj
