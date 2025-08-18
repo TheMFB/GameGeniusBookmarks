@@ -109,7 +109,7 @@ if __name__ == "__main__":
             "was_bookmark_created", False
         ):
             print_color("🔄 Re-reading current bookmark after creation...", "yellow")
-            get_last_used_bookmark(is_override_run_once=True)
+            get_last_used_bookmark(_is_override_run_once=True)
 
         # Print all folders and bookmarks with current one highlighted
         print_all_live_directories_and_bookmarks(

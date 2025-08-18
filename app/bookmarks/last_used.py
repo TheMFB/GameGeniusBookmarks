@@ -24,7 +24,7 @@ def save_last_used_bookmark(matched_bookmark_obj: MatchedBookmarkObj):
 @print_def_name(False)
 @memoize
 def get_last_used_bookmark(
-    is_override_run_once: bool = False,
+    _is_override_run_once: bool = False,
 ) -> MatchedBookmarkObj | None:
     """Get the last used bookmark from the global state file."""
     state_file = os.path.join(ABS_OBS_BOOKMARKS_DIR, "last_bookmark_state.json")

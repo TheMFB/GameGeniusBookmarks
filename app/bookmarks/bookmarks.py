@@ -104,7 +104,7 @@ def get_all_shallow_bookmark_abs_paths_in_dir(
 
 @print_def_name(False)
 @memoize
-def get_all_live_bookmarks_in_json_format(is_override_run_once: bool = False):
+def get_all_live_bookmarks_in_json_format(_is_override_run_once: bool = False):
     """
     Recursively scan all live folders and build a nested JSON structure with folder and bookmark tags/descriptions, including aggregated tags as 'tags'.
     """

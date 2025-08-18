@@ -126,13 +126,13 @@ def memoize(func):
     """
     Decorator to cache function results in memory for the duration of the process,
     keyed by the function's arguments and keyword arguments.
-    Allows bypassing cache with `is_override_run_once=True`.
+    Allows bypassing cache with `_is_override_run_once=True`.
     """
     cache = {}
 
     @wraps(func)
     def wrapper(*args, **kwargs):
-        if kwargs.pop("is_override_run_once", False):
+        if kwargs.pop("_is_override_run_once", False):
             return func(*args, **kwargs)
 
         hashable_args = make_hashable(args)
