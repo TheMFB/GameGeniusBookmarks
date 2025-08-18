@@ -40,7 +40,9 @@ RESERVED_BOOKMARK_NAMES = [
     "first",
     "last",
     "last_used",
-    "create_new_bookmark"
+    "current",
+    "again",
+    "create_new_bookmark",
 ]
 
 
@@ -53,11 +55,20 @@ ABS_OBS_BOOKMARKS_DIR = os.path.join(REPO_ROOT, "obs_bookmark_saves")
 # REDIS #
 INITIAL_REDIS_STATE_DIR = os.path.join(REPO_ROOT, "app", "bookmarks", "redis_states")
 
-IS_LOCAL_REDIS_DEV = os.environ.get('IS_LOCAL_REDIS_DEV', False) == "True" or os.environ.get(
-    'IS_LOCAL_REDIS_DEV', False) == "true"
+IS_LOCAL_REDIS_DEV = (
+    os.environ.get("IS_LOCAL_REDIS_DEV", False) == "True"
+    or os.environ.get("IS_LOCAL_REDIS_DEV", False) == "true"
+)
 LOCAL_REDIS_SESSIONS_HOST = "localhost"
 LOCAL_REDIS_SESSIONS_PORT = 6379
 LOCAL_REDIS_SESSIONS_DB = 0
 
 GAME_GENIUS_PARENT_DIR = str(Path(REPO_ROOT).resolve().parents[0])
-REDIS_DUMP_DIR = os.path.join(REPO_ROOT, "standalone_utils", "redis", "redis_dump") if IS_LOCAL_REDIS_DEV else os.path.join(GAME_GENIUS_PARENT_DIR, "game-genius/services/session_manager/utils/standalone/redis_dump")
+REDIS_DUMP_DIR = (
+    os.path.join(REPO_ROOT, "standalone_utils", "redis", "redis_dump")
+    if IS_LOCAL_REDIS_DEV
+    else os.path.join(
+        GAME_GENIUS_PARENT_DIR,
+        "game-genius/services/session_manager/utils/standalone/redis_dump",
+    )
+)

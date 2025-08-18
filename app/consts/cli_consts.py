@@ -3,11 +3,13 @@ USAGE_HELP = """
 Usage: main.py <bookmark_string> [--save-updates] [-s] [--use-preceding-bookmark <folder:bookmark>] [-p <folder:bookmark>] [--blank-slate] [-b] [-v <video_path>] [--open-video <video_path>] [--tags <tag1> <tag2> ...]
 
 Navigation commands:
-  next, previous, first, last, (last_used)    Navigate to adjacent bookmarks in the same directory
+  next, previous, first, last, last_used/current/again    Navigate to adjacent bookmarks in the same directory
 """
 
 # TODO(MFB): Add an option to show redis before and after diffs.
-OPTIONS_HELP = USAGE_HELP + """
+OPTIONS_HELP = (
+    USAGE_HELP
+    + """
 
 Options:
   -h, --help, -ls                            Show this help message and exit
@@ -41,5 +43,4 @@ Examples:
   main.py my-bookmark -sd
   main.py my-bookmark --no-obs -t important highlight
 """
-
-
+)
