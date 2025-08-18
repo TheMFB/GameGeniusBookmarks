@@ -18,6 +18,14 @@ from app.utils.printing_utils import print_color
 
 IS_PRINT_DEF_NAME = True
 
+def pause_obs(cl: obs.ReqClient, source_name: str = "Media Source"):
+    """Pause the media source"""
+    cl.send("TriggerMediaInputAction", {
+        "inputName": source_name,
+        "mediaAction": "OBS_WEBSOCKET_MEDIA_INPUT_ACTION_PAUSE"
+    })
+
+
 @print_def_name(IS_PRINT_DEF_NAME)
 def open_video_in_obs(video_path: str, source_name: str = "Media Source"):
     """Open a video file in OBS with it paused"""
@@ -33,6 +41,8 @@ def open_video_in_obs(video_path: str, source_name: str = "Media Source"):
 
         cl = obs.ReqClient(host="localhost", port=4455, password="", timeout=3)
 
+        pause_obs(cl)
+
         # Set the media source to the video file
         cl.send("SetInputSettings", {
             "inputName": source_name,
@@ -42,10 +52,7 @@ def open_video_in_obs(video_path: str, source_name: str = "Media Source"):
         })
 
         # Pause the media
-        cl.send("TriggerMediaInputAction", {
-            "inputName": source_name,
-            "mediaAction": "OBS_WEBSOCKET_MEDIA_INPUT_ACTION_PAUSE"
-        })
+        pause_obs(cl)
 
         print(f"✅ Opened video in OBS: {video_path}")
         print(f"📺 Source: {source_name}")
@@ -180,13 +187,13 @@ def load_bookmark_into_obs(matched_bookmark_obj: MatchedBookmarkObj) -> int:
                     "local_file": video_file_path
                 }
             })
-            # Always restart the media to ensure it's not in a stopped state
-            cl.send("TriggerMediaInputAction", {
-                "inputName": "Media Source",
-                "mediaAction": "OBS_WEBSOCKET_MEDIA_INPUT_ACTION_RESTART"
-            })
-            # Wait a bit for the media to load and restart
-            time.sleep(1)
+            # # Always restart the media to ensure it's not in a stopped state
+            # cl.send("TriggerMediaInputAction", {
+            #     "inputName": "Media Source",
+            #     "mediaAction": "OBS_WEBSOCKET_MEDIA_INPUT_ACTION_RESTART"
+            # })
+            # # Wait a bit for the media to load and restart
+            # time.sleep(1)
 
         # Ensure the media is in a valid state (playing or paused) before setting the cursor
         max_wait = 1.0  # seconds
@@ -231,11 +238,10 @@ def load_bookmark_into_obs(matched_bookmark_obj: MatchedBookmarkObj) -> int:
             media_cursor = int(timestamp)
             print(f"⚠️  Could not confidently determine timestamp units. Using as ms. Parsed: {parsed_seconds}s, Raw: {timestamp}")
 
+        time.sleep(1)
+
         # Pause the media
-        cl.send("TriggerMediaInputAction", {
-            "inputName": "Media Source",
-            "mediaAction": "OBS_WEBSOCKET_MEDIA_INPUT_ACTION_PAUSE"
-        })
+        pause_obs(cl)
 
         # Set the timestamp
         cl.send("SetMediaInputCursor", {
@@ -243,11 +249,8 @@ def load_bookmark_into_obs(matched_bookmark_obj: MatchedBookmarkObj) -> int:
             "mediaCursor": media_cursor
         })
 
-        # # Pause the media
-        # cl.send("TriggerMediaInputAction", {
-        #     "inputName": "Media Source",
-        #     "mediaAction": "OBS_WEBSOCKET_MEDIA_INPUT_ACTION_PAUSE"
-        # })
+        # Pause the media
+        pause_obs(cl)
 
         print(
             f"✅ Loaded OBS to timestamp from bookmark: {bookmark_info['timestamp_formatted']}")
