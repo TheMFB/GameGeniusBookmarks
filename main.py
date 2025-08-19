@@ -66,7 +66,10 @@ def main() -> tuple[int, CurrentRunSettings | None]:
 
     # MAIN PROCESS
 
-    results = handle_main_process(current_run_settings=current_run_settings_obj)
+    results = handle_main_process(
+        matched_bookmark_obj,
+        current_run_settings_obj,
+    )
     if results == 1:
         print_color("❌ Main process failed", "red")
         return results, current_run_settings_obj
