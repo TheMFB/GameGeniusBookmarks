@@ -14,8 +14,12 @@
   "reportUnusedVariable": "information",
   "reportUnknownMemberType": false,
   "reportUnknownVariableType": false,
-  "reportUnknownParameterType": false,
-  "reportMissingParameterType": false,
-  "reportUnknownArgumentType": false,
+  // "reportUnknownParameterType": false,
+  // "reportMissingParameterType": false,
+  // "reportUnknownArgumentType": false,
+  // "reportUnknownVariableType": "warning",
+  "reportUnknownParameterType": "warning",
+  "reportMissingParameterType": "warning",
+  "reportUnknownArgumentType": "warning",
   "reportAny": false
 }

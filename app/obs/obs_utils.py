@@ -2,6 +2,7 @@ import base64
 import io
 import os
 import time
+from typing import Any
 
 import obsws_python as obs
 from PIL import Image
@@ -12,18 +13,22 @@ from app.bookmarks.bookmarks_meta import (
 )
 from app.consts.bookmarks_consts import IS_DEBUG, SCREENSHOT_SAVE_SCALE
 from app.obs.videos import construct_full_video_file_path
-from app.types.bookmark_types import CurrentRunSettings, MatchedBookmarkObj
+from app.types.bookmark_types import CurrentRunSettings, MatchedBookmarkObj, MediaInfo
 from app.utils.decorators import print_def_name
 from app.utils.printing_utils import print_color
 
 IS_PRINT_DEF_NAME = True
 
+
 def pause_obs(cl: obs.ReqClient, source_name: str = "Media Source"):
     """Pause the media source"""
-    cl.send("TriggerMediaInputAction", {
-        "inputName": source_name,
-        "mediaAction": "OBS_WEBSOCKET_MEDIA_INPUT_ACTION_PAUSE"
-    })
+    cl.send(
+        "TriggerMediaInputAction",
+        {
+            "inputName": source_name,
+            "mediaAction": "OBS_WEBSOCKET_MEDIA_INPUT_ACTION_PAUSE",
+        },
+    )
 
 
 @print_def_name(IS_PRINT_DEF_NAME)
@@ -44,12 +49,10 @@ def open_video_in_obs(video_path: str, source_name: str = "Media Source"):
         pause_obs(cl)
 
         # Set the media source to the video file
-        cl.send("SetInputSettings", {
-            "inputName": source_name,
-            "inputSettings": {
-                "local_file": video_path
-            }
-        })
+        cl.send(
+            "SetInputSettings",
+            {"inputName": source_name, "inputSettings": {"local_file": video_path}},
+        )
 
         # Pause the media
         pause_obs(cl)
@@ -65,33 +68,40 @@ def open_video_in_obs(video_path: str, source_name: str = "Media Source"):
 
 
 @print_def_name(IS_PRINT_DEF_NAME)
-def get_media_source_info():
+def get_media_source_info() -> MediaInfo:
     """Get media source information from OBS."""
     try:
         cl = obs.ReqClient(host="localhost", port=4455, password="", timeout=3)
 
         # Get current media source settings
         settings = cl.send("GetInputSettings", {"inputName": "Media Source"})
-        file_path = settings.input_settings.get(  # type: ignore
-            "local_file", "")
+        input_settings: Any = getattr(settings, "input_settings", {})
+        file_path: str = input_settings.get("local_file", "")
 
         # Initialize with default values
-        timestamp = 0
+        timestamp: float = 0.0
         timestamp_formatted = "00:00:00"
 
         # Only try to get cursor position if we have a valid file path
         if file_path and os.path.exists(file_path):
             try:
                 # Get media status which includes cursor position
-                media_status = cl.send("GetMediaInputStatus", {"inputName": "Media Source"})
+                media_status = cl.send(
+                    "GetMediaInputStatus", {"inputName": "Media Source"}
+                )
 
-                # Get cursor position from media_status
-                if hasattr(media_status, 'media_cursor'):
-                    timestamp = media_status.media_cursor  # type: ignore
+                # Try to get the cursor position as a float
+                if hasattr(media_status, "media_cursor"):
+                    timestamp_value = getattr(media_status, "media_cursor", 0.0)
+                    try:
+                        timestamp = float(timestamp_value)
+                    except (TypeError, ValueError):
+                        timestamp = 0.0
+
                     print(f"🔍 Raw timestamp: {timestamp}")
 
                     # Convert timestamp to seconds if it's in milliseconds
-                    if timestamp > 3600:  # If timestamp is more than 1 hour, it's likely in milliseconds
+                    if timestamp > 3600:
                         timestamp = timestamp / 1000
                         print(f"🔍 Converted timestamp from ms to seconds: {timestamp}")
 
@@ -119,14 +129,16 @@ def get_media_source_info():
         else:
             print("❌ No valid media file loaded")
             print(f"   File path: {file_path}")
-            print(f"   Exists: {os.path.exists(file_path) if file_path else 'No file path'}")
+            print(
+                f"   Exists: {os.path.exists(file_path) if file_path else 'No file path'}"
+            )
             raise Exception("No valid media file loaded in OBS")
 
         return {
-            'file_path': file_path,  # Keep for backward compatibility
-            'video_filename': os.path.basename(file_path) if file_path else '',
-            'timestamp': timestamp,
-            'timestamp_formatted': timestamp_formatted
+            "file_path": file_path,  # Keep for backward compatibility
+            "video_filename": os.path.basename(file_path) if file_path else "",
+            "timestamp": timestamp,
+            "timestamp_formatted": timestamp_formatted,
         }
     except Exception as e:
         print(f"❌ Failed to get media source info: {e}")
@@ -143,57 +155,63 @@ def load_bookmark_into_obs(matched_bookmark_obj: MatchedBookmarkObj) -> int:
 
     try:
         if IS_DEBUG:
-            print(f"🔍 Debug - Loading bookmark_path_slash_rel: {bookmark_path_slash_rel}")
             print(
-                f"🔍 Debug - Bookmark info keys: {list(bookmark_info.keys())}")
+                f"🔍 Debug - Loading bookmark_path_slash_rel: {bookmark_path_slash_rel}"
+            )
+            print(f"🔍 Debug - Bookmark info keys: {list(bookmark_info.keys())}")
             print(
-                f"🔍 Debug - video_filename: {bookmark_info.get('video_filename', 'NOT_FOUND')}")
+                f"🔍 Debug - video_filename: {bookmark_info.get('video_filename', 'NOT_FOUND')}"
+            )
             print(
-                f"🔍 Debug - timestamp: {bookmark_info.get('timestamp', 'NOT_FOUND')}")
+                f"🔍 Debug - timestamp: {bookmark_info.get('timestamp', 'NOT_FOUND')}"
+            )
             print(
-                f"🔍 Debug - timestamp_formatted: {bookmark_info.get('timestamp_formatted', 'NOT_FOUND')}")
+                f"🔍 Debug - timestamp_formatted: {bookmark_info.get('timestamp_formatted', 'NOT_FOUND')}"
+            )
 
         if not bookmark_info:
-            print(
-                f"❌ No file path found in {bookmark_path_slash_rel} metadata")
+            print(f"❌ No file path found in {bookmark_path_slash_rel} metadata")
             return 1
 
         cl = obs.ReqClient(host="localhost", port=4455, password="", timeout=3)
 
         # Load the media file if different
         # current_settings = cl.send(
-            # "GetInputSettings", {"inputName": "Media Source"})
+        # "GetInputSettings", {"inputName": "Media Source"})
         # current_file = current_settings.input_settings.get("local_file", "")
 
         # Construct the full video file path from env variable
-        video_filename = bookmark_info.get('video_filename', '')
+        video_filename = bookmark_info.get("video_filename", "")
         video_file_path = construct_full_video_file_path(video_filename)
-
-
 
         if not video_filename:
             print("❌ No file path found in bookmark_path_slash_rel metadata")
             if IS_DEBUG:
                 print(
-                    f"🔍 Debug - Available keys in bookmark_info: {list(bookmark_info.keys())}")
+                    f"🔍 Debug - Available keys in bookmark_info: {list(bookmark_info.keys())}"
+                )
             return 1
 
         # if current_file != video_file_path:
         if True:
-            print(f"\U0001F4C1 Loading video file: {video_file_path}")
-            cl.send("SetInputSettings", {
-                "inputName": "Media Source",
-                "inputSettings": {
-                    "local_file": video_file_path
-                }
-            })
-            # # Always restart the media to ensure it's not in a stopped state
-            # cl.send("TriggerMediaInputAction", {
-            #     "inputName": "Media Source",
-            #     "mediaAction": "OBS_WEBSOCKET_MEDIA_INPUT_ACTION_RESTART"
-            # })
-            # # Wait a bit for the media to load and restart
-            # time.sleep(1)
+            print(f"\U0001f4c1 Loading video file: {video_file_path}")
+            cl.send(
+                "SetInputSettings",
+                {
+                    "inputName": "Media Source",
+                    "inputSettings": {"local_file": video_file_path},
+                },
+            )
+            # Always restart the media to ensure it's not in a stopped state
+            cl.send(
+                "TriggerMediaInputAction",
+                {
+                    "inputName": "Media Source",
+                    "mediaAction": "OBS_WEBSOCKET_MEDIA_INPUT_ACTION_RESTART",
+                },
+            )
+            # Wait a bit for the media to load and restart
+            time.sleep(1)
 
         # Ensure the media is in a valid state (playing or paused) before setting the cursor
         max_wait = 1.0  # seconds
@@ -203,23 +221,25 @@ def load_bookmark_into_obs(matched_bookmark_obj: MatchedBookmarkObj) -> int:
         while waited < max_wait:
             try:
                 status = cl.send("GetMediaInputStatus", {"inputName": "Media Source"})
-                media_state = getattr(status, 'media_state', None)
+                media_state = getattr(status, "media_state", None)
                 if IS_DEBUG:
-                    print(f"\U0001F50D Media state: {media_state}")
+                    print(f"\U0001f50d Media state: {media_state}")
                 if media_state in ("OBS_MEDIA_STATE_PLAYING", "OBS_MEDIA_STATE_PAUSED"):
                     break
             except Exception as poll_err:
                 if IS_DEBUG:
-                    print(f"\u26A0\uFE0F Error polling media state: {poll_err}")
+                    print(f"\u26a0\ufe0f Error polling media state: {poll_err}")
             time.sleep(poll_interval)
             waited += poll_interval
         else:
-            print(f"❌ Media source did not reach a playable state (state: {media_state}) after {max_wait} seconds.")
+            print(
+                f"❌ Media source did not reach a playable state (state: {media_state}) after {max_wait} seconds."
+            )
             return 1
 
         # Smartly determine if timestamp is ms or s by comparing to timestamp_formatted
-        timestamp = bookmark_info.get('timestamp', 0)
-        timestamp_formatted = bookmark_info.get('timestamp_formatted', '')
+        timestamp = bookmark_info.get("timestamp", 0)
+        timestamp_formatted = bookmark_info.get("timestamp_formatted", "")
         parsed_seconds = _parse_formatted_timestamp_to_seconds(timestamp_formatted)
         delta = 2  # seconds tolerance
         # Check both interpretations
@@ -227,16 +247,20 @@ def load_bookmark_into_obs(matched_bookmark_obj: MatchedBookmarkObj) -> int:
             # timestamp is in seconds
             media_cursor = int(timestamp * 1000)
             if IS_DEBUG:
-                print(f"\U0001F50D Interpreting timestamp as seconds: {timestamp}s")
+                print(f"\U0001f50d Interpreting timestamp as seconds: {timestamp}s")
         elif abs((timestamp / 1000) - parsed_seconds) <= delta:
             # timestamp is in ms
             media_cursor = int(timestamp)
             if IS_DEBUG:
-                print(f"\U0001F50D Interpreting timestamp as milliseconds: {timestamp}ms")
+                print(
+                    f"\U0001f50d Interpreting timestamp as milliseconds: {timestamp}ms"
+                )
         else:
             # Default to ms, but warn
             media_cursor = int(timestamp)
-            print(f"⚠️  Could not confidently determine timestamp units. Using as ms. Parsed: {parsed_seconds}s, Raw: {timestamp}")
+            print(
+                f"⚠️  Could not confidently determine timestamp units. Using as ms. Parsed: {parsed_seconds}s, Raw: {timestamp}"
+            )
 
         time.sleep(1)
 
@@ -244,10 +268,10 @@ def load_bookmark_into_obs(matched_bookmark_obj: MatchedBookmarkObj) -> int:
         pause_obs(cl)
 
         # Set the timestamp
-        cl.send("SetMediaInputCursor", {
-            "inputName": "Media Source",
-            "mediaCursor": media_cursor
-        })
+        cl.send(
+            "SetMediaInputCursor",
+            {"inputName": "Media Source", "mediaCursor": media_cursor},
+        )
 
         # Pause the media
         pause_obs(cl)
@@ -274,24 +298,25 @@ def save_obs_screenshot_to_bookmark_path(
     screenshot_path = os.path.join(matched_bookmark_path_abs, "screenshot.jpg")
     if os.path.exists(screenshot_path) and not is_save_updates:
         if IS_DEBUG:
-            print(
-                f"📸 Screenshot already exists, preserving: {screenshot_path}")
+            print(f"📸 Screenshot already exists, preserving: {screenshot_path}")
         print(
-            f"📸 Using existing screenshot: {matched_bookmark_path_rel}/screenshot.jpg")
+            f"📸 Using existing screenshot: {matched_bookmark_path_rel}/screenshot.jpg"
+        )
     else:
         try:
-            cl = obs.ReqClient(
-                host="localhost", port=4455, password="", timeout=3)
+            cl = obs.ReqClient(host="localhost", port=4455, password="", timeout=3)
 
-            response = cl.send("GetSourceScreenshot", {
-                "sourceName": "Media Source",
-                "imageFormat": "png"
-            })
+            response = cl.send(
+                "GetSourceScreenshot",
+                {"sourceName": "Media Source", "imageFormat": "png"},
+            )
 
-            image_data = response.image_data  # type: ignore
+            image_data = getattr(response, "image_data", None)
+            if not image_data:
+                print("❌ No image_data in response from OBS. Screenshot not saved.")
+                return
             if image_data.startswith("data:image/png;base64,"):
-                image_data = image_data.replace(
-                    "data:image/png;base64,", "")
+                image_data = image_data.replace("data:image/png;base64,", "")
             decoded_bytes = base64.b64decode(image_data)
             image = Image.open(io.BytesIO(decoded_bytes))
 
@@ -308,12 +333,12 @@ def save_obs_screenshot_to_bookmark_path(
 
             if IS_DEBUG:
                 print(f"📋 Screenshot saved to: {screenshot_path}")
-            print(
-                f"📸 Screenshot saved to: {matched_bookmark_path_rel}/screenshot.jpg")
+            print(f"📸 Screenshot saved to: {matched_bookmark_path_rel}/screenshot.jpg")
 
         except Exception as e:
             print(f"⚠️  1 Could not take screenshot: {e}")
             print("   Please ensure OBS is running and WebSocket server is enabled")
+
 
 # TODO(MFB): Debug and destroy
 # Backup of a duplicate of the above:
@@ -377,21 +402,21 @@ def save_obs_media_info_to_bookmark_meta(
 
     if not os.path.exists(matched_bookmark_path_abs):
         print_color(
-            f"❌ Could not create bookmark metadata - bookmark directory doesn't exist: {matched_bookmark_path_abs}", 'red')
+            f"❌ Could not create bookmark metadata - bookmark directory doesn't exist: {matched_bookmark_path_abs}",
+            "red",
+        )
         return 1
 
     if current_run_settings_obj["is_no_obs"]:
         # Create minimal metadata without OBS info
-        minimal_media_info = {
-            'file_path': '',
-            'video_filename': '',
-            'timestamp': 0,
-            'timestamp_formatted': '00:00:00'
+        minimal_media_info: MediaInfo = {
+            "file_path": "",
+            "video_filename": "",
+            "timestamp": 0,
+            "timestamp_formatted": "00:00:00",
         }
         patch_bookmark_meta(
-            matched_bookmark_obj,
-            minimal_media_info,
-            current_run_settings_obj["tags"]
+            matched_bookmark_obj, minimal_media_info, current_run_settings_obj["tags"]
         )
 
         if IS_DEBUG:
@@ -401,23 +426,21 @@ def save_obs_media_info_to_bookmark_meta(
         if media_info:
             if is_save_updates:
                 patch_bookmark_meta(
-                    matched_bookmark_obj,
-                    media_info,
-                    current_run_settings_obj["tags"]
+                    matched_bookmark_obj, media_info, current_run_settings_obj["tags"]
                 )
                 if IS_DEBUG:
                     print(
-                        f"📋 Patched bookmark obs metadata with tags: {current_run_settings_obj['tags']}")
+                        f"📋 Patched bookmark obs metadata with tags: {current_run_settings_obj['tags']}"
+                    )
 
             else:
                 update_missing_bookmark_meta_fields(
-                    matched_bookmark_obj,
-                    media_info,
-                    current_run_settings_obj["tags"]
+                    matched_bookmark_obj, media_info, current_run_settings_obj["tags"]
                 )
                 if IS_DEBUG:
                     print(
-                        f"📋 Updated missing bookmark obs metadata with tags: {current_run_settings_obj['tags']}")
+                        f"📋 Updated missing bookmark obs metadata with tags: {current_run_settings_obj['tags']}"
+                    )
 
     return 0
 
