@@ -55,6 +55,13 @@ class CurrentRunSettings(TypedDict):
     tags: list[str] | None
 
 
+class MediaInfo(TypedDict):
+    file_path: str
+    video_filename: str
+    timestamp: float
+    timestamp_formatted: str
+
+
 # CLI FLAGS #
 
 ValidRoutedFlags = Literal[

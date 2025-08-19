@@ -2,6 +2,7 @@ import base64
 import io
 import os
 import time
+from typing import Any
 
 import obsws_python as obs
 from PIL import Image
@@ -12,7 +13,7 @@ from app.bookmarks.bookmarks_meta import (
 )
 from app.consts.bookmarks_consts import IS_DEBUG, SCREENSHOT_SAVE_SCALE
 from app.obs.videos import construct_full_video_file_path
-from app.types.bookmark_types import CurrentRunSettings, MatchedBookmarkObj
+from app.types.bookmark_types import CurrentRunSettings, MatchedBookmarkObj, MediaInfo
 from app.utils.decorators import print_def_name
 from app.utils.printing_utils import print_color
 
@@ -67,19 +68,18 @@ def open_video_in_obs(video_path: str, source_name: str = "Media Source"):
 
 
 @print_def_name(IS_PRINT_DEF_NAME)
-def get_media_source_info():
+def get_media_source_info() -> MediaInfo:
     """Get media source information from OBS."""
     try:
         cl = obs.ReqClient(host="localhost", port=4455, password="", timeout=3)
 
         # Get current media source settings
         settings = cl.send("GetInputSettings", {"inputName": "Media Source"})
-        file_path = settings.input_settings.get(  # type: ignore
-            "local_file", ""
-        )
+        input_settings: Any = getattr(settings, "input_settings", {})
+        file_path: str = input_settings.get("local_file", "")
 
         # Initialize with default values
-        timestamp = 0
+        timestamp: float = 0.0
         timestamp_formatted = "00:00:00"
 
         # Only try to get cursor position if we have a valid file path
@@ -90,15 +90,18 @@ def get_media_source_info():
                     "GetMediaInputStatus", {"inputName": "Media Source"}
                 )
 
-                # Get cursor position from media_status
+                # Try to get the cursor position as a float
                 if hasattr(media_status, "media_cursor"):
-                    timestamp = media_status.media_cursor  # type: ignore
+                    timestamp_value = getattr(media_status, "media_cursor", 0.0)
+                    try:
+                        timestamp = float(timestamp_value)
+                    except (TypeError, ValueError):
+                        timestamp = 0.0
+
                     print(f"🔍 Raw timestamp: {timestamp}")
 
                     # Convert timestamp to seconds if it's in milliseconds
-                    if (
-                        timestamp > 3600
-                    ):  # If timestamp is more than 1 hour, it's likely in milliseconds
+                    if timestamp > 3600:
                         timestamp = timestamp / 1000
                         print(f"🔍 Converted timestamp from ms to seconds: {timestamp}")
 
@@ -309,7 +312,10 @@ def save_obs_screenshot_to_bookmark_path(
                 {"sourceName": "Media Source", "imageFormat": "png"},
             )
 
-            image_data = response.image_data  # type: ignore
+            image_data = getattr(response, "image_data", None)
+            if not image_data:
+                print("❌ No image_data in response from OBS. Screenshot not saved.")
+                return
             if image_data.startswith("data:image/png;base64,"):
                 image_data = image_data.replace("data:image/png;base64,", "")
             decoded_bytes = base64.b64decode(image_data)
@@ -404,7 +410,7 @@ def save_obs_media_info_to_bookmark_meta(
 
     if current_run_settings_obj["is_no_obs"]:
         # Create minimal metadata without OBS info
-        minimal_media_info = {
+        minimal_media_info: MediaInfo = {
             "file_path": "",
             "video_filename": "",
             "timestamp": 0,

@@ -19,7 +19,7 @@ def create_auto_tags(
     Converts provided game state fields into a list of auto-tag strings,
     adding prefixes or suffixes as needed.
     """
-    tags = []
+    tags: list[str] = []
 
     # Direct fields
     if current_screen_name:

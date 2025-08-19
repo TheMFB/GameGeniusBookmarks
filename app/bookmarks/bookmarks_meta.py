@@ -1,11 +1,12 @@
 import json
 import os
 from datetime import datetime
+from typing import Any
 
 from app.bookmarks.auto_tags.auto_tags_utils import safe_process_auto_tags
 from app.consts.bookmarks_consts import IS_DEBUG, IS_DEBUG_FULL
 from app.obs.videos import construct_full_video_file_path
-from app.types.bookmark_types import MatchedBookmarkObj
+from app.types.bookmark_types import BookmarkInfo, MatchedBookmarkObj, MediaInfo
 from app.utils.decorators import print_def_name
 
 IS_PRINT_DEF_NAME = True
@@ -14,7 +15,7 @@ IS_PRINT_DEF_NAME = True
 @print_def_name(
     False
 )  # This is loaded for all bookmarks to create a tree of bookmarks and tags.
-def load_folder_meta(folder_path):
+def load_folder_meta(folder_path: str) -> dict[str, Any]:
     """Load folder metadata from folder_meta.json"""
     folder_meta_file = os.path.join(folder_path, "folder_meta.json")
     if os.path.exists(folder_meta_file):
@@ -29,7 +30,7 @@ def load_folder_meta(folder_path):
 
 
 @print_def_name(IS_PRINT_DEF_NAME)
-def load_bookmark_meta_from_rel(bookmark_dir_rel):
+def load_bookmark_meta_from_rel(bookmark_dir_rel: str) -> BookmarkInfo | None:
     """Load bookmark metadata and construct full file path."""
     meta_file = os.path.join(bookmark_dir_rel, "bookmark_meta.json")
     if os.path.exists(meta_file):
@@ -43,14 +44,12 @@ def load_bookmark_meta_from_rel(bookmark_dir_rel):
 
             # Handle both old and new formats
             if "file_path" in meta_data:
-                # Old format - file_path already contains full path
                 meta_data["video_path"] = meta_data["file_path"]
                 if IS_DEBUG_FULL:
                     print(
                         f"🔍 Debug - Using old format file_path: {meta_data['file_path']}"
                     )
             elif "video_filename" in meta_data:
-                # New format - construct full path from VIDEO_PATH and filename
                 video_filename = meta_data["video_filename"]
                 if IS_DEBUG_FULL:
                     print(
@@ -78,14 +77,14 @@ def load_bookmark_meta_from_rel(bookmark_dir_rel):
         except json.JSONDecodeError:
             if IS_DEBUG:
                 print(f"⚠️  Could not parse bookmark_meta.json in {bookmark_dir_rel}")
-            return {}
-    return {}
+            return None
+    return None
 
 
 @print_def_name(
     False
 )  # This is loaded for all bookmarks to create a tree of bookmarks and tags.
-def load_bookmark_meta_from_abs(bookmark_path_abs):
+def load_bookmark_meta_from_abs(bookmark_path_abs: str) -> dict[str, Any] | None:
     """Load bookmark metadata from bookmark_meta.json"""
     bookmark_meta_path = os.path.join(bookmark_path_abs, "bookmark_meta.json")
     if os.path.exists(bookmark_meta_path):
@@ -97,12 +96,12 @@ def load_bookmark_meta_from_abs(bookmark_path_abs):
 # TODO(KERCH): Implement is_patch_updates
 @print_def_name(IS_PRINT_DEF_NAME)
 def create_directory_meta(
-    dir_absolute_path,
-    description="",
-    tags=None,
-    _is_patch_updates=False,  # TODO(MFB): Implement or remove
-    _is_overwrite=False,  # TODO(MFB): Implement or remove
-):
+    dir_absolute_path: str,
+    description: str = "",
+    tags: list[str] | None = None,
+    _is_patch_updates: bool = False,  # TODO: Implement or remove
+    _is_overwrite: bool = False,  # TODO: Implement or remove
+) -> bool:
     """Create or update folder_meta.json file"""
 
     dir_meta_file_path = os.path.join(dir_absolute_path, "folder_meta.json")
@@ -147,9 +146,9 @@ def create_directory_meta(
 @print_def_name(IS_PRINT_DEF_NAME)
 def create_bookmark_meta(
     matched_bookmark_obj: MatchedBookmarkObj,
-    media_info=None,
-    tags=None,
-):
+    media_info: MediaInfo | dict[str, Any] | None = None,
+    tags: list[str] | None = None,
+) -> None:
     """Create bookmark metadata with optional tags."""
     bookmark_dir_slash_abs = matched_bookmark_obj["bookmark_path_slash_abs"]
     bookmark_tail_name = matched_bookmark_obj["bookmark_tail_name"]
@@ -182,9 +181,9 @@ def create_bookmark_meta(
 @print_def_name(IS_PRINT_DEF_NAME)
 def update_bookmark_meta(
     matched_bookmark_obj: MatchedBookmarkObj,
-    media_info,
-    tags=None,
-):
+    media_info: MediaInfo | dict[str, Any],
+    tags: list[str] | None = None,
+) -> None:
     """Update or create bookmark metadata with optional patching."""
     bookmark_dir_slash_abs = matched_bookmark_obj["bookmark_path_slash_abs"]
     bookmark_tail_name = matched_bookmark_obj["bookmark_tail_name"]
@@ -227,9 +226,9 @@ def update_bookmark_meta(
 @print_def_name(IS_PRINT_DEF_NAME)
 def patch_bookmark_meta(
     matched_bookmark_obj: MatchedBookmarkObj,
-    media_info,
+    media_info: MediaInfo | dict[str, Any],
     tags: list[str] | None = None,
-):
+) -> None:
     """Update or create bookmark metadata with optional patching."""
     bookmark_dir_slash_abs = matched_bookmark_obj["bookmark_path_slash_abs"]
     bookmark_tail_name = matched_bookmark_obj["bookmark_tail_name"]
@@ -274,9 +273,9 @@ def patch_bookmark_meta(
 @print_def_name(IS_PRINT_DEF_NAME)
 def update_missing_bookmark_meta_fields(
     matched_bookmark_obj: MatchedBookmarkObj,
-    media_info,
+    media_info: MediaInfo | dict[str, Any],
     tags: list[str] | None = None,
-):
+) -> None:
     """Update or create bookmark metadata with optional patching."""
     bookmark_dir_slash_abs = matched_bookmark_obj["bookmark_path_slash_abs"]
     bookmark_tail_name = matched_bookmark_obj["bookmark_tail_name"]

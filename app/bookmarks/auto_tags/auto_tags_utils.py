@@ -2,9 +2,13 @@ import json
 import os
 
 from app.bookmarks.auto_tags.process_auto_tags import process_auto_tags
+from app.types.bookmark_types import CurrentRunSettings, MatchedBookmarkObj
 
 
-def safe_process_auto_tags(matched_bookmark_obj, current_run_settings_obj=None):
+def safe_process_auto_tags(
+    matched_bookmark_obj: MatchedBookmarkObj,
+    current_run_settings_obj: CurrentRunSettings | None = None,
+) -> None:
     """
     Loads redis_after.json and runs process_auto_tags.
     Handles missing files and logs any errors.
