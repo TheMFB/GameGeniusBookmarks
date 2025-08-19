@@ -33,6 +33,7 @@ class BookmarkInfo(TypedDict):
 
 class MatchedBookmarkObj(BookmarkPathDictionary):
     bookmark_info: NotRequired[BookmarkInfo]
+    auto_tags: NotRequired[list[str]]
 
 
 class CurrentRunSettings(TypedDict):

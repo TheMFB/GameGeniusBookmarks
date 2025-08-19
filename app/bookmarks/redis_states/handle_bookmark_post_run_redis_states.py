@@ -1,5 +1,6 @@
 import os
 
+from app.bookmarks.auto_tags.auto_tags_utils import safe_process_auto_tags
 from app.bookmarks.redis_states.file_copy_handlers.handle_copy_redis_dump_state_to_target_bm_redis_state import (
     handle_copy_redis_dump_state_to_target_bm_redis_state,
 )
@@ -30,15 +31,19 @@ def handle_bookmark_post_run_redis_states(
     # Matched Bookmark
     matched_bookmark_path_abs = matched_bookmark_obj["bookmark_path_slash_abs"]
     is_bm_match_redis_after_state_exist = os.path.exists(
-        os.path.join(matched_bookmark_path_abs, "redis_after.json"))
+        os.path.join(matched_bookmark_path_abs, "redis_after.json")
+    )
 
     # Behavioral Flags
     is_save_updates = current_run_settings_obj["is_save_updates"]
-    is_overwrite_bm_redis_after = current_run_settings_obj["is_overwrite_bm_redis_after"]
+    is_overwrite_bm_redis_after = current_run_settings_obj[
+        "is_overwrite_bm_redis_after"
+    ]
     is_no_saving_dry_run = current_run_settings_obj["is_no_saving_dry_run"]
 
-    is_skip_redis_processing = current_run_settings_obj[
-        "is_no_docker_no_redis"] or is_no_saving_dry_run
+    is_skip_redis_processing = (
+        current_run_settings_obj["is_no_docker_no_redis"] or is_no_saving_dry_run
+    )
 
     ## SAVE REDIS STATE TO TEMP FILE ##
 
@@ -48,13 +53,13 @@ def handle_bookmark_post_run_redis_states(
 
     # We never pull the redis-after state from another bookmark (atm), so always export from Redis unless dry run.
     # TODO(MFB): Figure our which of the two we should be using here.
-    handle_export_from_redis(
-        before_or_after="after"
-    )
+    handle_export_from_redis(before_or_after="after")
 
     ### SAVING TEMP TO BOOKMARK ###
 
-    if is_bm_match_redis_after_state_exist and (not is_save_updates or not is_overwrite_bm_redis_after):
+    if is_bm_match_redis_after_state_exist and (
+        not is_save_updates or not is_overwrite_bm_redis_after
+    ):
         # We do not want to save the temp file to the bookmark directory if it already exists,
         # unless we are in is_save_updates mode.
         return 0
@@ -63,7 +68,8 @@ def handle_bookmark_post_run_redis_states(
     handle_copy_redis_dump_state_to_target_bm_redis_state(
         target_bookmark_path_slash_abs=matched_bookmark_path_abs,
         target_bm_redis_state_before_or_after="after",
-        redis_temp_state_filename="bookmark_temp_after"
+        redis_temp_state_filename="bookmark_temp_after",
     )
+    safe_process_auto_tags(matched_bookmark_obj, current_run_settings_obj)
 
     return 0
