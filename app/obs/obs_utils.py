@@ -253,7 +253,7 @@ def load_bookmark_into_obs(matched_bookmark_obj: MatchedBookmarkObj) -> int:
         pause_obs(cl)
 
         print(
-            f"✅ Loaded OBS to timestamp from bookmark: {bookmark_info['timestamp_formatted']}")
+            f"✅ Loaded OBS to timestamp from bookmark: {bookmark_info['timestamp_formatted']} ({bookmark_info['timestamp']}s)")
         return 0
 
     except Exception as e:
