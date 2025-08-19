@@ -27,13 +27,13 @@ class BookmarkInfo(TypedDict):
     timestamp: float
     timestamp_formatted: str
     tags: list[str]
+    auto_tags: NotRequired[list[str]]
     created_at: str
     description: NotRequired[str]
 
 
 class MatchedBookmarkObj(BookmarkPathDictionary):
     bookmark_info: NotRequired[BookmarkInfo]
-    auto_tags: NotRequired[list[str]]
 
 
 class CurrentRunSettings(TypedDict):

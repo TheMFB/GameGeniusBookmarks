@@ -29,9 +29,7 @@ def process_auto_tags(
 
     # Now extract the screen_statuses.current_screen_name safely
     screen_statuses = game_state_data.get("screen_statuses", {})
-    map_battle_mode_statuses = game_state_data.get(
-        "map_battle_mode_statuses", {}
-    )  # <-- THIS LINE!
+    map_battle_mode_statuses = game_state_data.get("map_battle_mode_statuses", {})
 
     auto_tags = create_auto_tags(
         current_screen_name=screen_statuses.get("current_screen_name"),
@@ -50,7 +48,18 @@ def process_auto_tags(
     print("🏷️ Generated auto-tags:", auto_tags)
 
     # Attach auto_tags to the bookmark's info
-    matched_bookmark_obj["auto_tags"] = auto_tags
+    if "bookmark_info" not in matched_bookmark_obj:
+        matched_bookmark_obj["bookmark_info"] = {
+            "bookmark_tail_name": matched_bookmark_obj.get("bookmark_tail_name", ""),
+            "video_filename": "",
+            "timestamp": 0.0,
+            "timestamp_formatted": "",
+            "tags": [],
+            "auto_tags": auto_tags,
+            "created_at": "",
+        }
+    else:
+        matched_bookmark_obj["bookmark_info"]["auto_tags"] = auto_tags
 
     # Save back to disk (overwrite the bookmark file)
     bookmark_path = (
@@ -60,7 +69,21 @@ def process_auto_tags(
         with open(bookmark_path, "r") as f:
             bm_json = json.load(f)
         # Update top-level auto_tags
-        bm_json["auto_tags"] = auto_tags
+        if "auto_tags" in bm_json:
+            # Old-style top-level auto_tags, remove it
+            del bm_json["auto_tags"]
+        if "bookmark_info" not in bm_json:
+            bm_json["bookmark_info"] = {
+                "bookmark_tail_name": bm_json.get("bookmark_tail_name", ""),
+                "video_filename": bm_json.get("video_filename", ""),
+                "timestamp": bm_json.get("timestamp", 0.0),
+                "timestamp_formatted": bm_json.get("timestamp_formatted", ""),
+                "tags": bm_json.get("tags", []),
+                "auto_tags": auto_tags,
+                "created_at": bm_json.get("created_at", ""),
+            }
+        else:
+            bm_json["bookmark_info"]["auto_tags"] = auto_tags
         with open(bookmark_path, "w") as f:
             json.dump(bm_json, f, indent=2)
         print(f"✅ Auto-tags written to {bookmark_path}")

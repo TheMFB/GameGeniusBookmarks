@@ -1,6 +1,6 @@
 import json
 import os
-from typing import Any, cast
+from typing import Any, Dict, cast
 
 from app.bookmarks.bookmarks import get_all_live_bookmarks_in_json_format
 from app.bookmarks.last_used import get_last_used_bookmark
@@ -141,18 +141,25 @@ def print_all_live_directories_and_bookmarks(
             sub_parent_bm_dir_name,
             sub_dir_json_without_parent,
         ) in bookmark_dir_json_without_parent.items():
-            sub_dir_json_without_parent = cast(
-                dict[str, Any], sub_dir_json_without_parent
-            )
-            # Sub Dir is a bookmark
-            if sub_dir_json_without_parent.get("type") == "bookmark":
-                bookmarks_in_tree.append(
-                    (sub_parent_bm_dir_name, sub_dir_json_without_parent)
+            # Skip metadata fields we don't want to recurse into
+            if sub_parent_bm_dir_name in NON_NAME_BOOKMARK_KEYS:
+                continue
+
+            if isinstance(sub_dir_json_without_parent, dict):
+                sub_dir_json_without_parent = cast(
+                    Dict[str, Any], sub_dir_json_without_parent
                 )
-                # Sub Dir is a directory
-            elif sub_parent_bm_dir_name not in NON_NAME_BOOKMARK_KEYS:
-                sub_dirs_in_tree.append(
-                    (sub_parent_bm_dir_name, sub_dir_json_without_parent)
+                if sub_dir_json_without_parent.get("type") == "bookmark":
+                    bookmarks_in_tree.append(
+                        (sub_parent_bm_dir_name, sub_dir_json_without_parent)
+                    )
+                else:
+                    sub_dirs_in_tree.append(
+                        (sub_parent_bm_dir_name, sub_dir_json_without_parent)
+                    )
+            else:
+                print(
+                    f"WARNING: Unexpected non-dict in print_tree_recursive: key={sub_parent_bm_dir_name} value={repr(sub_dir_json_without_parent)}"
                 )
 
         # Print bookmarks_in_tree at this level (do NOT treat as folders)

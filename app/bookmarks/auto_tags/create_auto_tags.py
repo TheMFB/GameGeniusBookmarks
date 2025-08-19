@@ -5,6 +5,9 @@ from typing import List, Optional
 
 def create_auto_tags(
     *,
+    # TODO(Kerch): Review use of '*' to enforce keyword-only arguments in create_auto_tags.
+    # This restricts the function to only known arguments, which matches our current use case.
+    # If in the future we need to allow additional or dynamic arguments, consider using **kwargs.
     current_screen_name: Optional[str] = None,
     team_objective_control_state: Optional[str] = None,
     battle_timeline_phase: Optional[str] = None,
@@ -21,6 +24,7 @@ def create_auto_tags(
     """
     tags: list[str] = []
 
+    # TODO(Kerch): Too many optional parameters can lead to confusion.
     # Direct fields
     if current_screen_name:
         tags.append(current_screen_name)
