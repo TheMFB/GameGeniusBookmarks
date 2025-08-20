@@ -61,6 +61,7 @@ def process_flags(args: list[str]) -> CurrentRunSettings | int:
         return any(flag in args for flag in flags)
 
     # TODO(MFB): Clean this up.
+    # TODO(MFB): Pull all of these out into their own arrays, and then make a union out of them for the above (and remove the list in bookmark_types)
     is_overwrite_bm_redis_after = is_flag_in_args(["--save-redis-after", "-sa", "-s"])
     is_overwrite_bm_redis_before = is_flag_in_args(["--save-redis-before", "-sb", "-s"])
     # Saves both before and after states, and OBS info. (may want more)
