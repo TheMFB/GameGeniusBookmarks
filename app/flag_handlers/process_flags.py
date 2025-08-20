@@ -62,7 +62,7 @@ def process_flags(args: list[str]) -> CurrentRunSettings | int:
 
     # TODO(MFB): Clean this up.
     # TODO(MFB): Pull all of these out into their own arrays, and then make a union out of them for the above (and remove the list in bookmark_types)
-    is_overwrite_bm_redis_after = is_flag_in_args([
+    is_save_bm_redis_after = is_flag_in_args([
         "--after",
         "--both",
         "--save-redis-after",
@@ -74,7 +74,7 @@ def process_flags(args: list[str]) -> CurrentRunSettings | int:
         "-s", # Note that the shorthand "-s" and "-u" are both used for JUST saving the redis after state (most common use)
     ])
     # TODO(MFB): When we pull out the above, have an extra list for the combo of both save and reset (all), that we tack onto these two.
-    is_overwrite_bm_redis_before = is_flag_in_args([
+    is_reset_bm_redis_before = is_flag_in_args([
         "--before",
         "--both",
         "--reset",
@@ -139,7 +139,7 @@ def process_flags(args: list[str]) -> CurrentRunSettings | int:
         tags = find_cli_tags(args)
 
     if IS_DEBUG:
-        print(f"🔍 Debug - is_overwrite_bm_redis_after: {is_overwrite_bm_redis_after}")
+        print(f"🔍 Debug - is_save_bm_redis_after: {is_save_bm_redis_after}")
         print(f"🔍 Debug - is_save_updates: {is_save_updates}")
         print(f"🔍 Debug - is_blank_slate: {is_blank_slate}")
         print(f"🔍 Debug - is_no_obs: {is_no_obs}")
@@ -154,8 +154,8 @@ def process_flags(args: list[str]) -> CurrentRunSettings | int:
         "is_no_docker_no_redis": is_no_docker_no_redis,
         "is_no_obs": is_no_obs,
         "is_no_saving_dry_run": is_no_saving_dry_run,
-        "is_overwrite_bm_redis_after": is_overwrite_bm_redis_after,
-        "is_overwrite_bm_redis_before": is_overwrite_bm_redis_before,
+        "is_save_bm_redis_after": is_save_bm_redis_after,
+        "is_reset_bm_redis_before": is_reset_bm_redis_before,
         "is_save_updates": is_save_updates,
         "is_show_image": is_show_image,
         "is_use_alt_source_bookmark": is_use_alt_source_bookmark,

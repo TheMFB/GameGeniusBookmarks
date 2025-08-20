@@ -46,8 +46,8 @@ class CurrentRunSettings(TypedDict):
     is_no_docker_no_redis: bool
     is_no_obs: bool
     is_no_saving_dry_run: bool
-    is_overwrite_bm_redis_after: bool
-    is_overwrite_bm_redis_before: bool
+    is_save_bm_redis_after: bool
+    is_reset_bm_redis_before: bool
     is_save_obs: bool
     is_save_updates: bool
     is_show_image: bool
@@ -122,8 +122,8 @@ default_processed_flags: CurrentRunSettings = {
     "is_no_docker_no_redis": False,
     "is_no_obs": False,
     "is_no_saving_dry_run": False,
-    "is_overwrite_bm_redis_after": False,
-    "is_overwrite_bm_redis_before": False,
+    "is_save_bm_redis_after": False,
+    "is_reset_bm_redis_before": False,
     "is_save_obs": False,
     "is_save_updates": False,
     "is_show_image": False,

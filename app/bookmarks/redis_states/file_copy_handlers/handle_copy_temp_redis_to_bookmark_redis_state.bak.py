@@ -41,7 +41,7 @@
 #         print(f"❌ Bookmark directory does not exist: {bookmark_dir_slash_abs}")
 #         return False
 
-#     is_save_updates = current_run_settings_obj["is_save_updates"] or current_run_settings_obj["is_overwrite_bm_redis_after"]
+#     is_save_updates = current_run_settings_obj["is_save_updates"] or current_run_settings_obj["is_save_bm_redis_after"]
 #     bm_redis_state_exists = os.path.exists(bookmark_redis_state_path)
 #     is_should_save_redis_after = is_save_updates or not bm_redis_state_exists
 

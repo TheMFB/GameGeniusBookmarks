@@ -36,8 +36,8 @@ def handle_bookmark_post_run_redis_states(
 
     # Behavioral Flags
     is_save_updates = current_run_settings_obj["is_save_updates"]
-    is_overwrite_bm_redis_after = current_run_settings_obj[
-        "is_overwrite_bm_redis_after"
+    is_save_bm_redis_after = current_run_settings_obj[
+        "is_save_bm_redis_after"
     ]
     is_no_saving_dry_run = current_run_settings_obj["is_no_saving_dry_run"]
 
@@ -58,7 +58,7 @@ def handle_bookmark_post_run_redis_states(
     ### SAVING TEMP TO BOOKMARK ###
 
     if is_bm_match_redis_after_state_exist and (
-        not is_save_updates or not is_overwrite_bm_redis_after
+        not is_save_updates or not is_save_bm_redis_after
     ):
         # We do not want to save the temp file to the bookmark directory if it already exists,
         # unless we are in is_save_updates mode.
