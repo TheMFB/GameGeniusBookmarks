@@ -62,12 +62,41 @@ def process_flags(args: list[str]) -> CurrentRunSettings | int:
 
     # TODO(MFB): Clean this up.
     # TODO(MFB): Pull all of these out into their own arrays, and then make a union out of them for the above (and remove the list in bookmark_types)
-    is_overwrite_bm_redis_after = is_flag_in_args(["--save-redis-after", "-sa", "-s"])
-    is_overwrite_bm_redis_before = is_flag_in_args(["--save-redis-before", "-sb", "-s"])
+    is_overwrite_bm_redis_after = is_flag_in_args([
+        "--after",
+        "--both",
+        "--save-redis-after",
+        "-s",
+        "-sa",
+        "-u",
+        "-ua",
+    ])
+    is_overwrite_bm_redis_before = is_flag_in_args([
+        "--before",
+        "--both",
+        "--save-redis-before",
+        "-s",
+        "-sb",
+        "-u",
+        "-ub",
+    ])
     # Saves both before and after states, and OBS info. (may want more)
     # TODO(): May want a "save-obs" flag as well.
     # TODO(): If we have individual settings for each of these, we don't need the save updates setting.
-    is_save_updates = is_flag_in_args(["--save-updates", "-s"])
+    is_save_updates = is_flag_in_args([
+        "--both",
+        "--save-updates",
+        "--update-all",
+        "-s",
+        "-u",
+    ])
+    is_update_obs = is_flag_in_args([
+        "--save-updates",
+        "--update-all",
+        "--update-obs",
+        "-uo",
+        # "-s",
+    ])
 
     # TODO(MFB): --continue / rum the rest of them in the directory, only stopping if there's an error.
     is_use_alt_source_bookmark = is_flag_in_args(
@@ -111,23 +140,21 @@ def process_flags(args: list[str]) -> CurrentRunSettings | int:
         print(f"🔍 Debug - is_blank_slate: {is_blank_slate}")
         print(f"🔍 Debug - is_no_obs: {is_no_obs}")
 
-    return cast(
-        CurrentRunSettings,
-        {
-            **default_processed_flags,
-            "alt_source_bookmark_obj": alt_source_bookmark_obj,
-            "alt_source_cli_nav_string": alt_source_cli_nav_string,
-            "is_add_bookmark": is_add_bookmark,
-            "is_blank_slate": is_blank_slate,
-            "is_no_docker": is_no_docker,
-            "is_no_docker_no_redis": is_no_docker_no_redis,
-            "is_no_obs": is_no_obs,
-            "is_no_saving_dry_run": is_no_saving_dry_run,
-            "is_overwrite_bm_redis_after": is_overwrite_bm_redis_after,
-            "is_overwrite_bm_redis_before": is_overwrite_bm_redis_before,
-            "is_save_updates": is_save_updates,
-            "is_show_image": is_show_image,
-            "is_use_alt_source_bookmark": is_use_alt_source_bookmark,
-            "tags": tags,
-        },
-    )
+    return cast(CurrentRunSettings, {
+        **default_processed_flags,
+        "alt_source_bookmark_obj": alt_source_bookmark_obj,
+        "alt_source_cli_nav_string": alt_source_cli_nav_string,
+        "is_add_bookmark": is_add_bookmark,
+        "is_blank_slate": is_blank_slate,
+        "is_no_docker": is_no_docker,
+        "is_no_docker_no_redis": is_no_docker_no_redis,
+        "is_no_obs": is_no_obs,
+        "is_no_saving_dry_run": is_no_saving_dry_run,
+        "is_overwrite_bm_redis_after": is_overwrite_bm_redis_after,
+        "is_overwrite_bm_redis_before": is_overwrite_bm_redis_before,
+        "is_save_updates": is_save_updates,
+        "is_show_image": is_show_image,
+        "is_use_alt_source_bookmark": is_use_alt_source_bookmark,
+        "is_update_obs": is_update_obs,
+        "tags": tags,
+    })

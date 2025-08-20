@@ -52,6 +52,7 @@ class CurrentRunSettings(TypedDict):
     is_save_updates: bool
     is_show_image: bool
     is_use_alt_source_bookmark: bool
+    is_update_obs: bool
     tags: list[str] | None
 
 
@@ -69,46 +70,49 @@ ValidRoutedFlags = Literal[
 ]
 
 VALID_FLAGS = [
-    # Add a new bookmark
     "--add-bookmark",
-    "-a",
-    # Overwrite existing bookmark data
-    "--save-updates",
-    "-s",
-    # Save last redis state
-    "--save-last-redis",
-    "-s",
-    # Use another bookmark as a alt source template
-    "--use-preceding-bookmark",
-    "-p",
-    "--bookmark-alt-source",
-    # Use a blank redis state as the alt source template
+    "--after",
+    "--before",
     "--blank-slate",
-    "-b",
-    # Dry run (no saving) - nor will it run the main process
+    "--bookmark-alt-source",
+    "--both",
+    "--both",
+    "--both",
     "--dry-run",
-    "-d",
-    "--no-saving",
-    "-ns",
-    # No docker (game processing/main process) run
     "--no-docker",
-    "-nd",
-    # No docker, no redis - updates to states will still be saved
     "--no-docker-no-redis",
-    "-ndr",
-    "-ndnr",
-    # Does not pull information from OBS
     "--no-obs",
-    # Save OBS information to the bookmark meta
+    "--no-saving",
+    "--save-last-redis",
     "--save-obs",
-    "-so",
-    "--update-obs",
-    "-uo",
-    # Add tags to the bookmark
-    "--tags",
-    "-t",
-    # Show the image of the bookmark
+    "--save-redis-after",
+    "--save-redis-before",
+    "--save-updates",
     "--show-image",
+    "--tags",
+    "--update-all",
+    "--update-obs",
+    "--use-preceding-bookmark",
+    "-a",
+    "-b",
+    "-d",
+    "-nd",
+    "-ndnr",
+    "-ndr",
+    "-ns",
+    "-p",
+    "-s",
+    "-s",
+    "-sa",
+    "-sb",
+    "-so",
+    "-t",
+    "-u",
+    "-u",
+    "-u",
+    "-ua",
+    "-ub",
+    "-uo",
 ]
 
 default_processed_flags: CurrentRunSettings = {
@@ -127,6 +131,7 @@ default_processed_flags: CurrentRunSettings = {
     "is_save_updates": False,
     "is_show_image": False,
     "is_use_alt_source_bookmark": False,
+    "is_update_obs": False,
     "tags": None,
 }
 
