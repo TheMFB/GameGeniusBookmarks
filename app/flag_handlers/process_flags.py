@@ -66,34 +66,38 @@ def process_flags(args: list[str]) -> CurrentRunSettings | int:
         "--after",
         "--both",
         "--save-redis-after",
-        "-s",
-        "-sa",
+        "--save",
+        "--update",
         "-u",
-        "-ua",
+        "--update-all",
+        "--update-redis-after",
+        "-s", # Note that the shorthand "-s" and "-u" are both used for JUST saving the redis after state (most common use)
     ])
+    # TODO(MFB): When we pull out the above, have an extra list for the combo of both save and reset (all), that we tack onto these two.
     is_overwrite_bm_redis_before = is_flag_in_args([
         "--before",
         "--both",
+        "--reset",
         "--save-redis-before",
-        "-s",
-        "-sb",
-        "-u",
-        "-ub",
+        "--update-redis-before",
+        "-r",
+        "--update-all",
     ])
     # Saves both before and after states, and OBS info. (may want more)
     # TODO(): May want a "save-obs" flag as well.
     # TODO(): If we have individual settings for each of these, we don't need the save updates setting.
     is_save_updates = is_flag_in_args([
-        "--both",
+        # TODO(MFB): Refine all of these...
         "--save-updates",
         "--update-all",
-        "-s",
-        "-u",
+        "-sall",
+        "-uall",
     ])
     is_update_obs = is_flag_in_args([
         "--save-updates",
         "--update-all",
         "--update-obs",
+        "--save-obs",
         "-uo",
         # "-s",
     ])
