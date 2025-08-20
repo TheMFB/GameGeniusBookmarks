@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Any, Optional
 
 from app.bookmarks.auto_tags.create_auto_tags import create_auto_tags
+from app.consts.bookmarks_consts import IS_APPLY_AUTOTAGS, IS_DEBUG
 from app.types.bookmark_types import CurrentRunSettings, MatchedBookmarkObj
 
 
@@ -14,6 +15,11 @@ def process_auto_tags(
     """
     Pulls values from redis_after_data and applies them as auto-tags to the matched bookmark.
     """
+    if not IS_APPLY_AUTOTAGS:
+        if IS_DEBUG:
+            print("⚠️ Skipping auto-tagging (IS_APPLY_AUTOTAGS is False).")
+        return
+
     print("🔍 Processing auto-tags...")
 
     # Find the game_state entry dynamically

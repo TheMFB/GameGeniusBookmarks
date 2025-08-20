@@ -2,6 +2,7 @@ import json
 import os
 
 from app.bookmarks.auto_tags.process_auto_tags import process_auto_tags
+from app.consts.bookmarks_consts import IS_APPLY_AUTOTAGS, IS_DEBUG
 from app.types.bookmark_types import CurrentRunSettings, MatchedBookmarkObj
 
 
@@ -13,6 +14,11 @@ def safe_process_auto_tags(
     Loads redis_after.json and runs process_auto_tags.
     Handles missing files and logs any errors.
     """
+    if not IS_APPLY_AUTOTAGS:
+        if IS_DEBUG:
+            print("⚠️ Skipping safe_process_auto_tags (IS_APPLY_AUTOTAGS is False).")
+        return
+
     bookmark_dir_slash_abs = matched_bookmark_obj["bookmark_path_slash_abs"]
     redis_after_path = os.path.join(bookmark_dir_slash_abs, "redis_after.json")
     try:
