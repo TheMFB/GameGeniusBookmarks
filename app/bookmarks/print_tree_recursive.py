@@ -7,6 +7,7 @@ from app.consts.bookmarks_consts import (
     NON_NAME_BOOKMARK_KEYS,
     RESET_COLOR,
 )
+from app.utils.bookmark_utils import get_effective_tags
 from app.utils.printing_utils import get_embedded_bookmark_file_link, print_color
 
 IS_PRINT_VIDEO_FILE_NAMES = True
@@ -125,7 +126,7 @@ def print_tree_recursive(
     # Print bookmarks_in_tree at this level (do NOT treat as folders)
     for tree_bookmark_tail_name, tree_bookmark_json in sorted(bookmarks_in_tree):
         # bookmark_tags = set(bookmark_info.get('tags', [])) - effective_inherited_tags
-        bookmark_tags = set(tree_bookmark_json.get("tags", []))
+        bookmark_tags = set(get_effective_tags(tree_bookmark_json))
         timestamp = tree_bookmark_json.get("timestamp", "unknown time")
         if len(timestamp) < 5:
             timestamp = "0" + timestamp
