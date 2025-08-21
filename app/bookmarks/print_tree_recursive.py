@@ -7,7 +7,7 @@ from app.consts.bookmarks_consts import (
     NON_NAME_BOOKMARK_KEYS,
     RESET_COLOR,
 )
-from app.utils.bookmark_utils import get_effective_tags
+from app.tags.tag_utils import get_effective_tags
 from app.utils.printing_utils import get_embedded_bookmark_file_link, print_color
 
 IS_PRINT_VIDEO_FILE_NAMES = True

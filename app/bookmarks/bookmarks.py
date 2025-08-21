@@ -14,12 +14,12 @@ from app.consts.bookmarks_consts import (
     IS_DEBUG_PRINT_ALL_BOOKMARKS_JSON,
     REPO_ROOT,
 )
+from app.tags.tag_utils import get_effective_tags
 from app.types.bookmark_types import (
     BookmarkInfo,
     BookmarkPathDictionary,
     MatchedBookmarkObj,
 )
-from app.utils.bookmark_utils import get_effective_tags
 from app.utils.decorators import memoize, print_def_name
 from app.utils.printing_utils import pprint, print_color
 
