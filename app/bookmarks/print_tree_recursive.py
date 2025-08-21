@@ -101,8 +101,6 @@ def print_tree_recursive(
         sub_parent_bm_dir_name,
         sub_dir_json_without_parent,
     ) in bookmark_dir_json_without_parent.items():
-        # print("========== TEST 1")
-
         # Skip metadata fields we don't want to recurse into
         if sub_parent_bm_dir_name in NON_NAME_BOOKMARK_KEYS:
             continue
@@ -124,12 +122,8 @@ def print_tree_recursive(
                 f"WARNING: Unexpected non-dict in print_tree_recursive: key={sub_parent_bm_dir_name} value={repr(sub_dir_json_without_parent)}"
             )
 
-    # print("================================== TEST 2")
-
     # Print bookmarks_in_tree at this level (do NOT treat as folders)
     for tree_bookmark_tail_name, tree_bookmark_json in sorted(bookmarks_in_tree):
-        # print("========== TEST 3")
-
         # bookmark_tags = set(bookmark_info.get('tags', [])) - effective_inherited_tags
         bookmark_tags = set(tree_bookmark_json.get("tags", []))
         timestamp = tree_bookmark_json.get("timestamp", "unknown time")
@@ -177,8 +171,6 @@ def print_tree_recursive(
 
     # Recurse into sub_dirs_in_tree
     for sub_dir_name, sub_dir_node in sorted(sub_dirs_in_tree):
-        # print("========== TEST 4")
-
         next_path = f"{full_colon_path_to_here}:{sub_dir_name}"
 
         # Only recurse if we're printing the full tree or the subfolder is part of the current path
