@@ -66,7 +66,7 @@ class MediaInfo(TypedDict):
 # CLI FLAGS #
 
 ValidRoutedFlags = Literal[
-    "--help", "-h", "--ls", "-ls", "--which", "-w", "--open-video", "-v"
+    "--help", "-h", "--ls", "-ls", "--which", "-w", "--open-video", "-v", "--pwd"
 ]
 
 VALID_FLAGS = [
@@ -110,6 +110,7 @@ VALID_FLAGS = [
     "-t",
     "-u",
     "-uo",
+    "--pwd",
 ]
 
 default_processed_flags: CurrentRunSettings = {
