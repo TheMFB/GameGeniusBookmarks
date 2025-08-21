@@ -3,6 +3,9 @@ from typing import Any
 from app.bookmarks.bookmarks import get_all_live_bookmarks_in_json_format
 from app.bookmarks.last_used import get_last_used_bookmark
 from app.bookmarks.print_tree_recursive import print_tree_recursive
+from app.bookmarks.redis_states.log_has_bm_redis_before_diverged import (
+    log_has_bm_redis_before_diverged,
+)
 from app.consts.bookmarks_consts import (
     ABS_OBS_BOOKMARKS_DIR,
     IS_PRINT_JUST_CURRENT_DIRECTORY_BOOKMARKS,
@@ -93,4 +96,8 @@ def print_all_live_directories_and_bookmarks(
         rel_current_bookmark = None
 
     print_color(f"🔍 Current bookmark: bm {rel_current_bookmark}", "magenta")
+
+    if current_bookmark_obj:
+        log_has_bm_redis_before_diverged(current_bookmark_obj) # type: ignore
+
     return
