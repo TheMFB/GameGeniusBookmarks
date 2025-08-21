@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from typing import Literal
 
 from dotenv import load_dotenv
 
@@ -18,6 +19,9 @@ IS_PRINT_JUST_CURRENT_DIRECTORY_BOOKMARKS = False
 IS_PRINT_JUST_CURRENT_DIRECTORY_BOOKMARKS_ON_LS = False
 IS_APPLY_AUTOTAGS = True
 # IS_APPLY_AUTOTAGS = False
+
+TagType = Literal["user_tags", "auto_tags", "both"]
+ACTIVE_TAG_TYPE: TagType = "both"
 
 ## CONSTANTS ##
 
