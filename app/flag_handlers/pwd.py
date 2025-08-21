@@ -7,7 +7,7 @@ IS_PRINT_DEF_NAME = True
 
 
 @print_def_name(IS_PRINT_DEF_NAME)
-def handle_pwd(_args):
+def handle_pwd(_args: list[str]):
     # We'll grab the last-used bookmark as the "current" one
     # This keeps us aligned with how print_all_live_directories_and_bookmarks behaves
     print_all_live_directories_and_bookmarks(
