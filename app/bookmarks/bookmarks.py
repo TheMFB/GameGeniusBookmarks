@@ -19,6 +19,7 @@ from app.types.bookmark_types import (
     BookmarkPathDictionary,
     MatchedBookmarkObj,
 )
+from app.utils.bookmark_utils import get_effective_tags
 from app.utils.decorators import memoize, print_def_name
 from app.utils.printing_utils import pprint, print_color
 
@@ -140,16 +141,17 @@ def get_all_live_bookmarks_in_json_format(_is_override_run_once: bool = False):
                 # This folder is a bookmark (leaf)
                 bookmark_meta = load_bookmark_meta_from_abs(folder_path)
                 if bookmark_meta:
+                    tags = get_effective_tags(bookmark_meta)
                     node.update(
                         {
-                            "tags": bookmark_meta.get("tags", []),
+                            "tags": tags,
                             "description": bookmark_meta.get("description", ""),
                             "timestamp": bookmark_meta.get("timestamp_formatted", ""),
                             "video_filename": bookmark_meta.get("video_filename", ""),
                             "type": "bookmark",
                         }
                     )
-                return node  # Do not process further, this is a bookmark
+                return node
 
         # Attach sub_dirs to node
         for sub_dir_name, sub_dir_node in sub_dirs.items():

@@ -77,6 +77,9 @@ def print_tree_recursive(
     #     all_tags = collect_all_bookmark_tags_recursive(bookmark_dir_json_without_parent)
     #     bm_sub_dir_tags = set.intersection(*all_tags) if all_tags else set()
 
+    if is_print_just_current_directory_bookmarks and not is_parent_dir_current:
+        bm_sub_dir_tags = set()
+
     if bm_sub_dir_tags:
         print_color(
             f"{indent}🏷️ {' '.join(f'•{tag}' for tag in sorted(bm_sub_dir_tags))}",
