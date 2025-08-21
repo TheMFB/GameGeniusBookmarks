@@ -226,6 +226,11 @@ def print_all_live_directories_and_bookmarks(
 
     # Start printing from the root level
     for parent_bm_dir_name, sub_dir_json_without_parent in all_bookmarks.items():
+        # ✅ If we're filtering, only recurse into the current bookmark's root tree
+        if is_print_just_current_directory_bookmarks and current_bm_path_colon_rel:
+            if not is_ancestor_path(parent_bm_dir_name, current_bm_path_colon_rel):
+                continue
+
         print("")
         print_tree_recursive(
             indent_level=0,
