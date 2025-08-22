@@ -10,15 +10,15 @@ IS_PRINT_DEF_NAME = True
 
 # TODO(KERCH): These are no longer just "utilities" -- we should put some of these into their own folders. (I couldn't find abs_to_rel_path earlier lol)
 
+
 def abs_to_rel_path(abs_path, base_dir):
     """Convert an absolute path to a relative path."""
     return os.path.relpath(abs_path, base_dir)
 
+
 @print_def_name(IS_PRINT_DEF_NAME)
 @memoize
-def convert_exact_bookmark_path_to_bm_obj(
-    *args
-) -> MatchedBookmarkObj:
+def convert_exact_bookmark_path_to_bm_obj(*args) -> MatchedBookmarkObj:
     """
     Flexible conversion utility for bookmark paths.
 
@@ -53,43 +53,45 @@ def convert_exact_bookmark_path_to_bm_obj(
         # If both are the same, treat as a single full bookmark_dir+name
         if args[0] == args[1]:
             value = args[0]
-            if ':' in value:
-                parts = value.split(':')
-            elif '/' in value or value.startswith(ABS_OBS_BOOKMARKS_DIR):
+            if ":" in value:
+                parts = value.split(":")
+            elif "/" in value or value.startswith(ABS_OBS_BOOKMARKS_DIR):
                 parts = Path(value).parts
             parts = [value]
         else:
             # (bookmark_tail_name, bookmark_dir)
             # bookmark_tail_name, bookmark_dir = args
             arg2, arg1 = args
-            if ':' in arg1 or '/' in arg1:
+            if ":" in arg1 or "/" in arg1:
                 bookmark_dir = arg1
                 bookmark_tail_name = arg2
             else:
                 bookmark_dir = arg2
                 bookmark_tail_name = arg1
 
-            if ':' in bookmark_dir:
-                path_parts = bookmark_dir.split(':')
+            if ":" in bookmark_dir:
+                path_parts = bookmark_dir.split(":")
             else:
                 path_parts = Path(bookmark_dir).parts
             parts = list(path_parts) + [bookmark_tail_name]
     elif len(args) == 1:
         # (bookmark_path was provided)
         value = args[0]
-        if ':' in value:
-            parts = value.split(':')
-        elif '/' in value:
+        if ":" in value:
+            parts = value.split(":")
+        elif "/" in value:
             # If absolute, strip ABS_OBS_BOOKMARKS_DIR
             if value.startswith(ABS_OBS_BOOKMARKS_DIR):
-                rel_value = value[len(ABS_OBS_BOOKMARKS_DIR):].lstrip(os.sep)
+                rel_value = value[len(ABS_OBS_BOOKMARKS_DIR) :].lstrip(os.sep)
                 parts = Path(rel_value).parts
             else:
                 parts = Path(value).parts
         else:
             parts = [value]
     else:
-        raise ValueError("Must provide either (bookmark_tail_name, bookmark_dir) or (full_path)")
+        raise ValueError(
+            "Must provide either (bookmark_tail_name, bookmark_dir) or (full_path)"
+        )
 
     if not parts:
         raise ValueError("Could not parse bookmark bookmark_dir.")
@@ -100,20 +102,18 @@ def convert_exact_bookmark_path_to_bm_obj(
     path_parts = parts[:-1]
 
     # Relative
-    bookmark_dir_slash_rel = '/'.join(path_parts)
-    bookmark_path_slash_rel = '/'.join(parts)
-    bookmark_dir_colon_rel = ':'.join(path_parts)
-    bookmark_path_colon_rel = ':'.join(parts)
+    bookmark_dir_slash_rel = "/".join(path_parts)
+    bookmark_path_slash_rel = "/".join(parts)
+    bookmark_dir_colon_rel = ":".join(path_parts)
+    bookmark_path_colon_rel = ":".join(parts)
 
     # Absolute
     # if not bookmark_dir:
     #     bookmark_dir_slash_abs = None
     #     bookmark_path_slash_abs = None
     # else:
-    bookmark_dir_slash_abs = str(
-        Path(ABS_OBS_BOOKMARKS_DIR) / bookmark_dir_slash_rel)
-    bookmark_path_slash_abs = str(
-        Path(ABS_OBS_BOOKMARKS_DIR) / bookmark_path_slash_rel)
+    bookmark_dir_slash_abs = str(Path(ABS_OBS_BOOKMARKS_DIR) / bookmark_dir_slash_rel)
+    bookmark_path_slash_abs = str(Path(ABS_OBS_BOOKMARKS_DIR) / bookmark_path_slash_rel)
 
     bookmark_path_dict: MatchedBookmarkObj = {
         "bookmark_tail_name": bookmark_tail_name,
@@ -124,11 +124,9 @@ def convert_exact_bookmark_path_to_bm_obj(
         "bookmark_path_slash_abs": bookmark_path_slash_abs,
         "bookmark_path_slash_rel": bookmark_path_slash_rel,
         # "bookmark_info": None,
-
     }
 
     bookmark_info = get_bookmark_info(bookmark_path_dict)
-
 
     if not bookmark_info:
         return bookmark_path_dict
@@ -139,10 +137,11 @@ def convert_exact_bookmark_path_to_bm_obj(
 def split_path_into_array(path):
     """Normalize a bookmark path into components using both ':' and '/' as separators."""
     # Replace both ':' and '/' with a single consistent delimiter (e.g., '/')
-    path = path.replace(':', '/')
-    return [part.lower() for part in path.strip('/').split('/')]
+    path = path.replace(":", "/")
+    return [part.lower() for part in path.strip("/").split("/")]
 
-def does_path_exist_in_bookmarks(all_bookmarks_obj, path, separator=':'):
+
+def does_path_exist_in_bookmarks(all_bookmarks_obj, path, separator=":"):
     """
     Given a colon-separated path (e.g., 'grand-parent:parent:bm1'),
     return True if that path exists in the nested bookmarks object.
