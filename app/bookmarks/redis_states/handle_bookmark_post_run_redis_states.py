@@ -9,7 +9,6 @@ from app.bookmarks.redis_states.redis_state_handlers.handle_export_from_redis im
 )
 from app.types.bookmark_types import CurrentRunSettings, MatchedBookmarkObj
 from app.utils.decorators import print_def_name
-from app.utils.printing_utils import print_dev
 
 IS_PRINT_DEF_NAME = True
 
