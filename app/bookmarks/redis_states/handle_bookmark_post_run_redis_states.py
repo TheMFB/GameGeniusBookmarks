@@ -9,6 +9,7 @@ from app.bookmarks.redis_states.redis_state_handlers.handle_export_from_redis im
 )
 from app.types.bookmark_types import CurrentRunSettings, MatchedBookmarkObj
 from app.utils.decorators import print_def_name
+from app.utils.printing_utils import print_dev
 
 IS_PRINT_DEF_NAME = True
 
@@ -57,19 +58,16 @@ def handle_bookmark_post_run_redis_states(
 
     ### SAVING TEMP TO BOOKMARK ###
 
-    if is_bm_match_redis_after_state_exist and (
-        not is_save_updates or not is_save_bm_redis_after
-    ):
-        # We do not want to save the temp file to the bookmark directory if it already exists,
-        # unless we are in is_save_updates mode.
-        return 0
+    # If the redis_after.json does not exist, or we are in is_save_updates or is_save_bm_redis_after mode,
+    # then we need to copy the redis_after temp file to the bookmark directory.
+    if not is_bm_match_redis_after_state_exist or is_save_updates or is_save_bm_redis_after:
+        # Copy the temp file to the bookmark directory.
+        handle_copy_redis_dump_state_to_target_bm_redis_state(
+            target_bookmark_path_slash_abs=matched_bookmark_path_abs,
+            target_bm_redis_state_before_or_after="after",
+            redis_temp_state_filename="bookmark_temp_after",
+        )
 
-    # Copy the temp file to the bookmark directory.
-    handle_copy_redis_dump_state_to_target_bm_redis_state(
-        target_bookmark_path_slash_abs=matched_bookmark_path_abs,
-        target_bm_redis_state_before_or_after="after",
-        redis_temp_state_filename="bookmark_temp_after",
-    )
     safe_process_auto_tags(matched_bookmark_obj, current_run_settings_obj)
 
     return 0
