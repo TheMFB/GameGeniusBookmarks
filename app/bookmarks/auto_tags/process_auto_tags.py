@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 from typing import Any, Optional
 
-from app.bookmarks.auto_tags.create_auto_tags import create_auto_tags
+from app.bookmarks.auto_tags.auto_tag_config import AUTO_TAG_CONFIG
 from app.consts.bookmarks_consts import IS_APPLY_AUTOTAGS, IS_DEBUG
 from app.types.bookmark_types import CurrentRunSettings, MatchedBookmarkObj
 
@@ -33,23 +33,40 @@ def process_auto_tags(
         print("❌ Could not find :game_state in redis_after_data")
         return
 
-    # Now extract the screen_statuses.current_screen_name safely
-    screen_statuses = game_state_data.get("screen_statuses", {})
-    map_battle_mode_statuses = game_state_data.get("map_battle_mode_statuses", {})
+    auto_tags: list[str] = []
 
-    auto_tags = create_auto_tags(
-        current_screen_name=screen_statuses.get("current_screen_name"),
-        team_objective_control_state=map_battle_mode_statuses.get(
-            "team_objective_control_state"
-        ),
-        battle_timeline_phase=map_battle_mode_statuses.get("battle_timeline_phase"),
-        team_attack_or_defend=map_battle_mode_statuses.get("team_attack_or_defend"),
-        game_mode_name=map_battle_mode_statuses.get("game_mode_name"),
-        map_battle_mode_name=map_battle_mode_statuses.get("map_battle_mode_name"),
-        stage_name=map_battle_mode_statuses.get("stage_name"),
-        stage_location_name=map_battle_mode_statuses.get("stage_location_name"),
-        final_victory_or_defeat=map_battle_mode_statuses.get("final_victory_or_defeat"),
-    )
+    for rule in AUTO_TAG_CONFIG:
+        if not rule.get("is_enabled", True):
+            continue
+
+        relative_key_path = rule.get("key", "").split(":game_state:")[-1]
+        raw_value = extract_value_by_key_path(game_state_data, relative_key_path)
+
+        # Handle None
+        if raw_value is None:
+            tag = rule.get("undefined_string")
+            if tag:
+                auto_tags.append(tag)
+            continue
+
+        # Convert booleans
+        if isinstance(raw_value, bool):
+            true_string = rule.get("true_string")
+            false_string = rule.get("false_string")
+
+            if raw_value and true_string:
+                tag = true_string
+            elif not raw_value and false_string:
+                tag = false_string
+            else:
+                continue
+        else:
+            tag = str(raw_value)
+
+        if IS_DEBUG:
+            print(f"✔️ Rule matched: key={rule.get('key')} → tag={tag}")
+
+        auto_tags.append(tag)
 
     print("🏷️ Generated auto-tags:", auto_tags)
 
@@ -131,3 +148,14 @@ def process_auto_tags(
         print(f"✅ Auto-tags written to {bookmark_path}")
     except Exception as e:
         print(f"⚠️ Could not write auto-tags: {e}")
+
+
+def extract_value_by_key_path(data: dict[str, Any], key_path: str) -> Any:
+    keys = key_path.split(":")
+    current = data
+    for key in keys:
+        if isinstance(current, dict) and key in current:
+            current = current[key]
+        else:
+            return None
+    return current
