@@ -96,10 +96,17 @@ def process_auto_tags(
                 print("\n📋 Proposed Auto-Tag Update:")
                 print("Old tags:", old_tags)
                 print("New tags:", auto_tags)
-                user_input = input("\nApply these auto-tags? (y/n): ").strip().lower()
-                if user_input != "y":
-                    print("⚠️ Auto-tagging canceled by user.\n")
-                    return
+                while True:
+                    user_input = (
+                        input("\nApply these auto-tags? (y/n): ").strip().lower()
+                    )
+                    if user_input == "y":
+                        break
+                    elif user_input == "n":
+                        print("⚠️ Auto-tagging canceled by user.\n")
+                        return
+                    else:
+                        print("❌ Invalid input. Please enter 'y' or 'n'.")
 
         with open(bookmark_path, "r") as f:
             bm_json = json.load(f)
