@@ -72,6 +72,35 @@ def process_auto_tags(
         Path(matched_bookmark_obj["bookmark_path_slash_abs"]) / "bookmark_meta.json"
     )
     try:
+        # Check if we should skip confirmation
+        is_skip_auto_tag_confirmation = (
+            current_run_settings_obj.get("is_skip_auto_tag_confirmation", False)
+            if current_run_settings_obj
+            else False
+        )
+
+        if not is_skip_auto_tag_confirmation:
+            # Try to load current auto-tags from disk (if present)
+            try:
+                with open(bookmark_path, "r") as f:
+                    existing_data = json.load(f)
+                    old_tags = (
+                        existing_data.get("bookmark_info", {}).get("auto_tags", [])
+                        if "bookmark_info" in existing_data
+                        else []
+                    )
+            except Exception:
+                old_tags: list[str] = []
+
+            if old_tags != auto_tags:
+                print("\n📋 Proposed Auto-Tag Update:")
+                print("Old tags:", old_tags)
+                print("New tags:", auto_tags)
+                user_input = input("\nApply these auto-tags? (y/n): ").strip().lower()
+                if user_input != "y":
+                    print("⚠️ Auto-tagging canceled by user.\n")
+                    return
+
         with open(bookmark_path, "r") as f:
             bm_json = json.load(f)
         # Update top-level auto_tags
