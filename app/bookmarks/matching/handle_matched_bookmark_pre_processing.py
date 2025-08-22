@@ -1,5 +1,6 @@
 import os
 
+from app.bookmarks.auto_tags.auto_tags_utils import safe_process_auto_tags
 from app.bookmarks.navigation.process_alt_source_bookmark import (
     process_alt_source_bookmark,
 )
@@ -37,11 +38,12 @@ def handle_matched_bookmark_pre_processing(
 
     # RESOLVE SOURCE BOOKMARK
 
-    is_use_alt_source_bookmark = current_run_settings_obj.get("is_use_alt_source_bookmark", False)
+    is_use_alt_source_bookmark = current_run_settings_obj.get(
+        "is_use_alt_source_bookmark", False
+    )
     if is_use_alt_source_bookmark:
         alt_source_bookmark_results = process_alt_source_bookmark(
-            matched_bookmark_obj,
-            current_run_settings_obj
+            matched_bookmark_obj, current_run_settings_obj
         )
         if isinstance(alt_source_bookmark_results, int):
             print("❌ No source bookmark found")
@@ -50,10 +52,17 @@ def handle_matched_bookmark_pre_processing(
 
     # REDIS STATES
 
-    results = handle_bookmark_pre_run_redis_states(matched_bookmark_obj, current_run_settings_obj)
+    results = handle_bookmark_pre_run_redis_states(
+        matched_bookmark_obj, current_run_settings_obj
+    )
     if results != 0:
         print("❌ Error in handle_bookmark_pre_run_redis_states")
         return results
+
+    safe_process_auto_tags(
+        matched_bookmark_obj,
+        current_run_settings_obj=current_run_settings_obj,
+    )
 
     # OBS
 

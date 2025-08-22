@@ -6,7 +6,12 @@ from typing import Any
 from app.bookmarks.auto_tags.auto_tags_utils import safe_process_auto_tags
 from app.consts.bookmarks_consts import IS_DEBUG, IS_DEBUG_FULL
 from app.obs.videos import construct_full_video_file_path
-from app.types.bookmark_types import BookmarkInfo, MatchedBookmarkObj, MediaInfo
+from app.types.bookmark_types import (
+    BookmarkInfo,
+    CurrentRunSettings,
+    MatchedBookmarkObj,
+    MediaInfo,
+)
 from app.utils.decorators import print_def_name
 
 IS_PRINT_DEF_NAME = True
@@ -146,6 +151,7 @@ def create_bookmark_meta(
     matched_bookmark_obj: MatchedBookmarkObj,
     media_info: MediaInfo | dict[str, Any] | None = None,
     tags: list[str] | None = None,
+    current_run_settings_obj: CurrentRunSettings | None = None,
 ) -> None:
     """Create bookmark metadata with optional tags."""
     bookmark_dir_slash_abs = matched_bookmark_obj["bookmark_path_slash_abs"]
@@ -173,7 +179,9 @@ def create_bookmark_meta(
     if IS_DEBUG:
         print(f"📋 Created bookmark metadata with tags: {tags}")
 
-    safe_process_auto_tags(matched_bookmark_obj, current_run_settings_obj=None)
+    safe_process_auto_tags(
+        matched_bookmark_obj, current_run_settings_obj=current_run_settings_obj
+    )
 
 
 @print_def_name(IS_PRINT_DEF_NAME)
@@ -181,6 +189,7 @@ def update_bookmark_meta(
     matched_bookmark_obj: MatchedBookmarkObj,
     media_info: MediaInfo | dict[str, Any],
     tags: list[str] | None = None,
+    current_run_settings_obj: CurrentRunSettings | None = None,
 ) -> None:
     """Update or create bookmark metadata with optional patching."""
     bookmark_dir_slash_abs = matched_bookmark_obj["bookmark_path_slash_abs"]
@@ -218,7 +227,9 @@ def update_bookmark_meta(
     with open(meta_file, "w") as f:
         json.dump(meta_data, f, indent=2)
 
-    safe_process_auto_tags(matched_bookmark_obj, current_run_settings_obj=None)
+    safe_process_auto_tags(
+        matched_bookmark_obj, current_run_settings_obj=current_run_settings_obj
+    )
 
 
 @print_def_name(IS_PRINT_DEF_NAME)
@@ -226,6 +237,7 @@ def patch_bookmark_meta(
     matched_bookmark_obj: MatchedBookmarkObj,
     media_info: MediaInfo | dict[str, Any],
     tags: list[str] | None = None,
+    current_run_settings_obj: CurrentRunSettings | None = None,
 ) -> None:
     """Update or create bookmark metadata with optional patching."""
     bookmark_dir_slash_abs = matched_bookmark_obj["bookmark_path_slash_abs"]
@@ -265,7 +277,9 @@ def patch_bookmark_meta(
     if IS_DEBUG:
         print(f"📋 Patched bookmark metadata with tags: {tags}")
 
-    safe_process_auto_tags(matched_bookmark_obj, current_run_settings_obj=None)
+    safe_process_auto_tags(
+        matched_bookmark_obj, current_run_settings_obj=current_run_settings_obj
+    )
 
 
 @print_def_name(IS_PRINT_DEF_NAME)
@@ -273,6 +287,7 @@ def update_missing_bookmark_meta_fields(
     matched_bookmark_obj: MatchedBookmarkObj,
     media_info: MediaInfo | dict[str, Any],
     tags: list[str] | None = None,
+    current_run_settings_obj: CurrentRunSettings | None = None,
 ) -> None:
     """Update or create bookmark metadata with optional patching."""
     bookmark_dir_slash_abs = matched_bookmark_obj["bookmark_path_slash_abs"]
@@ -312,4 +327,6 @@ def update_missing_bookmark_meta_fields(
     if IS_DEBUG:
         print(f"📋 Patched bookmark metadata with tags: {tags}")
 
-    safe_process_auto_tags(matched_bookmark_obj, current_run_settings_obj=None)
+    safe_process_auto_tags(
+        matched_bookmark_obj, current_run_settings_obj=current_run_settings_obj
+    )
