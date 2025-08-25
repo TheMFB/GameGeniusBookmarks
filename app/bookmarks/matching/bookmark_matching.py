@@ -10,6 +10,7 @@ from app.bookmarks.matching.matching_utils import (
     handle_bookmark_matches,
 )
 from app.bookmarks.navigation.process_navigation import process_main_cli_arg_navigation
+from app.consts.bookmarks_consts import IS_DEBUG
 from app.types.bookmark_types import (
     NAVIGATION_COMMANDS,
     CurrentRunSettings,
@@ -33,10 +34,11 @@ def find_best_bookmark_match_or_create(
     Example Target: `GRANDPARENT:PARENT:BOOKMARK -t comp domination`
 
     """
-    print("🧪 DEBUG: Entered find_best_bookmark_match_or_create")
-    print("🧪 DEBUG: Incoming cli_bookmark_string =", cli_bookmark_string)
-    print("🧪 DEBUG: NAVIGATION_COMMANDS =", NAVIGATION_COMMANDS)
-    print("🧪 DEBUG: Incoming cli_bookmark_string =", cli_bookmark_string)
+    if IS_DEBUG:
+        print("🧪 DEBUG: Entered find_best_bookmark_match_or_create")
+        print("🧪 DEBUG: Incoming cli_bookmark_string =", cli_bookmark_string)
+        print("🧪 DEBUG: NAVIGATION_COMMANDS =", NAVIGATION_COMMANDS)
+        print("🧪 DEBUG: Incoming cli_bookmark_string =", cli_bookmark_string)
     # 1. Does the string match a reserved command?
     if cli_bookmark_string in NAVIGATION_COMMANDS:
         # TODO(MFB): Other than return bookmark, is there anything else with this one?

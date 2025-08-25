@@ -52,7 +52,7 @@ def create_auto_tags(redis_after_data: dict[str, Any]) -> list[str]:
                     tags.add(false_tag)
 
         if not isinstance(raw_value, str):
-            continue  # Skip unsupported types for now
+            continue
 
         tag: str = raw_value
 

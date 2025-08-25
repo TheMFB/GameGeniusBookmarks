@@ -16,7 +16,6 @@ class AutoTagRule(TypedDict, total=False):
     is_unique: bool
 
 
-# The config list you’ll build from
 AUTO_TAG_CONFIG: list[AutoTagRule] = [
     {
         "key": "game:marvel_rivals:session:DEV_SESSION_ID:game_state:screen_statuses:current_screen_name",
