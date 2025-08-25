@@ -28,3 +28,14 @@ def get_nested_value_from_colon_path(
         if IS_DEBUG:
             print(f"⚠️ Failed to resolve path '{path}': {e}")
         return None
+
+
+def nest_flat_colon_keys(flat_dict: dict[str, Any]) -> dict[str, Any]:
+    nested = {}
+    for full_key, value in flat_dict.items():
+        parts = full_key.split(":")
+        current = nested
+        for part in parts[:-1]:
+            current = current.setdefault(part, {})
+        current[parts[-1]] = value
+    return nested

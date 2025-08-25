@@ -12,6 +12,12 @@ def create_auto_tags(redis_after_data: dict[str, Any]) -> list[str]:
     tags: set[str] = set()
 
     for rule in AUTO_TAG_CONFIG:
+        if IS_DEBUG:
+            print("\n======================")
+            print("🔍 Evaluating rule:")
+            for k, v in rule.items():
+                print(f"  {k}: {v}")
+
         if not rule.get("is_enabled", True):
             continue
 
@@ -22,6 +28,10 @@ def create_auto_tags(redis_after_data: dict[str, Any]) -> list[str]:
             continue
 
         raw_value = get_nested_value_from_colon_path(redis_after_data, key_path)
+
+        if IS_DEBUG:
+            print(f"🔑 Rule: {key_path}")
+            print(f"🔍 Resolved value: {raw_value}")
 
         if raw_value is None:
             undefined_tag = rule.get("undefined_string")

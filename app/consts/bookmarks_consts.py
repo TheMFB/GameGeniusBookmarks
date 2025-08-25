@@ -8,8 +8,8 @@ load_dotenv()
 
 ## DEV CONSTANTS ##
 
-# IS_DEBUG = True
-IS_DEBUG = False
+IS_DEBUG = True
+# IS_DEBUG = False
 # IS_DEBUG_FULL = True
 # TODO(): Rename this -- no idea what it does without researching it.
 IS_DEBUG_FULL = False

@@ -5,6 +5,7 @@ from typing import Any, Optional
 from app.bookmarks.auto_tags.create_auto_tags import create_auto_tags
 from app.consts.bookmarks_consts import IS_APPLY_AUTOTAGS, IS_DEBUG
 from app.types.bookmark_types import CurrentRunSettings, MatchedBookmarkObj
+from app.utils.data_utils import nest_flat_colon_keys
 
 
 def process_auto_tags(
@@ -16,6 +17,9 @@ def process_auto_tags(
     Applies auto-tags to a matched bookmark and writes them to disk.
     Tags are generated via config and confirmed with user unless overridden.
     """
+    if IS_DEBUG:
+        print(f"🧩 redis_after_data top-level keys: {list(redis_after_data.keys())}")
+
     if not IS_APPLY_AUTOTAGS:
         if IS_DEBUG:
             print("⚠️ Skipping auto-tagging (IS_APPLY_AUTOTAGS is False).")
@@ -23,7 +27,9 @@ def process_auto_tags(
 
     print("🔍 Processing auto-tags...")
 
-    auto_tags = create_auto_tags(redis_after_data)
+    redis_after_data_nested = nest_flat_colon_keys(redis_after_data)
+    auto_tags = create_auto_tags(redis_after_data_nested)
+
     print("🏷️ Generated auto-tags:", auto_tags)
 
     # Attach auto_tags to the bookmark's info
