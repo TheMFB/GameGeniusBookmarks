@@ -7,6 +7,7 @@ from app.bookmarks.navigation.process_alt_source_bookmark import (
 from app.bookmarks.redis_states.handle_bookmark_pre_run_redis_states import (
     handle_bookmark_pre_run_redis_states,
 )
+from app.consts.bookmarks_consts import IS_DEBUG
 from app.obs.handle_bookmark_obs import (
     handle_bookmark_obs_pre_run,
 )
@@ -42,6 +43,9 @@ def handle_matched_bookmark_pre_processing(
         "is_use_alt_source_bookmark", False
     )
     if is_use_alt_source_bookmark:
+        if IS_DEBUG:
+            print("🧪 DEBUG: is_use_alt_source_bookmark is True")
+
         alt_source_bookmark_results = process_alt_source_bookmark(
             matched_bookmark_obj, current_run_settings_obj
         )
