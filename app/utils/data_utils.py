@@ -1,6 +1,4 @@
-from typing import Any
-
-from app.consts.bookmarks_consts import IS_DEBUG
+from typing import Any, cast
 
 
 def get_nested_value_from_colon_path(
@@ -14,20 +12,30 @@ def get_nested_value_from_colon_path(
     Returns:
         The resolved value if found, or None if any part is missing.
     """
-    try:
-        keys = path.split(":")
-        current = data
-        for key in keys:
-            if isinstance(current, dict) and key in current:
+    keys = path.split(":")
+    current = data
+
+    for i, key in enumerate(keys):
+        if isinstance(current, dict):
+            if key == "*":
+                for subkey in current:
+                    result = get_nested_value_from_colon_path(
+                        cast(dict[str, Any], current[subkey]),
+                        ":".join(keys[i + 1 :]),
+                    )
+                    if result is not None:
+                        return result
+                return None
+            elif key in current:
                 current = current[key]
             else:
                 return None
-        if isinstance(current, (str, bool)):
-            return current
-    except Exception as e:
-        if IS_DEBUG:
-            print(f"⚠️ Failed to resolve path '{path}': {e}")
-        return None
+        else:
+            return None
+    if isinstance(current, (str, bool)):
+        return current
+
+    return None
 
 
 def nest_flat_colon_keys(flat_dict: dict[str, Any]) -> dict[str, Any]:

@@ -3,7 +3,7 @@ from typing import Literal, Optional, TypedDict
 
 class AutoTagRule(TypedDict, total=False):
     key: str  # Full redis-like path
-    values: list[str]  # List of accepted values
+    values: Optional[list[str]]
     prepend_string: Optional[str]
     append_string: Optional[str]
     bookmark_hierarchy: Optional[
@@ -53,7 +53,7 @@ AUTO_TAG_CONFIG: list[AutoTagRule] = [
     {
         "key": "game:marvel_rivals:session:DEV_SESSION_ID:game_state:map_battle_mode_statuses:final_victory_or_defeat",
         "is_enabled": True,
-        "true_string": "victory",
-        "false_string": "defeat",
+        "true_string": "final_victory",
+        "false_string": "final_defeat",
     },
 ]

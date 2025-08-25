@@ -155,7 +155,7 @@ def find_best_bookmark_match_or_create(
             is_prompt_user_for_create_bm_option=is_prompt_user_for_create_bm_option,
             context=context,
         )
-
-    print("🧪 DEBUG: Returning None — no match found.")
+    if IS_DEBUG:
+        print("🧪 DEBUG: Returning None — no match found.")
 
     return 1
