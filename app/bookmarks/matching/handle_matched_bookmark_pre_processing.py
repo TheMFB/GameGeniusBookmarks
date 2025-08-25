@@ -42,6 +42,8 @@ def handle_matched_bookmark_pre_processing(
         "is_use_alt_source_bookmark", False
     )
     if is_use_alt_source_bookmark:
+        print("🧪 DEBUG: is_use_alt_source_bookmark is True")
+
         alt_source_bookmark_results = process_alt_source_bookmark(
             matched_bookmark_obj, current_run_settings_obj
         )

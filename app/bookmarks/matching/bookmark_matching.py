@@ -33,6 +33,10 @@ def find_best_bookmark_match_or_create(
     Example Target: `GRANDPARENT:PARENT:BOOKMARK -t comp domination`
 
     """
+    print("🧪 DEBUG: Entered find_best_bookmark_match_or_create")
+    print("🧪 DEBUG: Incoming cli_bookmark_string =", cli_bookmark_string)
+    print("🧪 DEBUG: NAVIGATION_COMMANDS =", NAVIGATION_COMMANDS)
+    print("🧪 DEBUG: Incoming cli_bookmark_string =", cli_bookmark_string)
     # 1. Does the string match a reserved command?
     if cli_bookmark_string in NAVIGATION_COMMANDS:
         # TODO(MFB): Other than return bookmark, is there anything else with this one?
@@ -149,5 +153,7 @@ def find_best_bookmark_match_or_create(
             is_prompt_user_for_create_bm_option=is_prompt_user_for_create_bm_option,
             context=context,
         )
+
+    print("🧪 DEBUG: Returning None — no match found.")
 
     return 1
