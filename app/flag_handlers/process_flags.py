@@ -112,7 +112,16 @@ def process_flags(args: list[str]) -> CurrentRunSettings | int:
         ]
     )
 
-    is_skip_auto_tag_confirmation = is_flag_in_args(["--auto-tag", "-at"])
+    # Handle auto-tag confirmation flags
+    has_at_flag = is_flag_in_args(["--auto-tag", "-at"])
+    has_nat_flag = is_flag_in_args(["--no-auto-tag", "-nat"])
+
+    if has_at_flag:
+        auto_tag_confirm_answer = "yes"
+    elif has_nat_flag:
+        auto_tag_confirm_answer = "no"
+    else:
+        auto_tag_confirm_answer = None
 
     # TODO(MFB): --continue / rum the rest of them in the directory, only stopping if there's an error.
     is_use_alt_source_bookmark = is_flag_in_args(
@@ -175,6 +184,6 @@ def process_flags(args: list[str]) -> CurrentRunSettings | int:
             "is_use_alt_source_bookmark": is_use_alt_source_bookmark,
             "is_update_obs": is_update_obs,
             "tags": tags,
-            "is_skip_auto_tag_confirmation": is_skip_auto_tag_confirmation,
+            "auto_tag_confirm_answer": auto_tag_confirm_answer,
         },
     )

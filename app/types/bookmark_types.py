@@ -54,7 +54,7 @@ class CurrentRunSettings(TypedDict):
     is_use_alt_source_bookmark: bool
     is_update_obs: bool
     tags: list[str] | None
-    is_skip_auto_tag_confirmation: bool
+    auto_tag_confirm_answer: Literal["yes", "no"] | None
 
 
 class MediaInfo(TypedDict):
@@ -114,6 +114,8 @@ VALID_FLAGS = [
     "--pwd",
     "--auto-tag",
     "-at",
+    "-nat",
+    "--no-auto-tag",
 ]
 
 default_processed_flags: CurrentRunSettings = {
@@ -134,7 +136,7 @@ default_processed_flags: CurrentRunSettings = {
     "is_use_alt_source_bookmark": False,
     "is_update_obs": False,
     "tags": None,
-    "is_skip_auto_tag_confirmation": False,
+    "auto_tag_confirm_answer": None,
 }
 
 NAVIGATION_COMMANDS = [
