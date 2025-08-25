@@ -1,50 +1,59 @@
-# app/bookmarks/auto_tags/create_auto_tags.py
+from typing import Any
 
-from typing import List, Optional
+from app.bookmarks.auto_tags.auto_tag_config import AUTO_TAG_CONFIG
+from app.consts.bookmarks_consts import IS_DEBUG
+from app.utils.data_utils import get_nested_value_from_colon_path
 
 
-def create_auto_tags(
-    *,
-    # TODO(Kerch): Review use of '*' to enforce keyword-only arguments in create_auto_tags.
-    # This restricts the function to only known arguments, which matches our current use case.
-    # If in the future we need to allow additional or dynamic arguments, consider using **kwargs.
-    current_screen_name: Optional[str] = None,
-    team_objective_control_state: Optional[str] = None,
-    battle_timeline_phase: Optional[str] = None,
-    team_attack_or_defend: Optional[str] = None,
-    game_mode_name: Optional[str] = None,
-    map_battle_mode_name: Optional[str] = None,
-    stage_name: Optional[str] = None,
-    stage_location_name: Optional[str] = None,
-    final_victory_or_defeat: Optional[str] = None,
-) -> List[str]:
+def create_auto_tags(redis_after_data: dict[str, Any]) -> list[str]:
     """
-    Converts provided game state fields into a list of auto-tag strings,
-    adding prefixes or suffixes as needed.
+    Converts redis_after_data into a list of auto-tags using config-driven rules.
     """
-    tags: list[str] = []
+    tags: set[str] = set()
 
-    # TODO(Kerch): Too many optional parameters can lead to confusion.
-    # Direct fields
-    if current_screen_name:
-        tags.append(current_screen_name)
-    if team_objective_control_state:
-        tags.append(team_objective_control_state)
-    if battle_timeline_phase:
-        tags.append(f"battle_phase_{battle_timeline_phase}")
-    if team_attack_or_defend:
-        tags.append(team_attack_or_defend)
-    if game_mode_name:
-        tags.append(game_mode_name)
-    if map_battle_mode_name:
-        tags.append(map_battle_mode_name)
-    if stage_name:
-        tags.append(stage_name)
-    if stage_location_name:
-        tags.append(stage_location_name)
-    if final_victory_or_defeat:
-        tags.append(f"final_{final_victory_or_defeat}")
+    for rule in AUTO_TAG_CONFIG:
+        if not rule.get("is_enabled", True):
+            continue
 
-    # (Optional: ensure tags are unique and alphabetized)
-    tags = sorted(set(tags))
-    return tags
+        key_path = rule.get("key")
+        if not key_path:
+            if IS_DEBUG:
+                print(f"⚠️ Skipping rule with missing 'key': {rule}")
+            continue
+
+        raw_value = get_nested_value_from_colon_path(redis_after_data, key_path)
+
+        if raw_value is None:
+            undefined_tag = rule.get("undefined_string")
+            if undefined_tag:
+                tags.add(undefined_tag)
+            elif IS_DEBUG:
+                print(f"⚠️ Key not found: {key_path}")
+            continue
+
+        if isinstance(raw_value, bool):
+            if raw_value:
+                true_tag = rule.get("true_string")
+                if true_tag:
+                    tags.add(true_tag)
+            else:
+                false_tag = rule.get("false_string")
+                if false_tag:
+                    tags.add(false_tag)
+
+        if not isinstance(raw_value, str):
+            continue  # Skip unsupported types for now
+
+        tag: str = raw_value
+
+        prepend = rule.get("prepend_string")
+        append = rule.get("append_string")
+
+        if prepend:
+            tag = prepend + tag
+        if append:
+            tag = tag + append
+
+        tags.add(tag)
+
+    return sorted(tags)
