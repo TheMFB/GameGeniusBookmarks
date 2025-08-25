@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from typing import Literal
 
 from dotenv import load_dotenv
 
@@ -7,15 +8,21 @@ load_dotenv()
 
 ## DEV CONSTANTS ##
 
+# IS_DEBUG = True
 IS_DEBUG = False
-# IS_DEBUG = False
 # IS_DEBUG_FULL = True
+# TODO(): Rename this -- no idea what it does without researching it.
 IS_DEBUG_FULL = False
 IS_DEBUG_PRINT_ALL_BOOKMARKS_JSON = False
 # IS_PRINT_JUST_CURRENT_DIRECTORY_BOOKMARKS = True
 IS_PRINT_JUST_CURRENT_DIRECTORY_BOOKMARKS = False
 # IS_PRINT_JUST_CURRENT_DIRECTORY_BOOKMARKS_ON_LS = True
 IS_PRINT_JUST_CURRENT_DIRECTORY_BOOKMARKS_ON_LS = False
+IS_APPLY_AUTOTAGS = True
+# IS_APPLY_AUTOTAGS = False
+
+TagType = Literal["user_tags", "auto_tags", "both"]
+ACTIVE_TAG_TYPE: TagType = "both"
 
 ## CONSTANTS ##
 

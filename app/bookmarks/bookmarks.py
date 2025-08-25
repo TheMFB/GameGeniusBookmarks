@@ -1,6 +1,7 @@
 import json
 import os
 import shutil
+from typing import Any
 
 from app.bookmarks.bookmark_dir_processes import get_all_valid_root_dir_names
 from app.bookmarks.bookmarks_meta import (
@@ -13,6 +14,7 @@ from app.consts.bookmarks_consts import (
     IS_DEBUG_PRINT_ALL_BOOKMARKS_JSON,
     REPO_ROOT,
 )
+from app.tags.tag_utils import get_effective_tags
 from app.types.bookmark_types import (
     BookmarkInfo,
     BookmarkPathDictionary,
@@ -37,14 +39,14 @@ def get_all_deep_bookmarks_in_dir_with_meta(
     Recursively search bookmark_dir_abs for directories containing bookmark_meta.json.
     Returns a dict mapping from a human-readable key to BookmarkInfo.
     """
-    matched_bookmarks = {}
+    matched_bookmarks: dict[str, BookmarkInfo] = {}
 
     if not os.path.exists(bookmark_dir_abs):
         return matched_bookmarks
 
     parent_dir_name = os.path.basename(bookmark_dir_abs)
 
-    def scan_for_bookmarks(current_abs_path: str, current_rel_path: str = ""):
+    def scan_for_bookmarks(current_abs_path: str, current_rel_path: str = "") -> None:
         for entry in os.listdir(current_abs_path):
             full_entry_path = os.path.join(current_abs_path, entry)
             if os.path.isdir(full_entry_path):
@@ -56,7 +58,9 @@ def get_all_deep_bookmarks_in_dir_with_meta(
                         if current_rel_path
                         else f"{parent_dir_name}/{entry}"
                     )
-                    bookmark_meta = load_bookmark_meta_from_rel(full_entry_path)
+                    bookmark_meta: BookmarkInfo | None = load_bookmark_meta_from_rel(
+                        full_entry_path
+                    )
                     if bookmark_meta:
                         matched_bookmarks[bookmark_key] = bookmark_meta
                     elif IS_DEBUG:
@@ -110,11 +114,11 @@ def get_all_live_bookmarks_in_json_format(_is_override_run_once: bool = False):
     """
     # TODO(MFB): Look into this, as this is likely a (relatively) VERY heavy operation.
 
-    def scan_folder(folder_path):
-        node = {}
+    def scan_folder(folder_path: str) -> dict[str, Any]:
+        node: dict[str, Any] = {}
         # Add folder meta if present
         folder_meta = load_folder_meta(folder_path)
-        folder_tags = set()
+        folder_tags: set[str] = set()
         if folder_meta:
             folder_tags = set(folder_meta.get("tags", []))
             node["description"] = folder_meta.get("description", "")
@@ -126,7 +130,7 @@ def get_all_live_bookmarks_in_json_format(_is_override_run_once: bool = False):
         except Exception:
             return node
 
-        sub_dirs = {}
+        sub_dirs: dict[str, dict[str, Any]] = {}
 
         for item in items:
             file_abs_path = os.path.join(folder_path, item)
@@ -137,16 +141,17 @@ def get_all_live_bookmarks_in_json_format(_is_override_run_once: bool = False):
                 # This folder is a bookmark (leaf)
                 bookmark_meta = load_bookmark_meta_from_abs(folder_path)
                 if bookmark_meta:
+                    tags = get_effective_tags(bookmark_meta)
                     node.update(
                         {
-                            "tags": bookmark_meta.get("tags", []),
+                            "tags": tags,
                             "description": bookmark_meta.get("description", ""),
                             "timestamp": bookmark_meta.get("timestamp_formatted", ""),
                             "video_filename": bookmark_meta.get("video_filename", ""),
                             "type": "bookmark",
                         }
                     )
-                return node  # Do not process further, this is a bookmark
+                return node
 
         # Attach sub_dirs to node
         for sub_dir_name, sub_dir_node in sub_dirs.items():
@@ -155,15 +160,15 @@ def get_all_live_bookmarks_in_json_format(_is_override_run_once: bool = False):
         if IS_AGGREGATE_TAGS_AND_HOIST_GROUPED:
             # --- Tag aggregation logic ---
             # Gather tags from all children (sub_dirs and bookmarks)
-            child_tag_sets = []
+            child_tag_sets: list[set[str]] = []
             for sub_dir_node in sub_dirs.values():
-                child_tags = set(sub_dir_node.get("tags", []))
+                # Cast everything to str to keep the type checkers happy
+                child_tags = set(str(t) for t in sub_dir_node.get("tags", []))
                 if child_tags:
                     child_tag_sets.append(child_tags)
 
-            # Only hoist if there are children
             if child_tag_sets:
-                grouped_tags = (
+                grouped_tags: set[str] = (
                     set.intersection(*child_tag_sets) if child_tag_sets else set()
                 )
             else:
@@ -172,21 +177,21 @@ def get_all_live_bookmarks_in_json_format(_is_override_run_once: bool = False):
             # Remove grouped_tags from all children
             for sub_dir_node in sub_dirs.values():
                 if "tags" in sub_dir_node:
-                    sub_dir_node["tags"] = list(
-                        set(sub_dir_node["tags"]) - grouped_tags
-                    )
+                    # Cast to str for safety
+                    sub_dir_node["tags"] = [
+                        str(t) for t in set(sub_dir_node["tags"]) - grouped_tags
+                    ]
 
             # Combine folder's own tags and grouped tags, and unique-ify
-            all_tags = folder_tags.union(grouped_tags)
+            all_tags: set[str] = set(folder_tags).union(grouped_tags)
             if all_tags:
-                node["tags"] = list(sorted(all_tags))
+                node["tags"] = [str(tag) for tag in sorted(all_tags)]
             elif "tags" in node:
-                # Remove empty tags list if present
                 del node["tags"]
 
         return node
 
-    all_bookmarks = {}
+    all_bookmarks: dict[str, dict[str, Any]] = {}
     for folder_path in get_all_valid_root_dir_names():
         folder_name = os.path.basename(folder_path)
         all_bookmarks[folder_name] = scan_folder(folder_path)
@@ -233,24 +238,21 @@ def get_bookmark_info(
 
 
 @print_def_name(IS_PRINT_DEF_NAME)
-def create_bookmark_symlinks(matched_bookmark_obj):
+def create_bookmark_symlinks(matched_bookmark_obj: MatchedBookmarkObj) -> None:
     """Create symlinks for the last used bookmark and its folder."""
 
-    # Get the root directory of the bookmark manager
     shortcuts_dir = os.path.join(REPO_ROOT, "shortcuts")
     os.makedirs(shortcuts_dir, exist_ok=True)
 
-    # Create last_used_bookmark directory if it doesn't exist
     last_used_bookmark_dir = os.path.join(shortcuts_dir, "last_used_bookmark")
     os.makedirs(last_used_bookmark_dir, exist_ok=True)
 
-    # Create last_used_bookmark_folder directory if it doesn't exist
     last_used_bookmark_folder_dir = os.path.join(
         shortcuts_dir, "last_used_bookmark_folder"
     )
     os.makedirs(last_used_bookmark_folder_dir, exist_ok=True)
 
-    def clear_directory(directory_path):
+    def clear_directory(directory_path: str) -> None:
         for item in os.listdir(directory_path):
             file_abs_path = os.path.join(directory_path, item)
             try:
@@ -266,13 +268,11 @@ def create_bookmark_symlinks(matched_bookmark_obj):
     clear_directory(last_used_bookmark_dir)
     clear_directory(last_used_bookmark_folder_dir)
 
-    # Construct the target paths
     bookmark_dir = matched_bookmark_obj["bookmark_dir_slash_abs"]
     bookmark_path = matched_bookmark_obj["bookmark_path_slash_abs"]
     bookmark_tail_name = matched_bookmark_obj["bookmark_tail_name"]
     bookmark_parent_name = os.path.basename(os.path.dirname(bookmark_path))
 
-    # Define symlink paths
     bookmark_symlink_path = os.path.join(last_used_bookmark_dir, bookmark_tail_name)
     folder_symlink_path = os.path.join(
         last_used_bookmark_folder_dir, bookmark_parent_name
@@ -301,14 +301,16 @@ def create_bookmark_symlinks(matched_bookmark_obj):
 
 @print_def_name(IS_PRINT_DEF_NAME)
 @memoize
-def get_all_live_bookmark_path_slash_rels():
+def get_all_live_bookmark_path_slash_rels() -> list[str]:
     """
     Return a flat list of all bookmark paths from all live folders.
     """
-    bookmark_paths = []
+    bookmark_paths: list[str] = []
 
     for folder in get_all_valid_root_dir_names():
-        all_bookmark_objects = get_all_deep_bookmarks_in_dir_with_meta(folder)
+        all_bookmark_objects: dict[str, BookmarkInfo] = (
+            get_all_deep_bookmarks_in_dir_with_meta(folder)
+        )
         bookmark_paths.extend(all_bookmark_objects.keys())
 
     return bookmark_paths

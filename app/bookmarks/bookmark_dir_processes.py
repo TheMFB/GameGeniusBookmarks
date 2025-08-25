@@ -6,6 +6,7 @@ from app.utils.decorators import memoize, print_def_name
 
 IS_PRINT_DEF_NAME = True
 
+
 @print_def_name(False)
 @memoize
 def get_all_valid_root_dir_names() -> list[str]:
@@ -38,6 +39,7 @@ def get_all_valid_root_dir_names() -> list[str]:
     except Exception as e:
         print(f"⚠️  Error while finding live folders: {e}")
         return []
+
 
 # Unused
 # @print_def_name(IS_PRINT_DEF_NAME)

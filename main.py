@@ -2,6 +2,7 @@ import sys
 import traceback
 
 from app.bookmarks.bookmarks_print import print_all_live_directories_and_bookmarks
+from app.bookmarks.last_used import save_last_used_bookmark
 from app.bookmarks.matching.bookmark_matching import find_best_bookmark_match_or_create
 from app.bookmarks.matching.handle_matched_bookmark_post_processing import (
     handle_matched_bookmark_post_processing,
@@ -53,6 +54,8 @@ def main() -> tuple[int, CurrentRunSettings | None]:
     else:
         matched_bookmark_obj = find_best_results
 
+    save_last_used_bookmark(matched_bookmark_obj)
+
     current_run_settings_obj["current_bookmark_obj"] = matched_bookmark_obj
 
     # HANDLE MATCHED BOOKMARK PRE-PROCESSING
@@ -66,7 +69,10 @@ def main() -> tuple[int, CurrentRunSettings | None]:
 
     # MAIN PROCESS
 
-    results = handle_main_process(current_run_settings=current_run_settings_obj)
+    results = handle_main_process(
+        matched_bookmark_obj,
+        current_run_settings_obj,
+    )
     if results == 1:
         print_color("❌ Main process failed", "red")
         return results, current_run_settings_obj

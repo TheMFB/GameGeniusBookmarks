@@ -1,11 +1,11 @@
 {
-  "gateway_listener_test": "Test value at 1751277898.39",
+  "gateway_listener_test": "Test value at 0",
   "game:marvel_rivals:session:DEV_SESSION_ID:meta_state": {
     "session_id": "DEV_SESSION_ID",
     "members": ["DEV_GG_USER_ID"],
     "leader": "DEV_GG_USER_ID",
     "game_name": "marvel_rivals",
-    "created_at": 1751311420.78,
+    "created_at": 0,
     "state": {}
   },
   "game:marvel_rivals:session:DEV_SESSION_ID:players_meta_state": {
@@ -28,7 +28,7 @@
       "last_css_ocr_check": null,
       "last_css_hero_check": null
     },
-    "battle_mode_statuses": {
+    "map_battle_mode_statuses": {
       "game_mode_name": null,
       "battle_mode_name": null,
       "stage_name": null,

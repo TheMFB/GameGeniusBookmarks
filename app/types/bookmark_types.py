@@ -27,6 +27,7 @@ class BookmarkInfo(TypedDict):
     timestamp: float
     timestamp_formatted: str
     tags: list[str]
+    auto_tags: NotRequired[list[str]]
     created_at: str
     description: NotRequired[str]
 
@@ -45,62 +46,74 @@ class CurrentRunSettings(TypedDict):
     is_no_docker_no_redis: bool
     is_no_obs: bool
     is_no_saving_dry_run: bool
-    is_overwrite_bm_redis_after: bool
-    is_overwrite_bm_redis_before: bool
+    is_save_bm_redis_after: bool
+    is_reset_bm_redis_before: bool
     is_save_obs: bool
     is_save_updates: bool
     is_show_image: bool
     is_use_alt_source_bookmark: bool
+    is_update_obs: bool
     tags: list[str] | None
+    is_skip_auto_tag_confirmation: bool
+
+
+class MediaInfo(TypedDict):
+    file_path: str
+    video_filename: str
+    timestamp: float
+    timestamp_formatted: str
 
 
 # CLI FLAGS #
 
 ValidRoutedFlags = Literal[
-    "--help", "-h", "--ls", "-ls", "--which", "-w", "--open-video", "-v"
+    "--help", "-h", "--ls", "-ls", "--which", "-w", "--open-video", "-v", "--pwd"
 ]
 
 VALID_FLAGS = [
-    # Add a new bookmark
+    # TODO(MFB): See if we aren't using some of these...
     "--add-bookmark",
-    "-a",
-    # Overwrite existing bookmark data
-    "--save-updates",
-    "-s",
-    # Save last redis state
-    "--save-last-redis",
-    "-s",
-    # Use another bookmark as a alt source template
-    "--use-preceding-bookmark",
-    "-p",
-    "--bookmark-alt-source",
-    # Use a blank redis state as the alt source template
+    "--after",
+    "--before",
     "--blank-slate",
-    "-b",
-    # Dry run (no saving) - nor will it run the main process
+    "--bookmark-alt-source",
+    "--both",
     "--dry-run",
-    "-d",
-    "--no-saving",
-    "-ns",
-    # No docker (game processing/main process) run
     "--no-docker",
-    "-nd",
-    # No docker, no redis - updates to states will still be saved
     "--no-docker-no-redis",
-    "-ndr",
-    "-ndnr",
-    # Does not pull information from OBS
     "--no-obs",
-    # Save OBS information to the bookmark meta
+    "--no-saving",
+    "--reset",
+    # "--save-last-redis",
     "--save-obs",
-    "-so",
-    "--update-obs",
-    "-uo",
-    # Add tags to the bookmark
-    "--tags",
-    "-t",
-    # Show the image of the bookmark
+    "--save-redis-after",
+    "--save-redis-before",
+    "--save-updates",
     "--show-image",
+    "--tags",
+    "--update-all",
+    "--update-obs",
+    "--update-redis-after",
+    "--update-redis-before",
+    "--use-preceding-bookmark",
+    "-a",
+    "-b",
+    "-d",
+    "-nd",
+    "-ndnr",
+    "-ndr",
+    "-ns",
+    "-p",
+    "-r",
+    "-s",
+    "-sboth",
+    "-so",
+    "-t",
+    "-u",
+    "-uo",
+    "--pwd",
+    "--auto-tag",
+    "-at",
 ]
 
 default_processed_flags: CurrentRunSettings = {
@@ -113,13 +126,15 @@ default_processed_flags: CurrentRunSettings = {
     "is_no_docker_no_redis": False,
     "is_no_obs": False,
     "is_no_saving_dry_run": False,
-    "is_overwrite_bm_redis_after": False,
-    "is_overwrite_bm_redis_before": False,
+    "is_save_bm_redis_after": False,
+    "is_reset_bm_redis_before": False,
     "is_save_obs": False,
     "is_save_updates": False,
     "is_show_image": False,
     "is_use_alt_source_bookmark": False,
+    "is_update_obs": False,
     "tags": None,
+    "is_skip_auto_tag_confirmation": False,
 }
 
 NAVIGATION_COMMANDS = [
