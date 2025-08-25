@@ -51,15 +51,19 @@ def process_auto_tags(
         Path(matched_bookmark_obj["bookmark_path_slash_abs"]) / "bookmark_meta.json"
     )
     try:
-        # Check if we should skip confirmation
-        is_skip_auto_tag_confirmation = (
-            current_run_settings_obj.get("is_skip_auto_tag_confirmation", False)
+        # Handle user confirmation for applying auto-tags
+        auto_tag_confirm_answer = (
+            current_run_settings_obj.get("auto_tag_confirm_answer")
             if current_run_settings_obj
-            else False
+            else None
         )
 
-        if not is_skip_auto_tag_confirmation:
-            # Try to load current auto-tags from disk (if present)
+        if auto_tag_confirm_answer == "no":
+            print("⚠️ Auto-tagging skipped (auto_tag_confirm_answer='no').\n")
+            return
+        elif auto_tag_confirm_answer == "yes":
+            pass
+        else:
             try:
                 with open(bookmark_path, "r") as f:
                     existing_data = json.load(f)
