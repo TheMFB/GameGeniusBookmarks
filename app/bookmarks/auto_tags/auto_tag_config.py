@@ -1,19 +1,19 @@
-from typing import Literal, Optional, TypedDict
+from typing import Literal, NotRequired, TypedDict
 
 
-class AutoTagRule(TypedDict, total=False):
+class AutoTagRule(TypedDict):
     key: str  # Full redis-like path
-    values: Optional[list[str]]
-    prepend_string: Optional[str]
-    append_string: Optional[str]
-    bookmark_hierarchy: Optional[
+    values: NotRequired[list[str]]
+    prepend_string: NotRequired[str]
+    append_string: NotRequired[str]
+    bookmark_hierarchy: NotRequired[
         Literal["t1", "t2", "t3"]
     ]  # TODO(KERCH): Implement later. Fine for now.
     is_enabled: bool
-    true_string: Optional[str]
-    false_string: Optional[str]
-    undefined_string: Optional[str]
-    is_unique: bool
+    true_string: NotRequired[str]
+    false_string: NotRequired[str]
+    undefined_string: NotRequired[str]
+    is_unique: NotRequired[bool]
 
 
 AUTO_TAG_CONFIG: list[AutoTagRule] = [
