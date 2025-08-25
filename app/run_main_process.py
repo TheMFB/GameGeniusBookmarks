@@ -1,6 +1,7 @@
 import subprocess
 import time
 
+from app.bookmarks.bookmarks_meta import load_bookmark_meta_from_abs
 from app.consts.bookmarks_consts import ASYNC_WAIT_TIME, IS_DEBUG
 from app.types.bookmark_types import CurrentRunSettings, MatchedBookmarkObj
 from app.utils.decorators import print_def_name
@@ -39,11 +40,17 @@ def handle_main_process(
 
     print('')
     print("🚀 Running main process...")
+
     if matched_bookmark_obj.get("bookmark_info", {}).get("timestamp"):
         time_override = matched_bookmark_obj.get("bookmark_info", {}).get("timestamp")
-        cmd = f'docker exec -e GG_TIME_OVERRIDE={time_override} -it game_processor_backend python ./main.py --run-once --gg_user_id="DEV_GG_USER_ID"'
     else:
-        cmd = 'docker exec -it game_processor_backend python ./main.py --run-once --gg_user_id="DEV_GG_USER_ID"'
+        # TODO(): We should probably find a way to pass around the matched bookmark obj to obs so that we can save the meta to it when created, but this is a quick fix for now.
+        bookmark_meta = load_bookmark_meta_from_abs(matched_bookmark_obj["bookmark_path_slash_abs"])
+        time_override = ''
+        if bookmark_meta and bookmark_meta.get("timestamp"):
+            time_override = bookmark_meta.get("timestamp")
+
+    cmd = f'docker exec -e GG_TIME_OVERRIDE={time_override} -it game_processor_backend python ./main.py --run-once --gg_user_id="DEV_GG_USER_ID"'
 
     try:
         result = subprocess.run(cmd, shell=True, check=False)
