@@ -6,7 +6,14 @@ from typing import Literal
 IS_PRINT_DEV = True
 
 ColorTypes = Literal[
-    "black", "red", "green", "yellow", "blue", "magenta", "cyan", "white"
+    "black",
+    "red",
+    "green",
+    "yellow",
+    "blue",
+    "magenta",
+    "cyan",
+    "white",
 ]
 
 ALLOWED_COLORS: set[ColorTypes] = {

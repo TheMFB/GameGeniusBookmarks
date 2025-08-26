@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Optional, cast
 
 from app.bookmarks.auto_tags.create_auto_tags import create_auto_tags
 from app.consts.bookmarks_consts import IS_APPLY_AUTOTAGS, IS_DEBUG
@@ -134,8 +134,6 @@ def process_auto_tags(
         with open(bookmark_path, "r") as f:
             bm_json = json.load(f)
 
-        bm_json.pop("auto_tags", None)  # Clean up old format
-
         bookmark_info = bm_json.setdefault("bookmark_info", {})
 
         # Clean up any previously existing tiered tags
@@ -143,13 +141,16 @@ def process_auto_tags(
         bookmark_info.pop("auto_tags_t3", None)
 
         # Write current tags
-        bookmark_info["auto_tags"] = auto_tags
+        existing_auto_tags = bookmark_info.get("auto_tags", [])
+        bookmark_info["auto_tags"] = sorted(set(existing_auto_tags + auto_tags))
 
-        if "t2" in tags_by_hierarchy:
-            bookmark_info["auto_tags_t2"] = tags_by_hierarchy["t2"]
-
-        if "t3" in tags_by_hierarchy:
-            bookmark_info["auto_tags_t3"] = tags_by_hierarchy["t3"]
+        for level in ("t2", "t3"):
+            if level in tags_by_hierarchy:
+                key = f"auto_tags_{level}"
+                existing_tags = bookmark_info.get(key, [])
+                bookmark_info[key] = sorted(
+                    set(existing_tags + tags_by_hierarchy[level])
+                )
 
         with open(bookmark_path, "w") as f:
             json.dump(bm_json, f, indent=2)
@@ -171,7 +172,9 @@ def process_auto_tags(
                 parent_bm_info = parent_meta.setdefault("bookmark_info", {})
 
                 hierarchy_level = tag_key[-2:]
-                parent_bm_info[tag_key] = tags_by_hierarchy[hierarchy_level]
+                existing_tags = cast(list[str], parent_bm_info.get(tag_key) or [])
+                new_tags = cast(list[str], tags_by_hierarchy.get(hierarchy_level) or [])
+                parent_bm_info[tag_key] = sorted(set(existing_tags + new_tags))
 
                 try:
                     with open(meta_path, "w") as f:

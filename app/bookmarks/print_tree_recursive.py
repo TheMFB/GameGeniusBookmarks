@@ -101,7 +101,7 @@ def print_tree_recursive(
         ):
             print_color(
                 f"{indent}🏷️ {' '.join(f'•{tag}' for tag in sorted(bookmark_dir_json_without_parent[tier_key]))}",
-                "cyan",
+                "orange",
             )
 
     # effective_inherited_tags = inherited_tags | bm_sub_dir_tags
