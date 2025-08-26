@@ -73,6 +73,8 @@ def build_bookmark_token_map(include_tags_and_descriptions=True):
     all_bookmarks_json = get_all_live_bookmarks_in_json_format()
 
     def walk(node, path_parts, ancestor_tags, ancestor_descriptions):
+        if not isinstance(node, dict):
+            return  # ✅ Prevent crashing on lists like auto_tags_t2
         # Gather tags and description at this node
         tags = set(ancestor_tags)
         descriptions = list(ancestor_descriptions)
