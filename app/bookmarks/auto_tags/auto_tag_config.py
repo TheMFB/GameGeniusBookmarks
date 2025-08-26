@@ -34,6 +34,11 @@ AUTO_TAG_CONFIG: list[AutoTagRule] = [
         "bookmark_hierarchy": "t1",
     },
     {
+        "key": "game:marvel_rivals:session:DEV_SESSION_ID:game_state:map_battle_mode_statuses:checkpoint_reached",
+        "is_enabled": True,
+        "bookmark_hierarchy": "t1",
+    },
+    {
         "key": "game:marvel_rivals:session:DEV_SESSION_ID:game_state:map_battle_mode_statuses:team_attack_or_defend",
         "is_enabled": True,
         "bookmark_hierarchy": "t2",
