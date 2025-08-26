@@ -25,10 +25,12 @@ AUTO_TAG_CONFIG: list[AutoTagRule] = [
     {
         "key": "game:marvel_rivals:session:DEV_SESSION_ID:game_state:map_battle_mode_statuses:team_objective_control_state",
         "is_enabled": True,
+        # "bookmark_hierarchy": "t2",
     },
     {
         "key": "game:marvel_rivals:session:DEV_SESSION_ID:game_state:map_battle_mode_statuses:battle_timeline_phase",
         "is_enabled": True,
+        "bookmark_hierarchy": "t3",
     },
     {
         "key": "game:marvel_rivals:session:DEV_SESSION_ID:game_state:map_battle_mode_statuses:team_attack_or_defend",

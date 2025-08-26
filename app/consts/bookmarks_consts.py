@@ -34,7 +34,16 @@ SCREENSHOT_SAVE_SCALE = 0.5
 
 EXCLUDED_DIRS = {"archive", "archive_temp", "temp"}
 
-NON_NAME_BOOKMARK_KEYS = ["tags", "description", "video_filename", "timestamp", "type"]
+NON_NAME_BOOKMARK_KEYS = [
+    "tags",
+    "description",
+    "video_filename",
+    "timestamp",
+    "type",
+    "auto_tags_t1",
+    "auto_tags_t2",
+    "auto_tags_t3",
+]
 # TODO(KERCH): On creation, we should not allow these to be used as directory names. If they exist, we should raise an error.
 # TODO(KERCH): Create this list from the NAVIGATION_COMMANDS and NON_NAME_DIR_KEYS, instead of hardcoding it.
 RESERVED_BOOKMARK_NAMES = [

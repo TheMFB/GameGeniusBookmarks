@@ -65,12 +65,14 @@ def print_tree_recursive(
 
     # Recursively gather all tags in this folder
 
+    # Recursively gather all tags in this folder, including tiered auto-tags
     bm_sub_dir_tags: set[str] = set()
-    if (
-        "tags" in bookmark_dir_json_without_parent
-        and bookmark_dir_json_without_parent["tags"]
-    ):
-        bm_sub_dir_tags = set(bookmark_dir_json_without_parent["tags"])
+
+    for tag_key in ("tags", "auto_tags_t2", "auto_tags_t3"):
+        tag_list = bookmark_dir_json_without_parent.get(tag_key, [])
+        if tag_list:
+            bm_sub_dir_tags.update(tag_list)
+
     # TODO(MFB): Do we want to do this?
     # else:
     #     # Prefer node's own tags if present, else compute from children
@@ -80,11 +82,32 @@ def print_tree_recursive(
     if is_print_just_current_directory_bookmarks and not is_parent_dir_current:
         bm_sub_dir_tags = set()
 
-    if bm_sub_dir_tags:
+    # TODO(KERCH): Possibly Remove
+    # if is_print_just_current_directory_bookmarks and not is_parent_dir_current:
+    #     # Only suppress printing, not calculation
+    #     pass
+
+    # Print normal tags
+
+    if (
+        "tags" in bookmark_dir_json_without_parent
+        and bookmark_dir_json_without_parent["tags"]
+    ):
         print_color(
-            f"{indent}🏷️ {' '.join(f'•{tag}' for tag in sorted(bm_sub_dir_tags))}",
+            f"{indent}🏷️ {' '.join(f'•{tag}' for tag in sorted(bookmark_dir_json_without_parent['tags']))}",
             "cyan",
         )
+
+    # Print tiered auto-tags
+    for tier_key in ("auto_tags_t2", "auto_tags_t3"):
+        if (
+            tier_key in bookmark_dir_json_without_parent
+            and bookmark_dir_json_without_parent[tier_key]
+        ):
+            print_color(
+                f"{indent}🏷️ {' '.join(f'•{tag}' for tag in sorted(bookmark_dir_json_without_parent[tier_key]))}",
+                "cyan",
+            )
 
     # effective_inherited_tags = inherited_tags | bm_sub_dir_tags
 
