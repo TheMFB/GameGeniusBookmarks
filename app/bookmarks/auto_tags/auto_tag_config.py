@@ -21,41 +21,48 @@ AUTO_TAG_CONFIG: list[AutoTagRule] = [
         "key": "game:marvel_rivals:session:DEV_SESSION_ID:game_state:screen_statuses:current_screen_name",
         "is_enabled": True,
         "is_unique": True,
+        "bookmark_hierarchy": "t1",
     },
     {
         "key": "game:marvel_rivals:session:DEV_SESSION_ID:game_state:map_battle_mode_statuses:team_objective_control_state",
         "is_enabled": True,
-        # "bookmark_hierarchy": "t2",
+        "bookmark_hierarchy": "t1",
     },
     {
         "key": "game:marvel_rivals:session:DEV_SESSION_ID:game_state:map_battle_mode_statuses:battle_timeline_phase",
         "is_enabled": True,
-        "bookmark_hierarchy": "t2",
+        "bookmark_hierarchy": "t1",
     },
     {
         "key": "game:marvel_rivals:session:DEV_SESSION_ID:game_state:map_battle_mode_statuses:team_attack_or_defend",
         "is_enabled": True,
+        "bookmark_hierarchy": "t2",
     },
     {
         "key": "game:marvel_rivals:session:DEV_SESSION_ID:game_state:map_battle_mode_statuses:game_mode_name",
         "is_enabled": True,
+        "bookmark_hierarchy": "t3",
     },
     {
         "key": "game:marvel_rivals:session:DEV_SESSION_ID:game_state:map_battle_mode_statuses:map_battle_mode_name",
         "is_enabled": True,
+        "bookmark_hierarchy": "t3",
     },
     {
         "key": "game:marvel_rivals:session:DEV_SESSION_ID:game_state:map_battle_mode_statuses:stage_name",
         "is_enabled": True,
+        "bookmark_hierarchy": "t3",
     },
     {
         "key": "game:marvel_rivals:session:DEV_SESSION_ID:game_state:map_battle_mode_statuses:stage_location_name",
         "is_enabled": True,
+        "bookmark_hierarchy": "t3",
     },
     {
         "key": "game:marvel_rivals:session:DEV_SESSION_ID:game_state:map_battle_mode_statuses:final_victory_or_defeat",
         "is_enabled": True,
         "true_string": "final_victory",
         "false_string": "final_defeat",
+        "bookmark_hierarchy": "t3",
     },
 ]

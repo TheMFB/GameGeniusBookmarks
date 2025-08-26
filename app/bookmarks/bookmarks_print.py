@@ -61,7 +61,7 @@ def print_all_live_directories_and_bookmarks(
 
     # Start printing from the root level
     for parent_bm_dir_name, sub_dir_json_without_parent in all_bookmarks.items():
-        parent_bm_dir_col_rel = parent_bm_dir_name  # Top-level key, e.g., 'videos-1'
+        parent_bm_dir_col_rel = parent_bm_dir_name
 
         # Only recurse into matching tree if filtering is active
         if is_print_just_current_directory_bookmarks and current_bm_path_colon_rel:
@@ -69,7 +69,6 @@ def print_all_live_directories_and_bookmarks(
                 continue
         if IS_DEBUG:
             print(f"DEBUG: parent_bm_dir_name = {parent_bm_dir_name}")
-        # ✅ If we're filtering, only recurse into the current bookmark's root tree
 
         print("")
         print_tree_recursive(
@@ -98,6 +97,6 @@ def print_all_live_directories_and_bookmarks(
     print_color(f"🔍 Current bookmark: bm {rel_current_bookmark}", "magenta")
 
     if current_bookmark_obj:
-        log_has_bm_redis_before_diverged(current_bookmark_obj) # type: ignore
+        log_has_bm_redis_before_diverged(current_bookmark_obj)  # type: ignore
 
     return

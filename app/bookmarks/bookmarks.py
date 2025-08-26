@@ -164,7 +164,6 @@ def get_all_live_bookmarks_in_json_format(_is_override_run_once: bool = False):
                             node[tag_key] = bookmark_info[tag_key]
                 return node
 
-        # ⬇️ NEW: Hoist t2 and t3 auto-tags from child bookmarks
         t2_tags: set[str] = set()
         t3_tags: set[str] = set()
         for item in items:

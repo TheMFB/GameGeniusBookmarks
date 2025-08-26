@@ -170,7 +170,7 @@ def process_auto_tags(
 
                 parent_bm_info = parent_meta.setdefault("bookmark_info", {})
 
-                hierarchy_level = tag_key[-2:]  # extracts "t2" or "t3"
+                hierarchy_level = tag_key[-2:]
                 parent_bm_info[tag_key] = tags_by_hierarchy[hierarchy_level]
 
                 try:

@@ -82,11 +82,6 @@ def print_tree_recursive(
     if is_print_just_current_directory_bookmarks and not is_parent_dir_current:
         bm_sub_dir_tags = set()
 
-    # TODO(KERCH): Possibly Remove
-    # if is_print_just_current_directory_bookmarks and not is_parent_dir_current:
-    #     # Only suppress printing, not calculation
-    #     pass
-
     # Print normal tags
 
     if (
