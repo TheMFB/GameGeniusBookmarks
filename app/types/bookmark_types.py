@@ -28,6 +28,8 @@ class BookmarkInfo(TypedDict):
     timestamp_formatted: str
     tags: list[str]
     auto_tags: NotRequired[list[str]]
+    auto_tags_t2: NotRequired[list[str]]
+    auto_tags_t3: NotRequired[list[str]]
     created_at: str
     description: NotRequired[str]
 

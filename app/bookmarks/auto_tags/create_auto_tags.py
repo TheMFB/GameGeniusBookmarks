@@ -5,11 +5,11 @@ from app.consts.bookmarks_consts import IS_DEBUG
 from app.utils.data_utils import get_nested_value_from_colon_path
 
 
-def create_auto_tags(redis_after_data: dict[str, Any]) -> list[str]:
+def create_auto_tags(redis_after_data: dict[str, Any]) -> dict[str, list[str]]:
     """
     Converts redis_after_data into a list of auto-tags using config-driven rules.
     """
-    tags: set[str] = set()
+    tags_by_hierarchy: dict[str, list[str]] = {}
 
     for rule in AUTO_TAG_CONFIG:
         if IS_DEBUG:
@@ -28,6 +28,7 @@ def create_auto_tags(redis_after_data: dict[str, Any]) -> list[str]:
             continue
 
         raw_value = get_nested_value_from_colon_path(redis_after_data, key_path)
+        level = rule.get("bookmark_hierarchy", "t1")
 
         if IS_DEBUG:
             print(f"🔑 Rule: {key_path}")
@@ -36,7 +37,7 @@ def create_auto_tags(redis_after_data: dict[str, Any]) -> list[str]:
         if raw_value is None:
             undefined_tag = rule.get("undefined_string")
             if undefined_tag:
-                tags.add(undefined_tag)
+                tags_by_hierarchy.setdefault(level, []).append(undefined_tag)
             elif IS_DEBUG:
                 print(f"⚠️ Key not found: {key_path}")
             continue
@@ -45,11 +46,11 @@ def create_auto_tags(redis_after_data: dict[str, Any]) -> list[str]:
             if raw_value:
                 true_tag = rule.get("true_string")
                 if true_tag:
-                    tags.add(true_tag)
+                    tags_by_hierarchy.setdefault(level, []).append(true_tag)
             else:
                 false_tag = rule.get("false_string")
                 if false_tag:
-                    tags.add(false_tag)
+                    tags_by_hierarchy.setdefault(level, []).append(false_tag)
 
         if not isinstance(raw_value, str):
             continue
@@ -64,6 +65,7 @@ def create_auto_tags(redis_after_data: dict[str, Any]) -> list[str]:
         if append:
             tag = tag + append
 
-        tags.add(tag)
+        level = rule.get("bookmark_hierarchy", "t1")
+        tags_by_hierarchy.setdefault(level, []).append(tag)
 
-    return sorted(tags)
+    return tags_by_hierarchy

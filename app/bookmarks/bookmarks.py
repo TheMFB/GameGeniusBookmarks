@@ -124,6 +124,11 @@ def get_all_live_bookmarks_in_json_format(_is_override_run_once: bool = False):
             node["description"] = folder_meta.get("description", "")
             node["video_filename"] = folder_meta.get("video_filename", "")
 
+            # Inject tiered auto-tags from folder_meta (if present)
+            for tag_key in ("auto_tags_t2", "auto_tags_t3"):
+                if tag_key in folder_meta:
+                    node[tag_key] = folder_meta[tag_key]
+
         # List all items in this folder
         try:
             items = os.listdir(folder_path)
@@ -151,7 +156,30 @@ def get_all_live_bookmarks_in_json_format(_is_override_run_once: bool = False):
                             "type": "bookmark",
                         }
                     )
+
+                    # Inject auto_tags_t2 and auto_tags_t3 if present
+                    bookmark_info = bookmark_meta.get("bookmark_info", {})
+                    for tag_key in ("auto_tags_t2", "auto_tags_t3"):
+                        if tag_key in bookmark_info:
+                            node[tag_key] = bookmark_info[tag_key]
                 return node
+
+        t2_tags: set[str] = set()
+        t3_tags: set[str] = set()
+        for item in items:
+            file_abs_path = os.path.join(folder_path, item)
+            if os.path.isdir(file_abs_path):
+                meta_file = os.path.join(file_abs_path, "bookmark_meta.json")
+                if os.path.exists(meta_file):
+                    bookmark_meta = load_bookmark_meta_from_abs(file_abs_path)
+                    if bookmark_meta:
+                        info = bookmark_meta.get("bookmark_info", {})
+                        t2_tags.update(info.get("auto_tags_t2", []))
+                        t3_tags.update(info.get("auto_tags_t3", []))
+        if t2_tags:
+            node["auto_tags_t2"] = sorted(t2_tags)
+        if t3_tags:
+            node["auto_tags_t3"] = sorted(t3_tags)
 
         # Attach sub_dirs to node
         for sub_dir_name, sub_dir_node in sub_dirs.items():
